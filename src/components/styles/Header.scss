@@ -1,0 +1,110 @@
+@import "../../assets//styles//base//variables";
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: transparent;
+  color: white;
+  z-index: 100;
+  transition: transform 0.3s ease-in-out;
+
+  &.hidden {
+    transform: translateY(-100%);
+  }
+
+  &.visible {
+    transform: translateY(0);
+  }
+  .header__logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+
+    img {
+      margin-left: 30px;
+    }
+
+    span {
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+  }
+
+  .header__right {
+    display: flex;
+    padding: 0 30px 0 80px;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    margin-right: 20px;
+    .header__account {
+      margin: 10px 0;
+      padding: 0 10px;
+      font-size: 1.6rem;
+      color: black;
+      border-left: 1.5px solid #8c8787;
+      border-right: 1.5px solid #8c8787;
+
+      .btn-login {
+        background-color: $primary-color;
+        color: #fff;
+        padding: 10px 20px;
+        font-size: 1.6rem;
+        font-weight: 600;
+
+        border: none;
+        border-radius: 9999px; // bo tròn viên thuốc
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: #16a34a; // xanh lá đậm hơn khi hover
+        }
+
+        &:active {
+          transform: scale(0.97);
+        }
+
+        &:disabled {
+          background-color: #a1a1aa; // màu xám
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .header__cart {
+      position: relative;
+      padding: 0 10px;
+
+      img {
+        width: 24px;
+        height: 24px;
+      }
+
+      .badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: $primary-color;
+        color: #fff;
+        font-size: 1.4rem;
+        padding: 2px 6px;
+        border-radius: 50%;
+      }
+    }
+
+    .header__search img {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+  }
+}

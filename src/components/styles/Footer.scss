@@ -1,0 +1,39 @@
+@import "../../assets/styles/base/variables";
+.footer {
+  background-color: #000;
+  color: white;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: justify;
+  padding: 10px 20px;
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+  }
+
+  &__column {
+    padding: 50px;
+    h3,
+    h4 {
+      text-transform: uppercase;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  &__underline {
+    width: 150px;
+    height: 3px;
+    background-color: $primary-color;
+    margin-bottom: 1rem;
+  }
+
+  &__certification {
+    margin-top: 1rem;
+  }
+}
