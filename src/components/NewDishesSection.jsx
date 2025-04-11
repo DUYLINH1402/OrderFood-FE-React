@@ -7,8 +7,8 @@ const NewDishesSection = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getNewFoods();
-      setDishes(data);
+      const data = await getNewFoods(page, size);
+      setDishes(data.content);
     };
     fetchData();
   }, []);

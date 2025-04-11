@@ -42,7 +42,10 @@ const Header = () => {
           <SearchBar />
         </div>
         <div className="header__account">
-          <button className="btn-login"> Đăng nhập</button>
+          <Link to="/login" className="btn-login">
+            {" "}
+            Đăng nhập
+          </Link>
         </div>
 
         <Link to="/cart" className="header__cart">

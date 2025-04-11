@@ -46,6 +46,7 @@
     border-radius: 20px;
     margin-right: 20px;
     .header__account {
+      display: flex;
       margin: 10px 0;
       padding: 0 10px;
       font-size: 1.6rem;
@@ -59,7 +60,7 @@
         padding: 10px 20px;
         font-size: 1.6rem;
         font-weight: 600;
-
+        text-decoration: none;
         border: none;
         border-radius: 9999px; // bo tròn viên thuốc
         cursor: pointer;

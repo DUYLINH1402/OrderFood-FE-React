@@ -5,6 +5,8 @@ import { Outlet } from "react-router-dom";
 import Home from "../pages/Home";
 import Cart from "../pages/Cart";
 import Layout from "../components/NavBar/Layout";
+import { LoginForm } from "../components/LoginForm";
+import FoodListPage from "../pages/Foods/FoodListPage";
 
 export const UserRoutes = [
   {
@@ -14,6 +16,8 @@ export const UserRoutes = [
     children: [
       { path: "/", element: <Home /> },
       { path: "/cart", element: <Cart /> },
+      { path: "/foods", element: <FoodListPage /> },
+      { path: "/login", element: <LoginForm /> },
     ],
   },
 ];

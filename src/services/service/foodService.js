@@ -6,16 +6,41 @@ import {
   getNewFoodsFromSQL,
   getFeaturedFoodsFromSQL,
   getBestSellerFoodsFromSQL,
+  getAllFoodsFromSQL,
+  getFoodsByCategoryFromSQL,
 } from "../api/foodApi";
 
-export const getNewFoods = async () => {
-  return useFirebase ? await getNewFoodsFromFirebase() : await getNewFoodsFromSQL();
+// LẤY DANH SÁCH MÓN MỚI
+export const getNewFoods = async (page, size) => {
+  return useFirebase
+    ? await getNewFoodsFromFirebase(page, size)
+    : await getNewFoodsFromSQL(page, size);
 };
 
-export const getFeaturedFoods = async () => {
-  return useFirebase ? await getFeaturedFoodsFromFirebase() : await getFeaturedFoodsFromSQL();
+// LẤY DANH SÁCH MÓN NGON
+export const getFeaturedFoods = async (page, size) => {
+  return useFirebase
+    ? await getFeaturedFoodsFromFirebase(page, size)
+    : await getFeaturedFoodsFromSQL(page, size);
 };
 
-export const getBestSellerFoods = async () => {
-  return useFirebase ? await getBestSellerFoodsFromFirebase() : await getBestSellerFoodsFromSQL();
+// LẤY DANH SÁCH MÓN ĐƯỢC ƯA THÍCH
+export const getBestSellerFoods = async (page, size) => {
+  return useFirebase
+    ? await getBestSellerFoodsFromFirebase(page, size)
+    : await getBestSellerFoodsFromSQL(page, size);
+};
+
+// LẤY DANH SÁCH TẤT CẢ MÓN ĂN
+export const getAllFoods = async (page, size) => {
+  return useFirebase
+    ? await getAllFoodsFromFirebase(page, size)
+    : await getAllFoodsFromSQL(page, size);
+};
+
+// LẤY DANH SÁCH MÓN ĂN THEO DANH MỤC
+export const getFoodsByCategory = async (categoryId, page, size) => {
+  return useFirebase
+    ? await getFoodsByCategoryFromFirebase(categoryId, page, size)
+    : await getFoodsByCategoryFromSQL(categoryId, page, size);
 };

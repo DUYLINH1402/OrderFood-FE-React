@@ -7,8 +7,8 @@ const FavoriteDishesSection = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getBestSellerFoods();
-      setBestSellerDishes(data);
+      const data = await getBestSellerFoods(page, size);
+      setBestSellerDishes(data.content);
     };
     fetchData();
   }, []);

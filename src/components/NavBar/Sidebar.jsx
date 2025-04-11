@@ -1,9 +1,12 @@
 import React from "react";
 import "../styles/Sidebar.scss";
 import { FontAwesomeIcon, faTimes, faChevronDown } from "../../utils/icons";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Sidebar = ({ isOpen, onClose }) => {
+  const location = useLocation(); // LẤY ROUTE HIỆN TẠI
+  const isActive = (path) => location.pathname === path;
+
   return (
     <>
       <div className={`sidebar-overlay ${isOpen ? "active" : ""}`} onClick={onClose}></div>
@@ -17,43 +20,50 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         <ul className="sidebar-menu">
-          <li>
-            <Link to="#">GIỚI THIỆU</Link>
-          </li>
-          <li>
-            <Link to="/">TRANG CHỦ</Link>
-          </li>
-          <li className="has-dropdown">
-            <Link to="#">
-              THỰC ĐƠN <FontAwesomeIcon icon={faChevronDown} />
+          <li className={isActive("/about") ? "active" : ""}>
+            <Link to="/about" onClick={onClose}>
+              GIỚI THIỆU
             </Link>
           </li>
-
-          <li className="has-dropdown">
-            <Link to="#">
+          <li className={isActive("/") ? "active" : ""}>
+            <Link to="/" onClick={onClose}>
+              TRANG CHỦ
+            </Link>
+          </li>
+          <li className={`has-dropdown ${isActive("/foods") ? "active" : ""}`}>
+            <Link to="/foods" onClick={onClose}>
+              THỰC ĐƠN
+            </Link>
+          </li>
+          <li>
+            <Link to="#" onClick={onClose}>
               ĐÁNH GIÁ CỦA KHÁCH HÀNG <FontAwesomeIcon icon={faChevronDown} />
             </Link>
           </li>
-
           <li>
-            <Link to="#">TÍCH ĐIỂM - NHẬN QUÀ</Link>
+            <Link to="#" onClick={onClose}>
+              TÍCH ĐIỂM - NHẬN QUÀ
+            </Link>
           </li>
           <li>
-            <Link to="#">LÀM THIỆN NGUYỆN CÙNG ĐỒNG XANH</Link>
-          </li>
-          <li>
-            <Link to="#">ĐÃI TIỆC LƯU ĐỘNG TẠI NHÀ</Link>
+            <Link to="#" onClick={onClose}>
+              LÀM THIỆN NGUYỆN CÙNG ĐỒNG XANH
+            </Link>
           </li>
           <li className="has-dropdown">
-            <Link to="#">
+            <Link to="#" onClick={onClose}>
               TÀI NGUYÊN - KIẾN THỨC <FontAwesomeIcon icon={faChevronDown} />
             </Link>
           </li>
           <li>
-            <Link to="#">TIN TỨC</Link>
+            <Link to="#" onClick={onClose}>
+              TIN TỨC
+            </Link>
           </li>
           <li>
-            <Link to="#">LIÊN HỆ</Link>
+            <Link to="#" onClick={onClose}>
+              LIÊN HỆ
+            </Link>
           </li>
         </ul>
       </div>

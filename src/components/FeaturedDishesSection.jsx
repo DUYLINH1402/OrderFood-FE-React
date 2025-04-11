@@ -7,8 +7,8 @@ const FeaturedDishesSection = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getFeaturedFoods();
-      setFeaturedDishes(data);
+      const data = await getFeaturedFoods(page, size);
+      setFeaturedDishes(data.content);
     };
     fetchData();
   }, []);
