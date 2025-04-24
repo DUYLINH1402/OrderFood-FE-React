@@ -4,10 +4,12 @@ import { getBestSellerFoods } from "../services/service/foodService";
 
 const FavoriteDishesSection = () => {
   const [bestSellerDishes, setBestSellerDishes] = useState([]);
+  const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)
+  const pageSize = 12;
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getBestSellerFoods(page, size);
+      const data = await getBestSellerFoods(page, pageSize);
       setBestSellerDishes(data.content);
     };
     fetchData();

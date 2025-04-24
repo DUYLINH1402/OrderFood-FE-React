@@ -45,6 +45,7 @@ const FoodSidebar = ({ onSelectCategory }) => {
                     onSelectCategory(null);
                     setExpandedParent(null);
                     setSelectedId(null);
+                    navigate(`/foods/${child.id}`);
                   } else {
                     handleToggleExpand(cat);
                   }

@@ -10,6 +10,10 @@ const FoodGrid = ({ categoryId }) => {
   const pageSize = 12;
 
   useEffect(() => {
+    setPage(0); // reset page khi đổi danh mục
+  }, [categoryId]);
+
+  useEffect(() => {
     const fetchFoods = async () => {
       try {
         const data = categoryId

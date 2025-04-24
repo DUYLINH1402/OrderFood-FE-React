@@ -4,10 +4,12 @@ import { getNewFoods } from "../services/service/foodService";
 
 const NewDishesSection = () => {
   const [dishes, setDishes] = useState([]);
+  const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)
+  const pageSize = 12;
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getNewFoods(page, size);
+      const data = await getNewFoods(page, pageSize);
       setDishes(data.content);
     };
     fetchData();

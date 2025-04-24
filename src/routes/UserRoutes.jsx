@@ -18,6 +18,7 @@ export const UserRoutes = [
       { path: "/cart", element: <Cart /> },
       { path: "/foods", element: <FoodListPage /> },
       { path: "/login", element: <LoginForm /> },
+      { path: "/foods/:categoryId", element: <FoodListPage /> },
     ],
   },
 ];

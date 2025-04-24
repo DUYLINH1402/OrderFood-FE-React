@@ -42,14 +42,13 @@
       .food-sidebar-subitem {
         padding: 5px 10px;
         font-size: 1.6rem;
-        color: #444;
         background: transparent;
         border: none;
         cursor: pointer;
         text-align: left;
 
         &:hover {
-          color: #111;
+          opacity: 0.8;
         }
         li {
           text-decoration: none;
@@ -60,6 +59,6 @@
 }
 .food-sidebar-item.active,
 .food-sidebar-subitem.active {
-  color: #783737;
+  color: $primary-color;
   font-weight: bold;
 }

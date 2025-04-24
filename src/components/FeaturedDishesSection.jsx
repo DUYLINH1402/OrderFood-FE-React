@@ -4,10 +4,12 @@ import { getFeaturedFoods } from "../services/service/foodService";
 
 const FeaturedDishesSection = () => {
   const [featuredDishes, setFeaturedDishes] = useState([]);
+  const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)
+  const pageSize = 12;
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getFeaturedFoods(page, size);
+      const data = await getFeaturedFoods(page, pageSize);
       setFeaturedDishes(data.content);
     };
     fetchData();
