@@ -47,6 +47,8 @@ export const getAllFoodsFromSQL = async (page = 0, size = 12) => {
   try {
     const response = await fetch(`${BASE_URL}/api/foods?page=${page}&size=${size}`);
     if (!response.ok) {
+      const text = await response.text(); // chỉ đọc khi lỗi
+      console.error("Response lỗi:", text);
       throw new Error("Failed to fetch all foods");
     }
     return await response.json();

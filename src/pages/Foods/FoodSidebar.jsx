@@ -3,7 +3,7 @@ import { getCategoriesByParent, getRootCategories } from "../../services/service
 import { FontAwesomeIcon, faChevronUp, faChevronDown } from "../../utils/icons.js";
 import { motion, AnimatePresence } from "framer-motion";
 import "../styles/FoodSidebar.scss";
-
+import { Navigate } from "react-router-dom";
 const FoodSidebar = ({ onSelectCategory }) => {
   const [categories, setCategories] = useState([{ id: null, name: "Tất cả" }]);
   const [expandedParent, setExpandedParent] = useState(null);

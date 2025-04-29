@@ -4,6 +4,7 @@ import DishCard from "../../components/DishCard";
 import { getAllFoods, getFoodsByCategory } from "../../services/service/foodService";
 
 const FoodGrid = ({ categoryId }) => {
+  // console.log("Domain: ", import.meta.env.VITE_API_BASE_URL);
   const [foods, setFoods] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)

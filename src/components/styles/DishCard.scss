@@ -1,7 +1,11 @@
 @import "../../assets/styles/base/variables";
 
 .dish-card-wrap {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 0;
 }
 .dish-card {
   display: flex;
@@ -17,6 +21,7 @@
     border-radius: $border-radius;
     margin: 0 auto;
     background-color: #fff;
+    text-align: center;
     img {
       border-radius: $border-radius;
       object-fit: cover;

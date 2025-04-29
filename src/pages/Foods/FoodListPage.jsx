@@ -42,7 +42,7 @@ const FoodListPage = () => {
   }, [categoryId]);
 
   const breadcrumbs = [{ name: "Trang chủ", path: "/" }, ...categoryNameChain];
-
+  console.log("Category Name Chain: ", categoryNameChain);
   return (
     <div className="food-list-page-container">
       <nav className="breadcrumb">
