@@ -30,3 +30,27 @@ export const getCategoryByIdFromSQL = async (categoryId) => {
     return null;
   }
 };
+
+// LẤY DANH MỤC THEO SLUG
+export const getCategoryBySlugFromSQL = async (slug) => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/categories/slug/${slug}`);
+    if (!res.ok) throw new Error(`Failed to fetch category with slug: ${slug}`);
+    return await res.json();
+  } catch (error) {
+    console.error(`Lỗi khi fetch category với slug (${slug}):`, error);
+    return null;
+  }
+};
+
+// LẤY DANH SÁCH DANH MỤC CON THEO SLUG CHA
+export const getCategoriesByParentSlugFromSQL = async (slug) => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/categories/by-parent-slug/${slug}`);
+    if (!res.ok) throw new Error(`Failed to fetch child categories for slug: ${slug}`);
+    return await res.json();
+  } catch (error) {
+    console.error(`Lỗi khi fetch child categories với slug (${slug}):`, error);
+    return [];
+  }
+};

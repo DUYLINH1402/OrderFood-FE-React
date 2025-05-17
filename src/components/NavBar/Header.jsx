@@ -5,11 +5,12 @@ import shopping_cart from "../../assets/icons/shopping_cart.png";
 import "../styles/Header.scss";
 import LazyImage from "../LazyImage";
 import SearchBar from "../SearchBar";
+import { useSelector } from "react-redux";
 
 const Header = () => {
+  const cartCount = useSelector((state) => state.cart.count);
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
 
@@ -23,6 +24,9 @@ const Header = () => {
 
     setLastScrollY(currentScrollY);
   };
+  useEffect(() => {
+    window.forceShowHeader = () => setShowHeader(true); // expose hàm global
+  }, []);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
@@ -50,7 +54,7 @@ const Header = () => {
 
         <Link to="/cart" className="header__cart">
           <LazyImage src={shopping_cart} alt="Giỏ hàng" className="shopping-cart" />
-          <span className="badge">0</span>
+          <span className="badge">{cartCount}</span>
         </Link>
       </div>
     </header>

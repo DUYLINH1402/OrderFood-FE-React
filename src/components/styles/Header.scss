@@ -8,7 +8,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 3px;
   background: transparent;
   color: white;
   z-index: 100;
@@ -107,5 +107,28 @@
       height: 20px;
       cursor: pointer;
     }
+  }
+}
+
+.header {
+  @media (max-width: 768px) {
+    padding: 8px 1px; // mobile
+  }
+}
+.header__logo img {
+  @media (max-width: 768px) {
+    width: 45px;
+  }
+}
+.btn-login {
+  @media (max-width: 768px) {
+    font-size: 13px !important;
+    padding: 4px 10px !important;
+  }
+}
+.shopping-cart {
+  @media (max-width: 768px) {
+    width: 20px !important;
+    height: 20px !important;
   }
 }

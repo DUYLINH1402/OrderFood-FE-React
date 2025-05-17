@@ -1,60 +1,90 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import FoodSidebar from "./FoodSidebar";
 import FoodGrid from "./FoodGrid";
 import "../styles/FoodListPage.scss";
-import { getCategoryById } from "../../services/service/categoriesService";
+import {
+  getCategoryBySlug,
+  getCategoriesByParentSlug,
+  getCategoryById,
+} from "../../services/service/categoriesService";
+import FoodSidebarMobileWrapper from "./Mobile/FoodSidebarMobileWrapper";
 
 const FoodListPage = () => {
-  const { categoryId } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [categoryNameChain, setCategoryNameChain] = useState([]);
   const [categoryError, setCategoryError] = useState(false);
+  const [childCategories, setChildCategories] = useState([]);
+  const [isLoadedChildren, setIsLoadedChildren] = useState(false);
+
+  const isBestSellerPage = slug === "1"; // id BEST SELLER trong DB
 
   useEffect(() => {
-    const fetchCategoryChain = async () => {
-      if (!categoryId) {
+    const fetchCategoryData = async () => {
+      if (!slug || isBestSellerPage) {
         setCategoryNameChain([]);
         setCategoryError(false);
+        setChildCategories([]);
+        setIsLoadedChildren(true);
         return;
       }
 
       try {
-        const child = await getCategoryById(categoryId);
+        const child = await getCategoryBySlug(slug);
+        const children = await getCategoriesByParentSlug(slug);
+
         let breadcrumbChain = [];
 
         if (child.parentId) {
           const parent = await getCategoryById(child.parentId);
-          breadcrumbChain.push({ name: parent.name, path: `/foods/${parent.id}` });
+          breadcrumbChain.push({ name: parent.name, path: `/foods/${parent.slug}` });
         }
+        breadcrumbChain.push({ name: child.name, path: `/foods/${child.slug}` });
 
-        breadcrumbChain.push({ name: child.name, path: `/foods/${child.id}` });
         setCategoryNameChain(breadcrumbChain);
+        setChildCategories(children);
         setCategoryError(false);
+        setIsLoadedChildren(true);
       } catch (error) {
-        console.error("Lỗi khi lấy breadcrumb:", error);
+        console.error("Lỗi khi lấy breadcrumb hoặc danh mục con:", error);
         setCategoryNameChain([]);
         setCategoryError(true);
+        setChildCategories([]);
+        setIsLoadedChildren(true);
       }
     };
 
-    fetchCategoryChain();
-  }, [categoryId]);
+    fetchCategoryData();
+  }, [slug]);
 
   const breadcrumbs = [{ name: "Trang chủ", path: "/" }, ...categoryNameChain];
-  console.log("Category Name Chain: ", categoryNameChain);
+
   return (
     <div className="food-list-page-container">
       <nav className="breadcrumb">
         {breadcrumbs.map((crumb, index) => (
           <span key={index}>
-            <Link to={crumb.path}>{crumb.name}</Link>
+            <a
+              href={crumb.path}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(crumb.path);
+              }}
+              style={{
+                color: "#007bff",
+                textDecoration: "underline",
+                cursor: "pointer",
+              }}>
+              {crumb.name}
+            </a>
             {index < breadcrumbs.length - 1 && " > "}
           </span>
         ))}
       </nav>
       <div className="food-list-page">
-        <aside className="sidebar-menu-foods">
+        {/* Sidebar trên desktop */}
+        <aside className="sidebar-menu-foods hidden lg:block">
           <FoodSidebar
             onSelectCategory={(id) => {
               if (id) navigate(`/foods/${id}`);
@@ -62,18 +92,51 @@ const FoodListPage = () => {
             }}
           />
         </aside>
-        <main className="main-content">
+
+        {/* Sidebar trên mobile (dropdown) */}
+        <div className="block lg:hidden">
+          <FoodSidebarMobileWrapper
+            onSelectCategory={(id) => {
+              if (id) navigate(`/foods/${id}`);
+              else navigate(`/foods`);
+            }}
+          />
+        </div>
+
+        <main className="main-content mt-[80px] md:mt-0">
           {categoryError ? (
-            <h2 className="title-food-grid title-error">Không tìm thấy danh mục "{categoryId}"</h2>
+            <h2 className="title-food-grid title-error">Không tìm thấy danh mục "{slug}"</h2>
           ) : (
             <>
               <h2 className="title-food-grid">
-                {categoryNameChain?.length > 0 &&
-                categoryNameChain[categoryNameChain.length - 1]?.name
+                {isBestSellerPage
+                  ? "Danh mục BEST SELLER"
+                  : categoryNameChain?.length > 0 &&
+                    categoryNameChain[categoryNameChain.length - 1]?.name
                   ? `Danh mục ${categoryNameChain[categoryNameChain.length - 1].name}`
                   : "Tất cả các món"}
               </h2>
-              <FoodGrid categoryId={categoryId ? parseInt(categoryId) : null} />
+
+              {isBestSellerPage ? (
+                <FoodGrid filterType="best-seller" />
+              ) : isLoadedChildren ? (
+                childCategories.length > 0 ? (
+                  <div className="child-category-list">
+                    {childCategories.map((child) => (
+                      <div
+                        key={child.slug}
+                        onClick={() => navigate(`/foods/${child.slug}`)}
+                        className="child-category-item">
+                        {child.name}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <FoodGrid slug={slug} />
+                )
+              ) : (
+                <p>Đang tải dữ liệu...</p>
+              )}
             </>
           )}
         </main>

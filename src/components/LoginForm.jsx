@@ -73,16 +73,12 @@ export const LoginForm = () => {
             <div className="toggle-panel toggle-left">
               <h1>Chào mừng trở lại!</h1>
               <p>Nhập thông tin cá nhân để tiếp tục sử dụng dịch vụ</p>
-              <button className="hidden" onClick={handleLoginClick}>
-                Đăng nhập
-              </button>
+              <button onClick={handleLoginClick}>Đăng nhập</button>
             </div>
             <div className="toggle-panel toggle-right">
               <h1>Xin chào thành viên mới!</h1>
               <p>Hãy đăng ký tài khoản để trải nghiệm đầy đủ tính năng</p>
-              <button className="hidden" onClick={handleRegisterClick}>
-                Đăng ký
-              </button>
+              <button onClick={handleRegisterClick}>Đăng ký</button>
             </div>
           </div>
         </div>

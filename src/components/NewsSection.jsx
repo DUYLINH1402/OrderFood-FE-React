@@ -12,7 +12,7 @@ const NewsSection = () => {
   }, []);
 
   return (
-    <div className="dish-card-wrap">
+    <div className="grid grid-cols-1 min-[520px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2 sm:px-3 max-w-[1200px] mx-auto">
       {news.map((item) => (
         <div key={item.id} className="bg-white rounded-xl shadow-md p-4 flex gap-4">
           <LazyImage

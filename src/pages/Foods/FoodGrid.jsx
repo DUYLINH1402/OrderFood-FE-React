@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "../styles/FoodGrid.scss";
 import DishCard from "../../components/DishCard";
-import { getAllFoods, getFoodsByCategory } from "../../services/service/foodService";
+import {
+  getAllFoods,
+  getBestSellerFoods,
+  getFoodsByCategorySlug,
+} from "../../services/service/foodService";
 
-const FoodGrid = ({ categoryId }) => {
+const FoodGrid = ({ slug }) => {
   // console.log("Domain: ", import.meta.env.VITE_API_BASE_URL);
   const [foods, setFoods] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -12,29 +16,35 @@ const FoodGrid = ({ categoryId }) => {
 
   useEffect(() => {
     setPage(0); // reset page khi đổi danh mục
-  }, [categoryId]);
+  }, [slug]);
 
   useEffect(() => {
     const fetchFoods = async () => {
       try {
-        const data = categoryId
-          ? await getFoodsByCategory(categoryId, page, pageSize)
-          : await getAllFoods(page, pageSize);
+        let data;
+
+        if (slug === "best-seller") {
+          data = await getBestSellerFoods(page, pageSize);
+        } else if (slug) {
+          data = await getFoodsByCategorySlug(slug, page, pageSize);
+        } else {
+          data = await getAllFoods(page, pageSize);
+        }
 
         if (!data?.content) {
           console.error("Dữ liệu không hợp lệ:", data);
           return;
         }
 
+        // console.log("Foods từ BE:", data.content);
         setFoods(data.content);
         setTotalPages(data.totalPages);
       } catch (error) {
         console.error("Lỗi khi gọi API:", error);
       }
     };
-
     fetchFoods();
-  }, [categoryId, page]);
+  }, [slug, page]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < totalPages) {
@@ -48,6 +58,7 @@ const FoodGrid = ({ categoryId }) => {
         {foods.map((food) => (
           <DishCard
             key={food.id}
+            slug={food.slug} // slug là duy nhất
             name={food.name}
             price={food.price}
             imageUrl={food.imageUrl}
@@ -64,14 +75,31 @@ const FoodGrid = ({ categoryId }) => {
         <button onClick={() => handlePageChange(page - 1)} disabled={page === 0}>
           {"<"}
         </button>
-        {[...Array(totalPages)].map((_, i) => (
-          <button
-            key={i}
-            onClick={() => handlePageChange(i)}
-            className={i === page ? "active" : ""}>
-            {i + 1}
-          </button>
-        ))}
+        {(() => {
+          const isMobile = window.innerWidth < 640; // sm breakpoint
+          const maxVisible = isMobile ? 3 : 5;
+          const half = Math.floor(maxVisible / 2);
+          let start = Math.max(0, page - half);
+          let end = start + maxVisible;
+
+          if (end > totalPages) {
+            end = totalPages;
+            start = Math.max(0, end - maxVisible);
+          }
+
+          return [...Array(totalPages)].map((_, i) => {
+            if (i < start || i >= end) return null;
+            return (
+              <button
+                key={i}
+                onClick={() => handlePageChange(i)}
+                className={i === page ? "active" : ""}>
+                {i + 1}
+              </button>
+            );
+          });
+        })()}
+
         <button onClick={() => handlePageChange(page + 1)} disabled={page === totalPages - 1}>
           {">"}
         </button>

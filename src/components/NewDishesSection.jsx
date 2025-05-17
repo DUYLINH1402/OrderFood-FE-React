@@ -16,10 +16,11 @@ const NewDishesSection = () => {
   }, []);
 
   return (
-    <div className="dish-card-wrap">
+    <div className="grid grid-cols-1 min-[520px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2 sm:px-3 max-w-[1200px] mx-auto">
       {dishes.map((dish) => (
         <DishCard
           key={dish.id}
+          slug={dish.slug}
           name={dish.name}
           price={dish.price}
           imageUrl={dish.imageUrl}

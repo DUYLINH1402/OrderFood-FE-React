@@ -12,6 +12,7 @@
   max-width: 350px;
   padding: 20px;
   margin: 0 auto;
+  gap: 10px;
   .card_box {
     position: relative;
     width: 250px;
@@ -22,9 +23,11 @@
     margin: 0 auto;
     background-color: #fff;
     text-align: center;
+    gap: 10px;
     img {
       border-radius: $border-radius;
       object-fit: cover;
+      min-height: 230px;
     }
 
     .title-food {
@@ -58,6 +61,7 @@
         border-bottom-right-radius: 20px;
         .fa-shopping-basket {
           padding: 8px;
+          transform: translateX(-3px);
           background-color: white;
           border: 1px solid white;
           border-radius: 50%;
@@ -75,7 +79,7 @@
         right: 20px;
         bottom: 15px;
         font-size: 18px;
-        padding: 8px;
+        padding: 4px 8px;
         background-color: white;
         border: 1px solid $primary-color;
         border-radius: 50%;
@@ -338,4 +342,47 @@
   right: 10%;
   width: 1px;
   height: 100%;
+}
+
+// --------- RESPONSIVE ----------
+@media (max-width: 640px) {
+  .dish-card {
+    .card_box {
+      padding: 10px;
+
+      .title-food {
+        font-size: 14px;
+        margin-top: 4px;
+      }
+
+      .price {
+        font-size: 14px;
+        margin: 4px 0;
+      }
+
+      .action-wrapper {
+        gap: 6px;
+        margin-top: 8px;
+
+        .dish-card-action-btn {
+          font-size: 12px;
+          padding: 4px 8px;
+
+          i {
+            font-size: 14px;
+            margin-left: 4px;
+          }
+          .fa-shopping-basket {
+            transform: translateX(4px);
+          }
+        }
+
+        .shopping-cart-icon {
+          width: 35px;
+          height: 35px;
+          font-size: 14px;
+        }
+      }
+    }
+  }
 }

@@ -1,16 +1,30 @@
 import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
 import "./styles/DishCard.scss";
-import shopping_cart from "../assets/icons/shopping_cart.png";
 import LazyImage from "./LazyImage";
 
-const DishCard = ({ name, price, imageUrl, isNew, isFeatured, isBestSeller }) => {
+const DishCard = ({ name, price, slug, imageUrl, isNew, isFeatured, isBestSeller }) => {
+  const navigate = useNavigate();
+  // console.log("Slug trong DishCard:", slug);
+
+  const handleClick = () => {
+    navigate(`/foods/slug/${slug}`);
+  };
+
   return (
-    <div className="dish-card">
+    <div className="dish-card cursor-pointer" onClick={handleClick}>
       <div className="card_box">
         {isNew && <span className="is-new-foods"></span>}
         {isFeatured && <span className="is-featured-foods"></span>}
         {isBestSeller && <span className="is-best-seller-foods"></span>}
-        <LazyImage src={imageUrl} alt={name} width={250} height={250} />
+        <LazyImage
+          src={imageUrl}
+          alt={name}
+          width={210}
+          height={250}
+          className="w-full h-[140px] sm:h-[160px] object-cover"
+        />
         <h3 title={name} className="title-food">
           {name}{" "}
         </h3>

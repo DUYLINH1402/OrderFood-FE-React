@@ -62,3 +62,16 @@
   color: $primary-color;
   font-weight: bold;
 }
+
+// Cú pháp Tailwind để tái sử dụng class
+.food-sidebar-subitem {
+  @apply block w-full text-left px-4 py-2 text-sm rounded-md transition-colors duration-200;
+
+  &:hover {
+    @apply bg-gray-100 text-green-600 font-medium;
+  }
+
+  &.active {
+    @apply bg-green-100 text-green-700 font-semibold;
+  }
+}

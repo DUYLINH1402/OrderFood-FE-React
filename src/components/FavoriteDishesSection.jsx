@@ -16,10 +16,11 @@ const FavoriteDishesSection = () => {
   }, []);
 
   return (
-    <div className="dish-card-wrap">
+    <div className="grid grid-cols-1 min-[520px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2 sm:px-3 max-w-[1200px] mx-auto">
       {bestSellerDishes.map((bestSellerDishes) => (
         <DishCard
           key={bestSellerDishes.id}
+          slug={bestSellerDishes.slug}
           name={bestSellerDishes.name}
           price={bestSellerDishes.price}
           imageUrl={bestSellerDishes.imageUrl}

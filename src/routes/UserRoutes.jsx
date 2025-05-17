@@ -7,6 +7,7 @@ import Cart from "../pages/Cart";
 import Layout from "../components/NavBar/Layout";
 import { LoginForm } from "../components/LoginForm";
 import FoodListPage from "../pages/Foods/FoodListPage";
+import FoodDetailPage from "../components/FoodDetailPage";
 
 export const UserRoutes = [
   {
@@ -18,7 +19,8 @@ export const UserRoutes = [
       { path: "/cart", element: <Cart /> },
       { path: "/foods", element: <FoodListPage /> },
       { path: "/login", element: <LoginForm /> },
-      { path: "/foods/:categoryId", element: <FoodListPage /> },
+      { path: "/foods/:slug", element: <FoodListPage /> },
+      { path: "/foods/slug/:slug", element: <FoodDetailPage /> },
     ],
   },
 ];

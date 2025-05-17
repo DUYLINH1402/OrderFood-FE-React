@@ -59,7 +59,7 @@ export const getAllFoodsFromSQL = async (page = 0, size = 12) => {
 };
 
 // LẤY MÓN ĂN THEO DANH MỤC
-export const getFoodsByCategoryFromSQL = async (categoryId, page = 0, size = 12) => {
+export const getFoodsByCategoryIDFromSQL = async (categoryId, page = 0, size = 12) => {
   try {
     const response = await fetch(
       `${BASE_URL}/api/foods/by-category/${categoryId}?page=${page}&size=${size}`
@@ -71,5 +71,33 @@ export const getFoodsByCategoryFromSQL = async (categoryId, page = 0, size = 12)
   } catch (error) {
     console.error(`Lỗi khi lấy món ăn theo danh mục (${categoryId}):`, error.message);
     return [];
+  }
+};
+// LẤY MÓN ĂN THEO DANH MỤC BẰNG SLUG
+export const getFoodsByCategorySlugFromSQL = async (slug, page = 0, size = 12) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/foods/by-category-slug/${slug}?page=${page}&size=${size}`
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch foods for category: ${slug}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Lỗi khi lấy món ăn theo danh mục (${slug}):`, error.message);
+    return [];
+  }
+};
+// LẤY CHI TIẾT MÓN ĂN THEO SLUG
+export const getFoodBySlugFromSQL = async (slug) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/foods/slug/${slug}`);
+    if (!response.ok) {
+      throw new Error(`Không thể lấy món ăn với slug: ${slug}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Lỗi khi lấy chi tiết món ăn (${slug}):`, error.message);
+    return null;
   }
 };
