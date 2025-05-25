@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DishCard from "./DishCard";
 import { getFeaturedFoods } from "../services/service/foodService";
+import HorizontalScrollSection from "../utils/action";
 
 const FeaturedDishesSection = () => {
   const [featuredDishes, setFeaturedDishes] = useState([]);
@@ -15,18 +16,20 @@ const FeaturedDishesSection = () => {
     fetchData();
   }, []);
   return (
-    <div className="grid grid-cols-1 min-[520px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2 sm:px-3 max-w-[1200px] mx-auto">
-      {featuredDishes.map((featuredDishes) => (
+    <HorizontalScrollSection
+      items={featuredDishes}
+      renderItem={(dish) => (
         <DishCard
-          key={featuredDishes.id}
-          slug={featuredDishes.slug}
-          name={featuredDishes.name}
-          price={featuredDishes.price}
-          imageUrl={featuredDishes.imageUrl}
-          isFeatured={featuredDishes.isFeatured}
+          key={dish.id}
+          id={dish.id}
+          slug={dish.slug}
+          name={dish.name}
+          price={dish.price}
+          imageUrl={dish.imageUrl}
+          isFeatured={dish.isFeatured}
         />
-      ))}
-    </div>
+      )}
+    />
   );
 };
 

@@ -8,13 +8,13 @@
   .layout__sidebar {
     .menu-button {
       position: fixed;
-      top: 150px;
+      top: 110px;
       left: 15px;
       display: flex;
       align-items: center;
       gap: 8px;
       padding: 10px 16px;
-      background-color: $primary-color;
+      background-color: $secondary-color;
       color: #fff;
       font-weight: 600;
       font-size: 2rem;

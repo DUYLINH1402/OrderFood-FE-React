@@ -1,3 +1,4 @@
+@import "../../assets/styles/base/variables";
 .sidebar {
   position: fixed;
   top: 0;
@@ -52,7 +53,7 @@
         align-items: center;
 
         &:hover {
-          color: green;
+          color: rgb(74, 123, 13);
         }
       }
 
@@ -63,7 +64,7 @@
       }
     }
     li.active > a {
-      color: #2e7d32;
+      color: $primary-color;
       font-weight: bold;
       position: relative;
     }
@@ -76,7 +77,7 @@
       transform: translateY(-50%);
       width: 6px;
       height: 6px;
-      background: #2e7d32;
+      background: $primary-color;
       border-radius: 50%;
     }
   }

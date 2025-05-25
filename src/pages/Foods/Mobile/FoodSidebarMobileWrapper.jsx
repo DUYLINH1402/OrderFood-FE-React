@@ -16,7 +16,7 @@ const FoodSidebarMobileWrapper = ({ onSelectCategory }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed sm:top-[150px] top-[80px] right-4 z-[10] flex items-center gap-2 px-4 py-2 bg-[#32c828] text-white font-semibold text-[1.2rem] sm:text-[2rem] rounded-[8px] shadow-md transition-all">
+        className="fixed sm:top-[110px] top-[80px] right-4 z-[10] flex items-center gap-2 px-4 py-2 bg-[#07bc0c] text-white font-semibold text-[1.2rem] sm:text-[2rem] rounded-[8px] shadow-md transition-all">
         🍽️ Thực đơn
       </button>
 

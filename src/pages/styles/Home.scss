@@ -1,8 +1,9 @@
+@import "../../assets/styles/base/variables.scss";
 .home {
   &__section {
     margin: 0 auto;
     text-align: center;
-    padding: 20px 0;
+    padding: 20px;
 
     &--alt {
       background-color: #f3f4f6; // giống bg-gray-100
@@ -17,7 +18,7 @@
     display: inline-block;
     text-align: center;
     padding: 0 30px;
-    background: #32c828;
+    background: $primary-color;
     line-height: 63px;
     border-top-left-radius: 30px;
     border-bottom-right-radius: 30px;

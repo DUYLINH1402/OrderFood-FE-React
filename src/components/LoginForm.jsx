@@ -1,88 +1,93 @@
-import React, { useEffect, useRef } from "react";
+import { useState } from "react";
+import React from "react";
 import "./styles/LoginForm.scss";
+import facebook from "../assets/icons/facebook.svg";
+import google from "../assets/icons/google.svg";
+import zaloIcon from "../assets/icons/zaloIcon.svg";
 
-export const LoginForm = () => {
-  const containerRef = useRef(null);
-
-  const handleRegisterClick = () => {
-    containerRef.current.classList.add("active");
-  };
-
-  const handleLoginClick = () => {
-    containerRef.current.classList.remove("active");
-  };
+export default function LoginRegisterForm() {
+  const [isRegisterActive, setIsRegisterActive] = useState(false);
 
   return (
-    <div className="login-form-wrap">
-      <div className="container" ref={containerRef}>
-        {/* ĐĂNG KÝ */}
-        <div className="form-container sign-up">
-          <form>
-            <h1>Tạo tài khoản</h1>
-            <div className="social-icons">
-              <a href="#" className="icon">
-                <i className="fa-brands fa-google-plus-g"></i>
-              </a>
-              <a href="#" className="icon">
-                <i className="fa-brands fa-facebook-f"></i>
-              </a>
-              <a href="#" className="icon">
-                <i className="fa-brands fa-github"></i>
-              </a>
-              <a href="#" className="icon">
-                <i className="fa-brands fa-linkedin-in"></i>
-              </a>
-            </div>
-            <span>hoặc sử dụng email để đăng ký</span>
-            <input type="text" placeholder="Họ và tên" />
-            <input type="email" placeholder="Email" />
-            <input type="password" placeholder="Mật khẩu" />
-            <button type="submit">Đăng ký</button>
-          </form>
-        </div>
-
-        {/* ĐĂNG NHẬP */}
-        <div className="form-container sign-in">
+    <div className="login-register-wrapper">
+      <div className={`container${isRegisterActive ? " active" : ""}`}>
+        {/* LOGIN */}
+        <div className="form-box login ">
           <form>
             <h1>Đăng nhập</h1>
+            <div className="input-box">
+              <input type="text" placeholder="Email hoặc Username" required />
+              <i className="bx bxs-user"></i>
+            </div>
+            <div className="input-box">
+              <input type="password" placeholder="Mật khẩu" required />
+              <i className="bx bxs-lock-alt"></i>
+            </div>
+            <div className="forgot-link">
+              <a href="#">Quên mật khẩu?</a>
+            </div>
+            <button type="submit" className="btn">
+              Đăng nhập
+            </button>
+            <p>hoặc đăng nhập bằng mạng xã hội</p>
             <div className="social-icons">
-              <a href="#" className="icon">
-                <i className="fa-brands fa-google-plus-g"></i>
+              <a href="#">
+                <img src={google} alt="Google" />
               </a>
-              <a href="#" className="icon">
-                <i className="fa-brands fa-facebook-f"></i>
+              <a href="#">
+                <img src={facebook} alt="Facebook" />
               </a>
-              <a href="#" className="icon">
-                <i className="fa-brands fa-github"></i>
-              </a>
-              <a href="#" className="icon">
-                <i className="fa-brands fa-linkedin-in"></i>
+              <a href="#">
+                <img src={zaloIcon} alt="Zalo" />
               </a>
             </div>
-            <span>hoặc sử dụng email và mật khẩu</span>
-            <input type="email" placeholder="Email" />
-            <input type="password" placeholder="Mật khẩu" />
-            <a href="#">Quên mật khẩu?</a>
-            <button type="submit">Đăng nhập</button>
           </form>
         </div>
 
-        {/* KHUNG CHUYỂN ĐỔI */}
-        <div className="toggle-container">
-          <div className="toggle">
-            <div className="toggle-panel toggle-left">
-              <h1>Chào mừng trở lại!</h1>
-              <p>Nhập thông tin cá nhân để tiếp tục sử dụng dịch vụ</p>
-              <button onClick={handleLoginClick}>Đăng nhập</button>
+        {/* REGISTER */}
+        <div className="form-box register ">
+          <form>
+            <h1>Đăng ký</h1>
+            <div className="input-box">
+              <input type="text" placeholder="Tên đăng nhập (VD: duylinhGCT)" required />
+              <i className="bx bxs-user"></i>
             </div>
-            <div className="toggle-panel toggle-right">
-              <h1>Xin chào thành viên mới!</h1>
-              <p>Hãy đăng ký tài khoản để trải nghiệm đầy đủ tính năng</p>
-              <button onClick={handleRegisterClick}>Đăng ký</button>
+            <div className="input-box">
+              <input type="email" placeholder="Email" required />
+              <i className="bx bxs-envelope"></i>
             </div>
+            <div className="input-box">
+              <input type="password" placeholder="Mật khẩu" required />
+              <i className="bx bxs-lock-alt"></i>
+            </div>
+            <div className="input-box">
+              <input type="password" placeholder="Nhập lại mật khẩu" required />
+              <i className="bx bxs-lock-alt"></i>
+            </div>
+            <button type="submit" className="btn">
+              Đăng ký
+            </button>
+          </form>
+        </div>
+
+        {/* TOGGLE */}
+        <div className="toggle-box ">
+          <div className="toggle-panel toggle-left">
+            <h1 className="">Chào mừng bạn!</h1>
+            <p>Bạn chưa có tài khoản?</p>
+            <button className="btn register-btn" onClick={() => setIsRegisterActive(true)}>
+              Đăng ký
+            </button>
+          </div>
+          <div className="toggle-panel toggle-right">
+            <h1>Chào mừng trở lại!</h1>
+            <p>Bạn đã có tài khoản?</p>
+            <button className="btn login-btn" onClick={() => setIsRegisterActive(false)}>
+              Đăng nhập
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
-};
+}

@@ -20,31 +20,32 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         <ul className="sidebar-menu">
-          <li className={isActive("/about") ? "active" : ""}>
-            <Link to="/about" onClick={onClose}>
-              GIỚI THIỆU
-            </Link>
-          </li>
           <li className={isActive("/") ? "active" : ""}>
             <Link to="/" onClick={onClose}>
               TRANG CHỦ
             </Link>
           </li>
-          <li className={`has-dropdown ${isActive("/foods") ? "active" : ""}`}>
-            <Link to="/foods" onClick={onClose}>
+          <li className={isActive("/gioi-thieu") ? "active" : ""}>
+            <Link to="/gioi-thieu" onClick={onClose}>
+              GIỚI THIỆU
+            </Link>
+          </li>
+          <li className={`has-dropdown ${isActive("/thuc-don") ? "active" : ""}`}>
+            <Link to="/thuc-don" onClick={onClose}>
               THỰC ĐƠN
             </Link>
           </li>
-          <li>
-            <Link to="#" onClick={onClose}>
-              ĐÁNH GIÁ CỦA KHÁCH HÀNG <FontAwesomeIcon icon={faChevronDown} />
-            </Link>
-          </li>
-          <li>
-            <Link to="#" onClick={onClose}>
+          <li className={`has-dropdown ${isActive("/tich-diem") ? "active" : ""}`}>
+            <Link to="/tich-diem" onClick={onClose}>
               TÍCH ĐIỂM - NHẬN QUÀ
             </Link>
           </li>
+          <li>
+            <Link to="#" onClick={onClose}>
+              ĐÁNH GIÁ CỦA KHÁCH HÀNG
+            </Link>
+          </li>
+
           <li>
             <Link to="#" onClick={onClose}>
               LÀM THIỆN NGUYỆN CÙNG ĐỒNG XANH
@@ -52,7 +53,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           </li>
           <li className="has-dropdown">
             <Link to="#" onClick={onClose}>
-              TÀI NGUYÊN - KIẾN THỨC <FontAwesomeIcon icon={faChevronDown} />
+              TÀI NGUYÊN - KIẾN THỨC
             </Link>
           </li>
           <li>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DishCard from "./DishCard";
 import { getBestSellerFoods } from "../services/service/foodService";
+import HorizontalScrollSection from "../utils/action";
 
 const FavoriteDishesSection = () => {
   const [bestSellerDishes, setBestSellerDishes] = useState([]);
@@ -16,19 +17,20 @@ const FavoriteDishesSection = () => {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 min-[520px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2 sm:px-3 max-w-[1200px] mx-auto">
-      {bestSellerDishes.map((bestSellerDishes) => (
+    <HorizontalScrollSection
+      items={bestSellerDishes}
+      renderItem={(dish) => (
         <DishCard
-          key={bestSellerDishes.id}
-          slug={bestSellerDishes.slug}
-          name={bestSellerDishes.name}
-          price={bestSellerDishes.price}
-          imageUrl={bestSellerDishes.imageUrl}
-          isBestSeller={bestSellerDishes.isBestSeller}
+          key={dish.id}
+          id={dish.id}
+          slug={dish.slug}
+          name={dish.name}
+          price={dish.price}
+          imageUrl={dish.imageUrl}
+          isBestSeller={dish.isBestSeller}
         />
-      ))}
-    </div>
+      )}
+    />
   );
 };
-
 export default FavoriteDishesSection;

@@ -1,6 +1,9 @@
 @import "../../assets/styles/base/variables";
 .footer {
   background-color: #000;
+  background-image: url("https://bizweb.dktcdn.net/100/400/734/themes/795402/assets/bg-footer.jpg?1739761841827");
+  background-size: cover;
+  background-position: right;
   color: white;
   font-size: 14px;
   line-height: 1.6;
@@ -9,11 +12,10 @@
   &__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 25px;
   }
 
   &__column {
-    padding: 50px;
+    padding: 20px;
     h3,
     h4 {
       text-transform: uppercase;
@@ -35,5 +37,17 @@
 
   &__certification {
     margin-top: 1rem;
+  }
+}
+
+/* Hiển thị theo hàng dọc khi ở màn hình nhỏ hơn hoặc bằng 1024px */
+@media screen and (max-width: 1024px) {
+  .footer__grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .footer__column {
+    width: 100%; // chiếm toàn bộ chiều rộng khi xuống dòng
   }
 }

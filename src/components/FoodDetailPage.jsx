@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./styles/FoodDetailPage.scss";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+
 import { getFoodBySlug } from "../services/service/foodService";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { addQuantity } from "../store/slices/cartSlice";
+import { addToCart } from "../store/slices/cartSlice";
+import { flyToCart } from "../utils/action";
+import LoadingPage from "./Skeleton/LoadingPage";
 
 export default function FoodDetailPage() {
   const { slug } = useParams();
@@ -14,13 +17,12 @@ export default function FoodDetailPage() {
   const [selectedPrice, setSelectedPrice] = useState(0);
   const [selectedVariantId, setSelectedVariantId] = useState(null);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const imageRef = useRef();
-  const tingSound = new Audio(
-    "https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.wav"
-  );
-  tingSound.volume = 1;
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     const fetchFood = async () => {
       const data = await getFoodBySlug(slug);
       setFood(data);
@@ -31,70 +33,64 @@ export default function FoodDetailPage() {
   }, [slug]);
 
   const handleAddToCart = () => {
-    dispatch(addQuantity(quantity)); // đúng duy nhất ở đây
-    flyToCart();
-  };
+    window.forceShowHeader?.();
 
-  // Tạo hiệu ứng bay đến giỏ hàng
-  const flyToCart = () => {
-    const cartIcon = document.querySelector(".header__cart");
-    const image = imageRef.current;
+    setTimeout(() => {
+      flyToCart(imageRef); // delay bay
+    }, 300);
 
-    if (!cartIcon || !image) return;
+    const variantObj = food.variants?.find((v) => v.id === selectedVariantId);
+    const variantName = variantObj?.name || "Mặc định";
 
-    const imgRect = image.getBoundingClientRect();
-    const cartRect = cartIcon.getBoundingClientRect();
-
-    const clone = image.cloneNode(true);
-    clone.style.position = "fixed";
-    clone.style.zIndex = "9999";
-    clone.style.left = imgRect.left + "px";
-    clone.style.top = imgRect.top + "px";
-    clone.style.width = imgRect.width + "px";
-    clone.style.height = imgRect.height + "px";
-    clone.style.transition = "all 0.8s ease-in-out";
-    clone.style.borderRadius = "12px";
-
-    document.body.appendChild(clone);
-
-    requestAnimationFrame(() => {
-      clone.style.left = cartRect.left + "px";
-      clone.style.top = cartRect.top + "px";
-      clone.style.width = "20px";
-      clone.style.height = "20px";
-      clone.style.opacity = "0.5";
-    });
-
-    clone.addEventListener("transitionend", () => {
-      clone.remove();
-      cartIcon.classList.add("cart-bounce");
-      setTimeout(() => cartIcon.classList.remove("cart-bounce"), 500);
-    });
+    dispatch(
+      addToCart({
+        foodId: food.id,
+        slug: food.slug,
+        name: food.name,
+        price: selectedPrice, // đã bao gồm extra price
+        image: mainImage,
+        variant: variantName,
+        quantity: quantity, // số lượng người dùng chọn
+      })
+    );
   };
 
   const handleQuantityChange = (delta) => {
     setQuantity((prev) => Math.max(1, prev + delta));
   };
 
-  if (!food) return <div className="text-center mt-10">Đang tải món ăn...</div>;
+  if (!food) return <LoadingPage />;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-[150px] pb-16 text-[14px] md:text-[16px] grid grid-cols-1 md:grid-cols-2 gap-10">
+    <div className="max-w-6xl mx-auto px-4 pt-[160px] px-[40px] pb-16 text-[14px] md:text-[16px] grid grid-cols-1 md:grid-cols-2 gap-10 ">
       {/* Vùng ảnh bên trái */}
-      <div className="flex flex-col items-center">
+      <div className="flex relative flex-col items-center">
         {/* Nút quay lại */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-2 left-2 bg-white shadow-md rounded-full p-2 hover:bg-gray-100 transition"
-          title="Quay lại">
-          <i className="fa-solid fa-arrow-left text-gray-600"></i>
+          class="  top-[-50px] left-[0px] bg-green-100 text-center w-48 rounded-2xl h-14 relative text-black text-base group border border-[#199b7e]"
+          type="button">
+          <div class="bg-[#199b7e] rounded-xl h-11 w-1/4 flex items-center justify-center absolute left-1 top-[3px] group-hover:w-[113px] z-10 duration-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 1024 1024"
+              height="20px"
+              width="20px">
+              <path d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z" fill="#000000"></path>
+              <path
+                d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                fill="#000000"></path>
+            </svg>
+          </div>
+          <p class="translate-x-2">Quay lại</p>
         </button>
+
         {/* Ảnh chính */}
         <img
           ref={imageRef}
           src={mainImage}
           alt={food.name}
-          className="w-full max-w-md rounded-2xl shadow-lg object-cover"
+          className="w-full rounded-2xl shadow-lg object-cover"
         />
 
         {/* Ảnh phụ nếu có */}
@@ -118,7 +114,7 @@ export default function FoodDetailPage() {
       {/* Vùng thông tin bên phải */}
       <div>
         <div className="flex justify-between items-start mb-4">
-          <h1 className="text-3xl font-bold text-gray-800">{food.name}</h1>
+          <h1 className="sm:text-3xl font-bold text-gray-800">{food.name}</h1>
           <div className="flex space-x-3">
             {/* Nút yêu thích */}
             <button className="text-red-500 text-xl hover:scale-110 transition">
@@ -131,28 +127,16 @@ export default function FoodDetailPage() {
           </div>
         </div>
 
-        <p className="text-green-600 text-2xl font-semibold mb-3">
+        <p className="text-[#199b7e] sm:text-[25px] text-[20px] font-semibold mb-3">
           {selectedPrice.toLocaleString()}₫
         </p>
         <p className="text-gray-700 mb-5 leading-relaxed">{food.description}</p>
 
-        {/* Thành phần */}
-        {food.ingredients?.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-2">Thành phần:</h2>
-            <ul className="list-disc list-inside text-gray-600">
-              {food.ingredients.map((item, idx) => (
-                <li key={idx}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         {/* Biến thể nếu có */}
         {food.variants?.length > 0 && (
           <div className="mb-5">
-            <h2 className="font-semibold mb-2">Các biến thể khác:</h2>
-            <div className="flex flex-wrap gap-3">
+            <h2 className="font-semibold  mb-2">Các biến thể khác:</h2>
+            <div className="flex flex-wrap gap-3 ">
               {food.variants.map((v, idx) => (
                 <button
                   key={idx}
@@ -160,7 +144,7 @@ export default function FoodDetailPage() {
                     setSelectedVariantId(v.id);
                     setSelectedPrice(food.price + (v.extraPrice || 0));
                   }}
-                  className="px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm">
+                  className="px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm sm:text-base">
                   {v.name}
                 </button>
               ))}
@@ -175,7 +159,7 @@ export default function FoodDetailPage() {
             className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded">
             -
           </button>
-          <span className="text-lg font-medium">{quantity}</span>
+          <span className="sm:text-lg">{quantity}</span>
           <button
             onClick={() => handleQuantityChange(1)}
             className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded">
@@ -186,7 +170,7 @@ export default function FoodDetailPage() {
         {/* Nút hành động */}
         <div className="flex gap-4">
           <button
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-full font-semibold"
+            className="bg-[#199b7e] hover:bg-green-500 text-white px-6 py-2 rounded-full font-semibold"
             onClick={handleAddToCart}>
             Thêm vào giỏ hàng
           </button>

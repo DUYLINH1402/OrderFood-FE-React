@@ -9,3 +9,13 @@ body {
 html {
   font-size: 62.5%; /* 62.5% của 16px = 10px → 1rem = 10px */
 }
+.group:hover .group-hover\\:pause-marquee {
+  animation-play-state: paused;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

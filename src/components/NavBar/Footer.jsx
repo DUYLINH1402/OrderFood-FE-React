@@ -4,7 +4,7 @@ import logo_da_thong_bao_bct from "../../assets/images/logo_da_thong_bao_bct.web
 import LazyImage from "../LazyImage";
 const Footer = () => {
   return (
-    <footer className="footer">
+    <footer className="footer text-sm sm:text-base">
       <div className="footer__grid">
         {/* Cột 1: Giới thiệu */}
         <div className="footer__column">
@@ -15,12 +15,14 @@ const Footer = () => {
             sen và các món ăn gia đình. Mang đến giá trị cho khách hàng là sứ mệnh của Đồng Xanh.
           </p>
 
-          <h4>CHÍNH SÁCH</h4>
-          <div className="footer__underline" />
-          <p>
-            Chính sách bảo mật | Chính sách vận chuyển | Chính sách đổi trả | Chính sách kiểm hàng |
-            Chính sách thanh toán
-          </p>
+          <div className="mt-[40px]">
+            <h4>CHÍNH SÁCH</h4>
+            <div className="footer__underline" />
+            <p>
+              Chính sách bảo mật | Chính sách vận chuyển | Chính sách đổi trả | Chính sách kiểm hàng
+              | Chính sách thanh toán
+            </p>
+          </div>
         </div>
 
         {/* Cột 2: Liên hệ */}

@@ -58,6 +58,7 @@ const FoodGrid = ({ slug }) => {
         {foods.map((food) => (
           <DishCard
             key={food.id}
+            id={food.id}
             slug={food.slug} // slug là duy nhất
             name={food.name}
             price={food.price}
@@ -68,7 +69,7 @@ const FoodGrid = ({ slug }) => {
           />
         ))}
       </div>
-      <div className="pagination">
+      <div className="pagination sm:text-base">
         <button onClick={() => handlePageChange(0)} disabled={page === 0}>
           {"<<"}
         </button>

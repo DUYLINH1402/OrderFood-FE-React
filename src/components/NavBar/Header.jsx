@@ -8,7 +8,7 @@ import SearchBar from "../SearchBar";
 import { useSelector } from "react-redux";
 
 const Header = () => {
-  const cartCount = useSelector((state) => state.cart.count);
+  const cartCount = useSelector((state) => state.cart.items);
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const handleScroll = () => {
@@ -25,9 +25,8 @@ const Header = () => {
     setLastScrollY(currentScrollY);
   };
   useEffect(() => {
-    window.forceShowHeader = () => setShowHeader(true); // expose hàm global
+    window.forceShowHeader = () => setShowHeader(true);
   }, []);
-
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -54,7 +53,7 @@ const Header = () => {
 
         <Link to="/cart" className="header__cart">
           <LazyImage src={shopping_cart} alt="Giỏ hàng" className="shopping-cart" />
-          <span className="badge">{cartCount}</span>
+          <span className="badge">{cartCount.length}</span>
         </Link>
       </div>
     </header>

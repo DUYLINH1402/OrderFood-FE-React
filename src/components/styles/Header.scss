@@ -55,7 +55,7 @@
       border-right: 1.5px solid #8c8787;
 
       .btn-login {
-        background-color: $primary-color;
+        background-color: $secondary-color;
         color: #fff;
         padding: 10px 20px;
         font-size: 1.6rem;
@@ -94,10 +94,10 @@
         position: absolute;
         top: -10px;
         right: -10px;
-        background: $primary-color;
+        background: $secondary-color;
         color: #fff;
         font-size: 1.4rem;
-        padding: 2px 6px;
+        padding: 0px 7px;
         border-radius: 50%;
       }
     }
