@@ -1,32 +1,28 @@
-// import { configureStore } from "@reduxjs/toolkit";
-// import cartReducer from "./slices/cartSlice";
-
-// export const store = configureStore({
-//   reducer: {
-//     cart: cartReducer,
-//   },
-// });
-
 import { configureStore } from "@reduxjs/toolkit";
 import cartReducer from "./slices/cartSlice";
+import authReducer from "./slices/authSlice";
+
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // mặc định: localStorage
+import { combineReducers } from "redux";
 
+// Gộp nhiều reducer lại
+const rootReducer = combineReducers({
+  cart: cartReducer,
+  auth: authReducer,
+});
+
+// Cấu hình persist (chỉ persist cart, auth hoặc toàn bộ tuỳ chọn)
 const persistConfig = {
-  key: "cart",
+  key: "root",
   storage,
 };
 
-const persistedCartReducer = persistReducer(persistConfig, cartReducer);
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-  reducer: {
-    cart: persistedCartReducer,
-  },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: false, // tránh warning với redux-persist
-    }),
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });
 
 export const persistor = persistStore(store);

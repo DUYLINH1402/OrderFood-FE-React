@@ -19,3 +19,28 @@ html {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Chỉnh cỡ chữ của toast */
+.Toastify__toast {
+  font-size: 1.6rem;
+  line-height: 1.5;
+  @include respond-to(xs) {
+    margin: 10px auto;
+    width: 90vw;
+    border-radius: 10px !important;
+  }
+}
+.Toastify__toast--success {
+  font-size: 1.4rem; /* Cỡ chữ riêng cho toast success */
+  color: #28a745;
+}
+.Toastify__toast--error {
+  font-size: 1.4rem; /* Cỡ chữ riêng cho toast error */
+}
+.Toastify__toast--info {
+  background-color: #007bff;
+}
+.Toastify__toast--warning {
+  background-color: #ffc107;
+  color: #ffc107;
+}
