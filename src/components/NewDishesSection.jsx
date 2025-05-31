@@ -23,9 +23,10 @@ const NewDishesSection = () => {
         <DishCard
           id={dish.id}
           slug={dish.slug}
-          name={dish.name}
+          foodName={dish.name}
           price={dish.price}
           imageUrl={dish.imageUrl}
+          variants={dish.variants}
           isNew={dish.isNew}
         />
       )}

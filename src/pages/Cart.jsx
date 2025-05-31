@@ -3,12 +3,59 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./styles/CartPage.scss";
 import { removeFromCart, updateQuantity, clearCart } from "../store/slices/cartSlice";
+import { getToken } from "../services/auth/authApi";
+import { clearCartApi, removeCartItemApi, updateCartApi } from "../services/service/cartService";
+import { toast } from "react-toastify";
 
 export default function CartPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const items = useSelector((state) => state.cart.items);
   const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const token = getToken();
+
+  const handleUpdateQuantity = async (foodId, variantId, quantity) => {
+    const item = items.find((i) => i.foodId === foodId && i.variantId === variantId);
+    const oldQuantity = item?.quantity ?? 1;
+
+    dispatch(updateQuantity({ foodId, variantId, quantity }));
+
+    try {
+      await updateCartApi(foodId, variantId, quantity, token);
+    } catch (err) {
+      console.error("Lỗi cập nhật số lượng:", err);
+      toast.error("Cập nhật số lượng thất bại.");
+      dispatch(updateQuantity({ foodId, variantId, quantity: oldQuantity }));
+    }
+  };
+
+  const handleRemoveItem = async (foodId, variantId) => {
+    const removedItem = items.find((i) => i.foodId === foodId && i.variantId === variantId);
+    dispatch(removeFromCart({ foodId, variantId }));
+
+    try {
+      await removeCartItemApi(foodId, variantId, token); // truyền đúng id
+    } catch (err) {
+      console.error("Lỗi xóa món:", err);
+      toast.error("Xóa món thất bại.");
+      dispatch(updateQuantity({ foodId, variantId, quantity: removedItem.quantity }));
+    }
+  };
+
+  const handleClearCart = async () => {
+    const backupItems = [...items];
+    dispatch(clearCart());
+
+    try {
+      await clearCartApi(token);
+    } catch (err) {
+      console.error("Lỗi xóa toàn bộ:", err);
+      toast.error("Xóa toàn bộ giỏ hàng thất bại.");
+      backupItems.forEach((item) => {
+        dispatch(updateQuantity(item));
+      });
+    }
+  };
 
   return (
     <div className="cart-wrap m-10 max-w-5xl mx-auto p-50 sm:m-10 sm:text-base border border-gray-300 rounded-lg shadow-lg bg-white">
@@ -23,18 +70,18 @@ export default function CartPage() {
           <ul className="divide-y divide-gray-200">
             {items.map((item) => (
               <li
-                key={`${item.foodId}-${item.variant}`}
+                key={`${item.foodId}-${item.variantId}`}
                 className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 py-4">
                 <div
                   className="flex sm:items-center w-full cursor-pointer hover:bg-gray-100 transition duration-200 rounded-lg p-2"
                   onClick={() => navigate(`/foods/slug/${item.slug}`)}>
                   <img
-                    src={item.image}
-                    alt={item.name}
+                    src={item.imageUrl}
+                    alt={item.foodName}
                     className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-md border flex-shrink-0"
                   />
                   <div className="cart-food-infor ml-3 sm:ml-4 mt-2 sm:mt-0 leading-snug text-sm sm:text-base space-y-1">
-                    <h2 className="font-semibold text-gray-800">{item.name}</h2>
+                    <h2 className="font-semibold text-gray-800">{item.foodName}</h2>
                     <p className="text-gray-500">Cách chế biến: {item.variant}</p>
                     <p className="text-gray-600">
                       Giá: {item.price.toLocaleString()}₫ × {item.quantity}
@@ -45,13 +92,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-2 mt-2  sm:mt-0 self-end sm:self-center ">
                   <button
                     onClick={() =>
-                      dispatch(
-                        updateQuantity({
-                          foodId: item.foodId,
-                          variant: item.variant,
-                          quantity: item.quantity - 1,
-                        })
-                      )
+                      handleUpdateQuantity(item.foodId, item.variantId, item.quantity - 1)
                     }
                     disabled={item.quantity <= 1}
                     className="w-8 h-8 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50">
@@ -60,26 +101,13 @@ export default function CartPage() {
                   <span className="w-6 text-center text-sm sm:text-base">{item.quantity}</span>
                   <button
                     onClick={() =>
-                      dispatch(
-                        updateQuantity({
-                          foodId: item.foodId,
-                          variant: item.variant,
-                          quantity: item.quantity + 1,
-                        })
-                      )
+                      handleUpdateQuantity(item.foodId, item.variantId, item.quantity + 1)
                     }
                     className="w-8 h-8 border border-gray-300 rounded hover:bg-gray-100">
                     +
                   </button>
                   <button
-                    onClick={() =>
-                      dispatch(
-                        removeFromCart({
-                          foodId: item.foodId,
-                          variant: item.variant,
-                        })
-                      )
-                    }
+                    onClick={() => handleRemoveItem(item.foodId, item.variantId)}
                     className="text-red-500 hover:underline text-sm sm:text-base">
                     Xóa
                   </button>
@@ -90,7 +118,7 @@ export default function CartPage() {
 
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
             <button
-              onClick={() => dispatch(clearCart())}
+              onClick={handleClearCart}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
               Xóa toàn bộ
             </button>

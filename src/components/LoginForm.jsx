@@ -11,6 +11,8 @@ import { mapLoginError, mapRegisterError } from "../utils/authErrorMapper";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../store/slices/authSlice";
+import { getUserCart, syncCart } from "../services/service/cartService";
+import { setCartItems } from "../store/slices/cartSlice";
 
 export default function LoginRegisterForm() {
   const [isRegisterActive, setIsRegisterActive] = useState(false);
@@ -55,6 +57,16 @@ export default function LoginRegisterForm() {
       // Lưu localStorage để tránh mất dữ liệu khi reload
       localStorage.setItem("accessToken", data.token);
       localStorage.setItem("user", JSON.stringify(data));
+
+      // Đồng bộ giỏ hàng nếu có
+      const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+      if (cartItems.length > 0) {
+        await syncCart(cartItems, data.token);
+      }
+      // Lấy lại cart từ backend và cập nhật Redux
+      const serverCart = await getUserCart(data.token);
+      dispatch(setCartItems(serverCart));
+      console.log("Giỏ hàng đã đồng bộ từ BE:", serverCart);
 
       // Đăng nhập thành công → chuyển về trang chủ
       navigate("/");
@@ -129,6 +141,7 @@ export default function LoginRegisterForm() {
             <h1>Đăng nhập</h1>
             <div className="input-box">
               <input
+                id="emailOrUsername"
                 type="text"
                 placeholder="Email hoặc Username"
                 required
@@ -145,6 +158,7 @@ export default function LoginRegisterForm() {
             </div>
             <div className="input-box">
               <input
+                id="password"
                 type="password"
                 placeholder="Mật khẩu"
                 required

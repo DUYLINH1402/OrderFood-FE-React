@@ -24,9 +24,10 @@ const FavoriteDishesSection = () => {
           key={dish.id}
           id={dish.id}
           slug={dish.slug}
-          name={dish.name}
+          foodName={dish.name}
           price={dish.price}
           imageUrl={dish.imageUrl}
+          variants={dish.variants}
           isBestSeller={dish.isBestSeller}
         />
       )}

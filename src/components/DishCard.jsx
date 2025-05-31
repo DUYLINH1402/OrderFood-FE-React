@@ -5,9 +5,11 @@ import "./styles/DishCard.scss";
 import { addToCart } from "../store/slices/cartSlice";
 import { flyToCart } from "../utils/action";
 import FlyImage from "./FlyImage";
+import { addToCartApi } from "../services/service/cartService";
+import { getToken } from "../services/auth/authApi";
 
 const DishCard = ({
-  name,
+  foodName,
   id,
   variants,
   price,
@@ -20,34 +22,40 @@ const DishCard = ({
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const imageRef = useRef();
+  const token = getToken();
 
   const currentVariant = Array.isArray(variants) ? variants[0] : null;
-  const variantName = currentVariant?.name || "Mặc định";
+  const variantName = currentVariant?.foodName || "Mặc định";
 
   const handleClick = () => {
     navigate(`/foods/slug/${slug}`);
   };
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.stopPropagation();
-
     window.forceShowHeader?.();
 
     setTimeout(() => {
       flyToCart(imageRef);
     }, 300);
 
-    dispatch(
-      addToCart({
-        foodId: id,
-        slug,
-        name,
-        price: currentVariant?.price || price,
-        image: imageUrl,
-        variant: variantName,
-        quantity: 1,
-      })
-    );
+    const cartItem = {
+      foodId: id,
+      slug,
+      foodName,
+      price: currentVariant?.price || price,
+      imageUrl,
+      variant: variantName,
+      variantId: currentVariant?.id || null,
+      quantity: 1,
+    };
+
+    dispatch(addToCart(cartItem)); // cập nhật UI ngay
+    try {
+      await addToCartApi(cartItem, token); // gọi API backend
+    } catch (err) {
+      console.error("Lỗi thêm vào giỏ hàng:", err);
+    }
   };
 
   return (
@@ -60,24 +68,34 @@ const DishCard = ({
         <FlyImage
           ref={imageRef}
           src={imageUrl}
-          alt={name}
+          alt={foodName}
           width={210}
           height={250}
           className="w-full h-[140px] sm:h-[160px] object-cover"
         />
 
-        <h3 title={name} className="title-food">
-          {name}
+        <h3 title={foodName} className="title-food">
+          {foodName}
         </h3>
         <p className="price">{price.toLocaleString()}đ</p>
 
         <div className="action-wrapper">
-          <button className="dish-card-action-btn">
-            Đặt ngay
+          <button
+            className="dish-card-action-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/foods/slug/${slug}`);
+            }}>
+            {variants?.length > 0 ? "Tuỳ chọn" : "Đặt ngay"}
             <i className="fa fa-shopping-basket"></i>
           </button>
 
-          <button className="shopping-cart-icon" onClick={handleAddToCart}>
+          <button
+            className="shopping-cart-icon"
+            onClick={handleAddToCart}
+            disabled={variants?.length > 0}
+            title={variants?.length > 0 ? "Chọn biến thể trước" : "Thêm vào giỏ hàng"}
+            style={variants?.length > 0 ? { opacity: 0.4, pointerEvents: "none" } : {}}>
             <i className="fa-solid fa-cart-arrow-down"></i>
           </button>
         </div>

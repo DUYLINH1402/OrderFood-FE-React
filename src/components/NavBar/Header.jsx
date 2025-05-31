@@ -1,37 +1,80 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/icons//logo.webp";
 import shopping_cart from "../../assets/icons/shopping_cart.png";
 import "../styles/Header.scss";
 import LazyImage from "../LazyImage";
 import SearchBar from "../SearchBar";
-import { useSelector } from "react-redux";
-
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../store/slices/authSlice";
+import { clearCart } from "../../store/slices/cartSlice";
 const Header = () => {
-  const cartCount = useSelector((state) => state.cart.items);
+  const cartItems = useSelector((state) => state.cart.items);
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  const authUser = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownMounted, setDropdownMounted] = useState(false);
+
+  const dropdownRef = useRef(null);
+
+  // Ẩn hiện header khi scroll
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
 
-    if (currentScrollY <= 0) {
+    const scrollDownEnough = currentScrollY - lastScrollY > 20; // lăn xuống nhanh
+    const scrollUpEnough = lastScrollY - currentScrollY > 10; // lăn lên rõ rệt
+
+    if (currentScrollY <= 0 || scrollUpEnough) {
       setShowHeader(true);
-    } else if (currentScrollY > lastScrollY) {
-      setShowHeader(false); // lăn xuống -> ẩn
-    } else {
-      setShowHeader(true); // lăn lên -> hiện
+    } else if (scrollDownEnough) {
+      setShowHeader(false);
     }
 
     setLastScrollY(currentScrollY);
   };
+
   useEffect(() => {
     window.forceShowHeader = () => setShowHeader(true);
   }, []);
+
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
+  // Click ngoài avatar dropdown thì tự đóng
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle Logout
+  const handleLogout = () => {
+    dispatch(logout());
+    dispatch(clearCart()); // xoá Redux cart + localStorage
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
+
+  useEffect(() => {
+    let timer;
+    if (dropdownOpen) {
+      setDropdownMounted(true);
+    } else {
+      timer = setTimeout(() => setDropdownMounted(false), 200); // khớp với duration Tailwind
+    }
+    return () => clearTimeout(timer);
+  }, [dropdownOpen]);
+  // console.log("User:", authUser);
   return (
     <header className={`header ${showHeader ? "visible" : "hidden"}`}>
       <div className="header__left">
@@ -44,16 +87,70 @@ const Header = () => {
         <div className="header__search">
           <SearchBar />
         </div>
-        <div className="header__account">
-          <Link to="/login" className="btn-login">
-            {" "}
-            Đăng nhập
-          </Link>
+        <div className="header__account relative" ref={dropdownRef}>
+          {authUser ? (
+            <div className="flex items-center gap-2 sm:gap-3">
+              <img
+                src={authUser.avatarUrl || "https://i.pravatar.cc/100"}
+                alt="avatar"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border object-cover cursor-pointer"
+                onClick={() => setDropdownOpen((prev) => !prev)}
+              />
+              {dropdownMounted && (
+                <div
+                  className={`absolute sm:right-[-75px] sm:top-[6rem] right-[-90px] top-20 w-80 sm:w-[250px] bg-white shadow-2xl rounded-xl border border-gray-200 z-50 overflow-hidden text-sm transform transition-all duration-200 ease-out
+                        ${
+                          dropdownOpen
+                            ? "opacity-100 translate-y-0 scale-100"
+                            : "opacity-0 -translate-y-2 scale-95 pointer-events-none"
+                        }`}>
+                  {/* Header user info */}
+                  <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100">
+                    <img
+                      src={authUser.avatarUrl || "https://i.pravatar.cc/100"}
+                      alt="avatar"
+                      className="w-12 h-12 sm:w-20 sm:h-20 rounded-full border object-cover"
+                    />
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-gray-800 sm:text-base text-sm line-clamp-1 break-all">
+                        {authUser.fullName || authUser.username}
+                      </span>
+                      <span className="text-gray-500 text-sm">@{authUser.username}</span>
+                    </div>
+                  </div>
+
+                  {/* Menu items */}
+                  <div className="flex flex-col">
+                    <Link
+                      to="/profile"
+                      className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
+                      Trang cá nhân
+                    </Link>
+                    <Link
+                      to="/orders"
+                      className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
+                      Đơn hàng của tôi
+                    </Link>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button
+                      onClick={handleLogout}
+                      className="text-left px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition  sm:text-base text-sm">
+                      Đăng xuất
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/login" className="btn-login">
+              Đăng nhập
+            </Link>
+          )}
         </div>
 
         <Link to="/cart" className="header__cart">
           <LazyImage src={shopping_cart} alt="Giỏ hàng" className="shopping-cart" />
-          <span className="badge">{cartCount.length}</span>
+          <span className="badge">{cartItems?.length || 0}</span>
         </Link>
       </div>
     </header>

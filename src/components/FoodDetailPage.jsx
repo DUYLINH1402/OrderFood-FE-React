@@ -8,6 +8,8 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../store/slices/cartSlice";
 import { flyToCart } from "../utils/action";
 import LoadingPage from "./Skeleton/LoadingPage";
+import { getToken } from "../services/auth/authApi";
+import { addToCartApi } from "../services/service/cartService";
 
 export default function FoodDetailPage() {
   const { slug } = useParams();
@@ -19,6 +21,7 @@ export default function FoodDetailPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const imageRef = useRef();
+  const token = getToken();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -32,27 +35,33 @@ export default function FoodDetailPage() {
     fetchFood();
   }, [slug]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     window.forceShowHeader?.();
 
     setTimeout(() => {
-      flyToCart(imageRef); // delay bay
+      flyToCart(imageRef);
     }, 300);
 
     const variantObj = food.variants?.find((v) => v.id === selectedVariantId);
     const variantName = variantObj?.name || "Mặc định";
 
-    dispatch(
-      addToCart({
-        foodId: food.id,
-        slug: food.slug,
-        name: food.name,
-        price: selectedPrice, // đã bao gồm extra price
-        image: mainImage,
-        variant: variantName,
-        quantity: quantity, // số lượng người dùng chọn
-      })
-    );
+    const cartItem = {
+      foodId: food.id,
+      slug: food.slug,
+      foodName: food.name,
+      price: selectedPrice,
+      imageUrl: mainImage,
+      variant: variantName,
+      variantId: selectedVariantId,
+      quantity: quantity,
+    };
+
+    dispatch(addToCart(cartItem)); // cập nhật UI ngay
+    try {
+      await addToCartApi(cartItem, token); // đồng bộ backend
+    } catch (err) {
+      console.error("Lỗi thêm vào giỏ hàng:", err);
+    }
   };
 
   const handleQuantityChange = (delta) => {
@@ -60,7 +69,6 @@ export default function FoodDetailPage() {
   };
 
   if (!food) return <LoadingPage />;
-
   return (
     <div className="max-w-6xl mx-auto px-4 pt-[160px] px-[40px] pb-16 text-[14px] md:text-[16px] grid grid-cols-1 md:grid-cols-2 gap-10 ">
       {/* Vùng ảnh bên trái */}
@@ -144,7 +152,11 @@ export default function FoodDetailPage() {
                     setSelectedVariantId(v.id);
                     setSelectedPrice(food.price + (v.extraPrice || 0));
                   }}
-                  className="px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm sm:text-base">
+                  className={`px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm sm:text-base ${
+                    selectedVariantId === v.id
+                      ? "bg-green-100 border-green-500 ring-2 ring-green-400"
+                      : ""
+                  }`}>
                   {v.name}
                 </button>
               ))}
