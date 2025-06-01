@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import FoodSidebar from "./FoodSidebar";
 import FoodGrid from "./FoodGrid";
 import "../styles/FoodListPage.scss";
+import LoadingPage from "../../components/Skeleton/LoadingPage";
 import {
   getCategoryBySlug,
   getCategoriesByParentSlug,
@@ -135,7 +136,8 @@ const FoodListPage = () => {
                   <FoodGrid slug={slug} />
                 )
               ) : (
-                <p>Đang tải dữ liệu...</p>
+                <LoadingPage />
+                // <p>Đang tải dữ liệu...</p>
               )}
             </>
           )}

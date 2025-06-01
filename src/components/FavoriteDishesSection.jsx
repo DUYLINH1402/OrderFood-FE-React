@@ -2,19 +2,24 @@ import React, { useEffect, useState } from "react";
 import DishCard from "./DishCard";
 import { getBestSellerFoods } from "../services/service/foodService";
 import HorizontalScrollSection from "../utils/action";
+import SkeletonSection from "./Skeleton/SkeletonSection";
 
 const FavoriteDishesSection = () => {
   const [bestSellerDishes, setBestSellerDishes] = useState([]);
   const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)
+  const [loading, setLoading] = useState(true);
   const pageSize = 12;
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await getBestSellerFoods(page, pageSize);
       setBestSellerDishes(data.content);
+      setLoading(false);
     };
     fetchData();
   }, []);
+
+  if (loading) return <SkeletonSection />;
 
   return (
     <HorizontalScrollSection

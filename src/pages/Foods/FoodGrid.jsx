@@ -6,11 +6,12 @@ import {
   getBestSellerFoods,
   getFoodsByCategorySlug,
 } from "../../services/service/foodService";
+import { SkeletonFood } from "../../components/Skeleton/SkeletonFood";
 
 const FoodGrid = ({ slug }) => {
-  // console.log("Domain: ", import.meta.env.VITE_API_BASE_URL);
   const [foods, setFoods] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)
   const pageSize = 12;
 
@@ -20,6 +21,7 @@ const FoodGrid = ({ slug }) => {
 
   useEffect(() => {
     const fetchFoods = async () => {
+      setIsLoading(true);
       try {
         let data;
 
@@ -36,11 +38,12 @@ const FoodGrid = ({ slug }) => {
           return;
         }
 
-        // console.log("Foods từ BE:", data.content);
         setFoods(data.content);
         setTotalPages(data.totalPages);
       } catch (error) {
         console.error("Lỗi khi gọi API:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchFoods();
@@ -49,25 +52,29 @@ const FoodGrid = ({ slug }) => {
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < totalPages) {
       setPage(newPage);
+      //  Scroll lên đầu trang
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   return (
     <div className="food-grid-container">
       <div className="food-grid">
-        {foods.map((food) => (
-          <DishCard
-            key={food.id}
-            id={food.id}
-            slug={food.slug} // slug là duy nhất
-            name={food.name}
-            price={food.price}
-            imageUrl={food.imageUrl}
-            isNew={food.isNew}
-            isFeatured={food.isFeatured}
-            isBestSeller={food.isBestSeller}
-          />
-        ))}
+        {isLoading
+          ? [...Array(pageSize)].map((_, idx) => <SkeletonFood key={idx} />)
+          : foods.map((food) => (
+              <DishCard
+                key={food.id}
+                id={food.id}
+                slug={food.slug}
+                name={food.name}
+                price={food.price}
+                imageUrl={food.imageUrl}
+                isNew={food.isNew}
+                isFeatured={food.isFeatured}
+                isBestSeller={food.isBestSeller}
+              />
+            ))}
       </div>
       <div className="pagination sm:text-base">
         <button onClick={() => handlePageChange(0)} disabled={page === 0}>

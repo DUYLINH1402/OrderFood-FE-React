@@ -13,6 +13,7 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../store/slices/authSlice";
 import { getUserCart, syncCart } from "../services/service/cartService";
 import { setCartItems } from "../store/slices/cartSlice";
+import { LoadingButton } from "./Skeleton/LoadingButton";
 
 export default function LoginRegisterForm() {
   const [isRegisterActive, setIsRegisterActive] = useState(false);
@@ -21,6 +22,8 @@ export default function LoginRegisterForm() {
   const [registerErrors, setRegisterErrors] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   // Dữ liệu đăng ký
   const [registerData, setRegisterData] = useState({
@@ -33,7 +36,7 @@ export default function LoginRegisterForm() {
   // Xử lý login
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    setIsLoggingIn(true);
     // Mapping lại cho đúng input name
     const formValues = {
       emailOrUsername: loginData.login,
@@ -45,6 +48,7 @@ export default function LoginRegisterForm() {
     // Nếu có lỗi thì hiển thị
     if (errors.emailOrUsername || errors.password) {
       setLoginErrors(errors);
+      setIsLoggingIn(false);
       return;
     }
 
@@ -74,17 +78,21 @@ export default function LoginRegisterForm() {
     } catch (error) {
       console.error("Lỗi BE trả về:", error.message);
       setLoginErrors(mapLoginError(error.message));
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   // Xử lý register
   const handleRegister = async (e) => {
     e.preventDefault();
+    setIsRegistering(true);
     const errors = validateRegisterForm(registerData);
     const hasError = Object.values(errors).some((err) => err);
 
     if (hasError) {
       setRegisterErrors(errors);
+      setIsRegistering(false);
       return;
     }
 
@@ -99,6 +107,8 @@ export default function LoginRegisterForm() {
       resetRegisterForm(); // Xoá form đăng ký sau khi đăng ký thành công
     } catch (error) {
       setRegisterErrors(mapRegisterError(error.message));
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -179,9 +189,12 @@ export default function LoginRegisterForm() {
             <div className="forgot-link">
               <a href="#">Quên mật khẩu?</a>
             </div>
-            <button type="submit" className="btn">
+            <LoadingButton type="submit" className="btn" isLoading={isLoggingIn}>
               Đăng nhập
-            </button>
+            </LoadingButton>
+            {/* <LoadingButton type="submit" className="btn" isLoading={true}>
+              Đăng nhập
+            </LoadingButton> */}
             <p>hoặc đăng nhập bằng mạng xã hội</p>
             <div className="social-icons">
               <a href="#">
@@ -189,9 +202,6 @@ export default function LoginRegisterForm() {
               </a>
               <a href="#">
                 <img src={facebook} alt="Facebook" />
-              </a>
-              <a href="#">
-                <img src={zaloIcon} alt="Zalo" />
               </a>
             </div>
           </form>
@@ -267,9 +277,9 @@ export default function LoginRegisterForm() {
                 </p>
               )}
             </div>
-            <button type="submit" className="btn">
+            <LoadingButton type="submit" className="btn" isLoading={isRegistering}>
               Đăng ký
-            </button>
+            </LoadingButton>
           </form>
         </div>
 

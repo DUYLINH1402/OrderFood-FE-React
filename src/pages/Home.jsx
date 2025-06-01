@@ -7,6 +7,7 @@ import CustomerReviews from "../components/CustomerReviews";
 import LazyImage from "../components/LazyImage";
 import "./styles/Home.scss";
 import ServiceHighlights from "../components/ServiceHighlights";
+import SkeletonSection from "../components/Skeleton/SkeletonSection";
 
 const Home = () => {
   return (
@@ -24,6 +25,7 @@ const Home = () => {
       <section className="home__section">
         <h2 className="home__highlight">Món mới</h2>
         <NewDishesSection />
+        {/* <SkeletonSection /> */}
       </section>
 
       <section className="home__section home__section--alt">

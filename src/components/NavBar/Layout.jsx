@@ -5,11 +5,13 @@ import Footer from "./Footer";
 import Header from "./Header";
 import { FontAwesomeIcon, faBars } from "../../utils/icons";
 import Sidebar from "./Sidebar";
+import ScrollToTop from "../../utils/ScrollToTop";
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <div className="layout min-h-screen flex flex-col">
+      <ScrollToTop />
       <header className="layout__header">
         <Header />
       </header>
@@ -19,7 +21,7 @@ const Layout = () => {
         </button>
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       </div>
-      <main className="layout__main flex-grow">
+      <main className="layout__main flex-grow ">
         <Outlet />
       </main>
 

@@ -6,15 +6,19 @@ import SkeletonSection from "./Skeleton/SkeletonSection";
 
 const NewDishesSection = () => {
   const [dishes, setDishes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await getNewFoods(0, 12);
       setDishes(data.content);
+      setLoading(false);
     };
     fetchData();
   }, []);
-  if (!dishes) return <SkeletonSection />;
+
+  if (loading) return <SkeletonSection />;
+
   return (
     <HorizontalScrollSection
       title="Món Mới"

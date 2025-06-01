@@ -20,6 +20,14 @@ html {
   scrollbar-width: none;
 }
 
+.content {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+}
+
 /* Chỉnh cỡ chữ của toast */
 .Toastify__toast {
   font-size: 1.6rem;
