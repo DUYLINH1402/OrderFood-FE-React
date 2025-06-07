@@ -62,7 +62,7 @@ export default function LoginRegisterForm() {
     try {
       setLoginErrors({});
       const data = await loginApi(loginData); // gọi authService
-      console.log("Dữ liệu đăng nhập:", data);
+      // console.log("Dữ liệu đăng nhập:", data);
       // Lưu user + token vào Redux
       dispatch(loginSuccess({ user: data, accessToken: data.token }));
 

@@ -11,6 +11,7 @@ import FoodDetailPage from "../components/FoodDetailPage";
 import DongXanhIntro from "../pages/DongXanhIntro";
 import RewardPointsIntro from "../pages/RewardPointsIntro";
 import ProfilePage from "../pages/Profile/ProfilePage";
+import ResetPasswordPage from "../components/ResetPasswordPage";
 
 export const UserRoutes = [
   {
@@ -28,5 +29,9 @@ export const UserRoutes = [
       { path: "/foods/:slug", element: <FoodListPage /> },
       { path: "/foods/slug/:slug", element: <FoodDetailPage /> },
     ],
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   },
 ];

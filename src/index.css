@@ -12,7 +12,7 @@ body {
 html {
   font-size: 62.5%; /* 62.5% của 16px = 10px → 1rem = 10px */
 }
-.group:hover .group-hover\\:pause-marquee {
+.group:hover .group-hover\:pause-marquee {
   animation-play-state: paused;
 }
 .no-scrollbar::-webkit-scrollbar {
@@ -37,27 +37,47 @@ html {
   }
 }
 
-/* Chỉnh cỡ chữ của toast */
+/* Tuỳ chỉnh Toast cho React-Toastify */
 .Toastify__toast {
-  font-size: 1.6rem;
-  line-height: 1.5;
-  @include respond-to(xs) {
-    margin: 10px auto;
-    width: 90vw;
-    border-radius: 10px !important;
-  }
+  border-radius: 12px;
+  justify-content: center; /* canh giữa nội dung */
+  text-align: center;
+  padding: 12px 16px;
+  max-width: 80vw;
+  margin: 12px auto;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
+
 .Toastify__toast--success {
-  font-size: 1.4rem; /* Cỡ chữ riêng cho toast success */
-  color: #28a745;
+  background-color: #d1fae5;
+  color: #065f46;
+  border-left: 6px solid #10b981;
 }
+
 .Toastify__toast--error {
-  font-size: 1.4rem; /* Cỡ chữ riêng cho toast error */
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-left: 6px solid #ef4444;
 }
+
 .Toastify__toast--info {
-  background-color: #007bff;
+  background-color: #dbeafe;
+  color: #1e3a8a;
+  border-left: 6px solid #3b82f6;
 }
+
 .Toastify__toast--warning {
-  background-color: #ffc107;
-  color: #ffc107;
+  background-color: #fef3c7;
+  color: #92400e;
+  border-left: 6px solid #f59e0b;
+}
+
+@media (max-width: 640px) {
+  .Toastify__toast {
+    font-size: 1.3rem;
+    margin: 8px auto;
+    padding: 10px 14px;
+  }
 }

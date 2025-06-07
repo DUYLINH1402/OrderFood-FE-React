@@ -26,8 +26,8 @@ export const uploadAvatar = async (cartItems, token) => {
     : await uploadAvatarApi(cartItems, token);
 };
 // CHANGEPASSWORD
-export const changePassword = async (cartItems, token) => {
+export const changePassword = async (data, token) => {
   return useFirebase
-    ? await changePasswordFromFirebase(cartItems, token)
-    : await changePasswordApi(cartItems, token);
+    ? await changePasswordFromFirebase(data, token)
+    : await changePasswordApi(data, token);
 };

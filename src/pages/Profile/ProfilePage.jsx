@@ -13,6 +13,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { ProfileTab } from "./ProfileTab";
 import ChangePasswordTab from "./ChangePasswordTab";
+import ResetPasswordPage from "../../components/ResetPasswordPage";
+import { Navigate } from "react-router-dom";
 
 const tabs = [
   { id: "profile", label: "Hồ sơ cá nhân", icon: faUser },
@@ -26,7 +28,10 @@ const tabs = [
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
-
+  const accessToken = localStorage.getItem("accessToken");
+  if (!accessToken) {
+    return <Navigate to="/login" replace />;
+  }
   return (
     <div className="content-spacing flex flex-col md:flex-row gap-4 text-sm md:text-base rounded-xl shadow-md">
       <ul className="flex flex-col gap-[10px] font-medium w-[250px] ">
@@ -83,6 +88,7 @@ export default function ProfilePage() {
           <>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Liên hệ / Hỗ trợ</h3>
             <p>Form gửi yêu cầu hỗ trợ, khiếu nại, góp ý,...</p>
+            <ResetPasswordPage />
           </>
         )}
       </div>

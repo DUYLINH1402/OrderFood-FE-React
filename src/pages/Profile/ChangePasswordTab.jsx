@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { changePassword } from "../../services/service/userService";
 import { validatePassword, validateConfirmPassword, handleFieldBlur } from "../../utils/validation";
 import LoadingIcon from "../../components/Skeleton/LoadingIcon";
+import { mapAuthError } from "../../utils/authErrorMapper";
 
 export default function ChangePasswordTab() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,17 +66,22 @@ export default function ChangePasswordTab() {
       setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setErrors({});
     } catch (error) {
-      toast.error("Đổi mật khẩu thất bại!");
+      const errorCode = error.response?.data?.message;
+      const mapped = mapAuthError("change", errorCode);
+      setErrors((prev) => ({ ...prev, ...mapped }));
+      toast.error(mapped.general || "Đổi mật khẩu thất bại!");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="w-full min-h-fit flex justify-center px-4 py-10 bg-gray-50">
-      <div className="w-full max-w-[500px] bg-white shadow-md rounded-xl p-16 sm:p-16">
+    <div className=" w-full min-h-fit flex justify-center px-4 py-10 bg-gray-50">
+      <div className=" w-full relative max-w-[500px] bg-white shadow-md rounded-xl p-16 sm:p-16">
+        {errors.general && (
+          <p className="absolute  text-red-500 text-sm text-center -mt-12">{errors.general}</p>
+        )}
         <h1 className="md:text-lg text-base font-semibold text-center mb-6">Đổi mật khẩu</h1>
-
         <form onSubmit={handleSubmit} noValidate className="space-y-12">
           {/* Mật khẩu hiện tại */}
           <div className="relative input-box">
@@ -139,7 +145,6 @@ export default function ChangePasswordTab() {
               <p className=" absolute text-red-500 text-sm mt-2">{errors.confirmPassword}</p>
             )}
           </div>
-
           <button
             type="submit"
             disabled={isSubmitting}

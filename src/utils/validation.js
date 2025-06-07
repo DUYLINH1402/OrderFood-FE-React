@@ -17,7 +17,10 @@ export const validateEmailOrUsername = (value) => {
 // KIỂM TRA MẬT KHẨU (VÍ DỤ: YÊU CẦU TỐI THIỂU 6 KÝ TỰ)
 export const validatePassword = (password) => {
   if (!password) return "Vui lòng nhập mật khẩu";
-  return password.length >= 6 ? "" : "Mật khẩu phải có ít nhất 6 ký tự";
+  if (password.length < 6) return "Mật khẩu phải có ít nhất 6 ký tự";
+  if (!/[A-Z]/.test(password)) return "Mật khẩu phải có ít nhất 1 chữ in hoa";
+  if (!/\d/.test(password)) return "Mật khẩu phải có ít nhất 1 chữ số";
+  return "";
 };
 
 // HÀM TỔNG HỢP ĐỂ VALIDATE TOÀN BỘ FORM ĐĂNG NHẬP

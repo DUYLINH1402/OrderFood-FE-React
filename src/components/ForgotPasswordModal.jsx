@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { validateEmail } from "../utils/validation";
 import LoadingIcon from "./Skeleton/LoadingIcon";
-// import { sendForgotPasswordEmail } from "../services/service/userService";
+import { sendForgotPasswordEmailApi } from "../services/auth/authApi";
+import { mapAuthError } from "../utils/authErrorMapper";
 
 export default function ForgotPasswordModal({ isOpen, onClose }) {
   const [email, setEmail] = useState("");
@@ -23,13 +24,20 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
 
     setIsSubmitting(true);
     try {
-      // await sendForgotPasswordEmail(email);
+      await sendForgotPasswordEmailApi(email);
       toast.success("Vui lòng kiểm tra email để đặt lại mật khẩu!");
       setEmail("");
       setError("");
       onClose();
     } catch (error) {
-      toast.error("Không thể gửi yêu cầu. Vui lòng thử lại.");
+      const errorCode = error?.response?.data?.message;
+      const mappedError = mapAuthError("forgot", errorCode);
+
+      if (mappedError.email) {
+        setError(mappedError.email);
+      } else {
+        toast.error(mappedError.general || "Không thể gửi yêu cầu.");
+      }
     } finally {
       setIsSubmitting(false);
     }

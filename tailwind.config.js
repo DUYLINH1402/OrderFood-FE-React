@@ -13,6 +13,11 @@ module.exports = {
         50: "50px",
         120: "120px",
       },
+      screens: {
+        tablet: "640px",
+        laptop: "1024px",
+        desktop: "1280px",
+      },
       animation: {
         marquee: "marquee 30s linear infinite",
         "pause-marquee": "marquee 30s linear infinite paused", // không hoạt động đúng nên dùng variant

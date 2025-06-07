@@ -61,19 +61,17 @@ export const uploadAvatarApi = async (file) => {
 
   return res.data; // trả về imageUrl từ S3
 };
-// API Upload Avatar
-export const changePasswordApi = async (file) => {
-  const formData = new FormData();
-  formData.append("file", file);
 
+// API Change Password
+export const changePasswordApi = async (data) => {
   const token = getToken();
 
-  const res = await axios.post(`${BASE_URL}/api/users/avatar`, formData, {
+  const res = await axios.post(`${BASE_URL}/api/users/change-password`, data, {
     headers: {
-      "Content-Type": "multipart/form-data",
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
 
-  return res.data; // trả về imageUrl từ S3
+  return res.data;
 };

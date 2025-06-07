@@ -8,6 +8,8 @@ import { Link, NavLink } from "react-router-dom";
 const SearchBar = ({ onSearch, placeholder, setIsSearchExpanded }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const inputRef = useRef(null);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const isLaptop = typeof window !== "undefined" && window.innerWidth >= 1024;
 
   useEffect(() => {
     if (isExpanded) {
@@ -17,7 +19,6 @@ const SearchBar = ({ onSearch, placeholder, setIsSearchExpanded }) => {
     }
     return () => document.body.classList.remove("no-scroll");
   }, [isExpanded]);
-
   const handleExpand = () => {
     setIsExpanded(true);
     setIsSearchExpanded?.(true);
@@ -30,7 +31,7 @@ const SearchBar = ({ onSearch, placeholder, setIsSearchExpanded }) => {
   };
 
   const handleBlur = () => {
-    if (window.innerWidth < 768) {
+    if (isMobile) {
       handleCollapse();
     }
   };
@@ -43,22 +44,27 @@ const SearchBar = ({ onSearch, placeholder, setIsSearchExpanded }) => {
         bg-[#279736] shadow-[2px_2px_20px_rgba(0,0,0,0.08)] 
         rounded-full flex group items-center transition-all duration-1000 ease-in-out`}
       onMouseEnter={() => {
-        if (window.innerWidth >= 768) handleExpand();
+        if (!isMobile) handleExpand();
       }}
       onMouseLeave={() => {
-        if (window.innerWidth >= 768) handleCollapse();
+        if (!isMobile) handleCollapse();
       }}
       onClick={() => {
-        if (window.innerWidth < 768) handleExpand();
+        if (isMobile) handleExpand();
       }}>
-      <div className="flex items-center justify-center fill-white md:ml-1 md:mt-1">
+      <div className="flex items-center justify-center  fill-white/70 md:ml-1 md:mt-1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          id="Isolation_Mode"
-          data-name="Isolation Mode"
+          fill="none"
           viewBox="0 0 24 24"
-          className="md:w-[22px] md:h-[22px] w-6 h-6">
-          <path d="M18.9,16.776A10.539,10.539,0,1,0,16.776,18.9l5.1,5.1L24,21.88ZM10.5,18A7.5,7.5,0,1,1,18,10.5,7.507,7.507,0,0,1,10.5,18Z" />
+          stroke="white"
+          strokeWidth={1.8}
+          className="w-6 h-6 laptop:w-[22px] laptop:h-[22px]">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
+          />
         </svg>
       </div>
       <input
