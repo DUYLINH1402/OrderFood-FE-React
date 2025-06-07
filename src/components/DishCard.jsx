@@ -25,7 +25,7 @@ const DishCard = ({
   const token = getToken();
 
   const currentVariant = Array.isArray(variants) ? variants[0] : null;
-  const variantName = currentVariant?.foodName || "Mặc định";
+  const variantName = currentVariant?.name || "Mặc định";
 
   const handleClick = () => {
     navigate(`/foods/slug/${slug}`);

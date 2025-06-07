@@ -1,9 +1,9 @@
 module.exports = {
-  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  content: ["./index.html", "./src/**/*.{js,jsx}", "./node_modules/flowbite/**/*.js"],
   theme: {
     extend: {
       fontSize: {
-        sm: "12px",
+        sm: "13px",
         md: "14px",
         base: "16px",
         lg: "20px",
@@ -11,6 +11,7 @@ module.exports = {
       },
       spacing: {
         50: "50px",
+        120: "120px",
       },
       animation: {
         marquee: "marquee 30s linear infinite",
@@ -24,7 +25,7 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("flowbite/plugin")],
   corePlugins: {
     // preflight: false, // Tắt preflight nếu không dùng hoặc cấu hình riêng
   },

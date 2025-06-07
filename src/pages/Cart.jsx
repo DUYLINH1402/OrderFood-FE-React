@@ -6,6 +6,8 @@ import { removeFromCart, updateQuantity, clearCart } from "../store/slices/cartS
 import { getToken } from "../services/auth/authApi";
 import { clearCartApi, removeCartItemApi, updateCartApi } from "../services/service/cartService";
 import { toast } from "react-toastify";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import LazyImage from "../components/LazyImage";
 
 export default function CartPage() {
   const dispatch = useDispatch();
@@ -13,12 +15,18 @@ export default function CartPage() {
   const items = useSelector((state) => state.cart.items);
   const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const token = getToken();
+  const isLoggedIn = !!token;
 
   const handleUpdateQuantity = async (foodId, variantId, quantity) => {
     const item = items.find((i) => i.foodId === foodId && i.variantId === variantId);
     const oldQuantity = item?.quantity ?? 1;
 
     dispatch(updateQuantity({ foodId, variantId, quantity }));
+
+    if (!isLoggedIn) {
+      // Không gọi API nếu chưa đăng nhập
+      return;
+    }
 
     try {
       await updateCartApi(foodId, variantId, quantity, token);
@@ -33,8 +41,10 @@ export default function CartPage() {
     const removedItem = items.find((i) => i.foodId === foodId && i.variantId === variantId);
     dispatch(removeFromCart({ foodId, variantId }));
 
+    if (!isLoggedIn) return;
+
     try {
-      await removeCartItemApi(foodId, variantId, token); // truyền đúng id
+      await removeCartItemApi(foodId, variantId, token);
     } catch (err) {
       console.error("Lỗi xóa món:", err);
       toast.error("Xóa món thất bại.");
@@ -45,6 +55,8 @@ export default function CartPage() {
   const handleClearCart = async () => {
     const backupItems = [...items];
     dispatch(clearCart());
+
+    if (!isLoggedIn) return;
 
     try {
       await clearCartApi(token);
@@ -59,7 +71,7 @@ export default function CartPage() {
 
   return (
     <div className="cart-wrap m-10 max-w-5xl mx-auto p-50 sm:m-10 sm:text-base border border-gray-300 rounded-lg shadow-lg bg-white">
-      <h1 className="text-sm sm:text-xl font-bold mb-4 text-gray-800">
+      <h1 className="text-base sm:text-lg font-bold mb-4 text-gray-800">
         Giỏ hàng của bạn ({items.length} món)
       </h1>
 
@@ -75,35 +87,41 @@ export default function CartPage() {
                 <div
                   className="flex sm:items-center w-full cursor-pointer hover:bg-gray-100 transition duration-200 rounded-lg p-2"
                   onClick={() => navigate(`/foods/slug/${item.slug}`)}>
-                  <img
+                  <LazyImage
                     src={item.imageUrl}
                     alt={item.foodName}
-                    className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-md border flex-shrink-0"
+                    className="w-40 h-40 sm:w-40 sm:h-40 object-cover rounded-md border flex-shrink-0"
                   />
                   <div className="cart-food-infor ml-3 sm:ml-4 mt-2 sm:mt-0 leading-snug text-sm sm:text-base space-y-1">
-                    <h2 className="font-semibold text-gray-800">{item.foodName}</h2>
-                    <p className="text-gray-500">Cách chế biến: {item.variant}</p>
-                    <p className="text-gray-600">
+                    <h2 className="font-semibold text-gray-800 text-base sm:text-lg">
+                      {item.foodName}
+                    </h2>
+                    <p className="text-gray-500 text-sm sm:text-base">
+                      Cách chế biến: {item.variant}
+                    </p>
+                    <p className="text-gray-600 text-sm sm:text-base">
                       Giá: {item.price.toLocaleString()}₫ × {item.quantity}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-2  sm:mt-0 self-end sm:self-center ">
+                <div className="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-center">
                   <button
                     onClick={() =>
                       handleUpdateQuantity(item.foodId, item.variantId, item.quantity - 1)
                     }
                     disabled={item.quantity <= 1}
-                    className="w-8 h-8 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50">
+                    className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50">
                     −
                   </button>
-                  <span className="w-6 text-center text-sm sm:text-base">{item.quantity}</span>
+                  <span className="w-8 h-8 flex items-center justify-center border border-transparent text-sm sm:text-base">
+                    {item.quantity}
+                  </span>
                   <button
                     onClick={() =>
                       handleUpdateQuantity(item.foodId, item.variantId, item.quantity + 1)
                     }
-                    className="w-8 h-8 border border-gray-300 rounded hover:bg-gray-100">
+                    className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100">
                     +
                   </button>
                   <button
@@ -119,7 +137,7 @@ export default function CartPage() {
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
             <button
               onClick={handleClearCart}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm sm:text-base">
               Xóa toàn bộ
             </button>
             <p className="text-sm sm:text-base text-gray-800">

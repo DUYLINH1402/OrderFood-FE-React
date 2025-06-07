@@ -3,7 +3,8 @@ import React from "react";
 import "./styles/LoginForm.scss";
 import facebook from "../assets/icons/facebook.svg";
 import google from "../assets/icons/google.svg";
-import zaloIcon from "../assets/icons/zaloIcon.svg";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { loginApi, registerApi } from "../services/auth/authApi";
 import { handleFieldBlur, validateLoginForm, validateRegisterForm } from "../utils/validation";
 import { toast } from "react-toastify";
@@ -14,6 +15,7 @@ import { loginSuccess } from "../store/slices/authSlice";
 import { getUserCart, syncCart } from "../services/service/cartService";
 import { setCartItems } from "../store/slices/cartSlice";
 import { LoadingButton } from "./Skeleton/LoadingButton";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 export default function LoginRegisterForm() {
   const [isRegisterActive, setIsRegisterActive] = useState(false);
@@ -24,6 +26,11 @@ export default function LoginRegisterForm() {
   const navigate = useNavigate();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  // State để hiển thị/ẩn mật khẩu đăng nhập
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
 
   // Dữ liệu đăng ký
   const [registerData, setRegisterData] = useState({
@@ -55,6 +62,7 @@ export default function LoginRegisterForm() {
     try {
       setLoginErrors({});
       const data = await loginApi(loginData); // gọi authService
+      console.log("Dữ liệu đăng nhập:", data);
       // Lưu user + token vào Redux
       dispatch(loginSuccess({ user: data, accessToken: data.token }));
 
@@ -169,13 +177,19 @@ export default function LoginRegisterForm() {
             <div className="input-box">
               <input
                 id="password"
-                type="password"
+                type={showLoginPassword ? "text" : "password"}
                 placeholder="Mật khẩu"
                 required
                 value={loginData.password}
                 onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 onBlur={() => handleLoginBlur("password")}
               />
+              <span
+                className="toggle-password"
+                onClick={() => setShowLoginPassword(!showLoginPassword)}>
+                <FontAwesomeIcon icon={showLoginPassword ? faEyeSlash : faEye} size="lg" />
+              </span>
+
               <i className="bx bxs-lock-alt"></i>
               {(loginErrors.password || loginErrors.password) && (
                 <p className="absolute sm:left-[20px] sm:bottom-[-40px] bottom-[-35px] text-red-500 sm:!text-base !text-md mt-1 ">
@@ -187,14 +201,16 @@ export default function LoginRegisterForm() {
               <p className="text-center text-red-600 text-sm mb-4">{loginErrors.general}</p>
             )}
             <div className="forgot-link">
-              <a href="#">Quên mật khẩu?</a>
+              <span
+                onClick={() => setShowForgotModal(true)}
+                className="text-blue-600 hover:underline cursor-pointer text-sm sm:text-base">
+                Quên mật khẩu?
+              </span>
             </div>
+
             <LoadingButton type="submit" className="btn" isLoading={isLoggingIn}>
               Đăng nhập
             </LoadingButton>
-            {/* <LoadingButton type="submit" className="btn" isLoading={true}>
-              Đăng nhập
-            </LoadingButton> */}
             <p>hoặc đăng nhập bằng mạng xã hội</p>
             <div className="social-icons">
               <a href="#">
@@ -245,13 +261,19 @@ export default function LoginRegisterForm() {
             </div>
             <div className="input-box">
               <input
-                type="password"
+                type={showRegisterPassword ? "text" : "password"}
                 placeholder="Mật khẩu"
                 required
                 value={registerData.password}
                 onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                 onBlur={() => handleRegisterBlur("password")}
               />
+              <span
+                className="toggle-password"
+                onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
+                <FontAwesomeIcon icon={showRegisterPassword ? faEyeSlash : faEye} size="lg" />
+              </span>
+
               <i className="bx bxs-lock-alt"></i>
               {registerErrors.password && (
                 <p className="absolute sm:left-[20px] sm:bottom-[-40px] bottom-[-35px] text-red-500 sm:!text-base !text-md mt-1 ">
@@ -261,7 +283,7 @@ export default function LoginRegisterForm() {
             </div>
             <div className="input-box">
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Nhập lại mật khẩu"
                 required
                 value={registerData.confirmPassword}
@@ -270,6 +292,12 @@ export default function LoginRegisterForm() {
                 }
                 onBlur={() => handleRegisterBlur("confirmPassword")}
               />
+              <span
+                className="toggle-password"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} size="lg" />
+              </span>
+
               <i className="bx bxs-lock-alt"></i>
               {registerErrors.confirmPassword && (
                 <p className="absolute sm:left-[20px] sm:bottom-[-40px] bottom-[-35px] text-red-500 sm:!text-base !text-md mt-1 ">
@@ -311,6 +339,8 @@ export default function LoginRegisterForm() {
           </div>
         </div>
       </div>
+      {/* Modal Quên mật khẩu */}
+      <ForgotPasswordModal isOpen={showForgotModal} onClose={() => setShowForgotModal(false)} />
     </div>
   );
 }

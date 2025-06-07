@@ -32,6 +32,19 @@
   transition: 0.6s ease-in-out 1.2s, visibility 0s 1s;
 }
 
+.toggle-password {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #999;
+  z-index: 2;
+}
+.input-box {
+  position: relative;
+}
+
 .container.active .form-box {
   right: 50%;
 }

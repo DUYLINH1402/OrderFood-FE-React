@@ -67,7 +67,7 @@ const FoodGrid = ({ slug }) => {
                 key={food.id}
                 id={food.id}
                 slug={food.slug}
-                name={food.name}
+                foodName={food.name}
                 price={food.price}
                 imageUrl={food.imageUrl}
                 isNew={food.isNew}

@@ -43,6 +43,14 @@ export const validateEmail = (email) => {
   return "";
 };
 
+// HÀM KIỂM TRA HỢP LỆ CỦA TRƯỜNG "SỐ ĐIỆN THOẠI"
+export const validatePhoneNumber = (phone) => {
+  if (!phone) return "Vui lòng nhập số điện thoại";
+  const phoneRegex = /^[0-9]{9,11}$/;
+  if (!phoneRegex.test(phone)) return "Số điện thoại không hợp lệ";
+  return "";
+};
+
 // HÀM KIỂM TRA HỢP LỆ CỦA TRƯỜNG "NHẬP LẠI MẬT KHẨU"
 export const validateConfirmPassword = (password, confirmPassword) => {
   if (!confirmPassword) return "Vui lòng nhập lại mật khẩu";

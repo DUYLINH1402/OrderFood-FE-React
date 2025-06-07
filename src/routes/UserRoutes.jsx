@@ -10,6 +10,7 @@ import FoodListPage from "../pages/Foods/FoodListPage";
 import FoodDetailPage from "../components/FoodDetailPage";
 import DongXanhIntro from "../pages/DongXanhIntro";
 import RewardPointsIntro from "../pages/RewardPointsIntro";
+import ProfilePage from "../pages/Profile/ProfilePage";
 
 export const UserRoutes = [
   {
@@ -23,6 +24,7 @@ export const UserRoutes = [
       { path: "/thuc-don", element: <FoodListPage /> },
       { path: "/tich-diem", element: <RewardPointsIntro /> },
       { path: "/login", element: <LoginRegisterForm /> },
+      { path: "/profile", element: <ProfilePage /> },
       { path: "/foods/:slug", element: <FoodListPage /> },
       { path: "/foods/slug/:slug", element: <FoodDetailPage /> },
     ],

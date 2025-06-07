@@ -137,7 +137,6 @@ const FoodListPage = () => {
                 )
               ) : (
                 <LoadingPage />
-                // <p>Đang tải dữ liệu...</p>
               )}
             </>
           )}

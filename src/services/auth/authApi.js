@@ -5,6 +5,7 @@ export const getToken = () => {
   return token || null;
 };
 
+// API Login
 export const loginApi = async (loginData) => {
   const response = await fetch(`${BASE_URL}/api/auth/login`, {
     method: "POST",
@@ -20,6 +21,7 @@ export const loginApi = async (loginData) => {
   return await response.json(); // trả về token hoặc user info
 };
 
+// API Register
 export const registerApi = async (registerData) => {
   const response = await fetch(`${BASE_URL}/api/auth/register`, {
     method: "POST",

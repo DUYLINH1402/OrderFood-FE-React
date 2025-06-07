@@ -28,7 +28,7 @@
     color: white;
 
     img {
-      margin-left: 30px;
+      margin-left: 20px;
     }
 
     span {
@@ -39,7 +39,7 @@
 
   .header__right {
     display: flex;
-    padding: 0 30px 0 80px;
+    padding: 0 20px;
     align-items: center;
     background: #fff;
     border: 1px solid #ccc;
@@ -48,7 +48,7 @@
     .header__account {
       display: flex;
       margin: 10px 0;
-      padding: 0 10px;
+      padding: 0 5px;
       font-size: 1.6rem;
       color: black;
       border-left: 1.5px solid #8c8787;
@@ -83,7 +83,7 @@
 
     .header__cart {
       position: relative;
-      padding: 0 10px;
+      padding: 0 5px;
 
       img {
         width: 24px;
