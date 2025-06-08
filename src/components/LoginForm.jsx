@@ -5,10 +5,10 @@ import facebook from "../assets/icons/facebook.svg";
 import google from "../assets/icons/google.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { loginApi, registerApi } from "../services/auth/authApi";
+import { loginApi, registerApi, resendVerificationEmailApi } from "../services/auth/authApi";
 import { handleFieldBlur, validateLoginForm, validateRegisterForm } from "../utils/validation";
 import { toast } from "react-toastify";
-import { mapLoginError, mapRegisterError } from "../utils/authErrorMapper";
+import { mapAuthError, mapLoginError, mapRegisterError } from "../utils/authErrorMapper";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../store/slices/authSlice";
@@ -31,6 +31,9 @@ export default function LoginRegisterForm() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
+
+  // State để hiển thị link gửi lại email xác minh
+  const [showResendLink, setShowResendLink] = useState(false);
 
   // Dữ liệu đăng ký
   const [registerData, setRegisterData] = useState({
@@ -84,6 +87,9 @@ export default function LoginRegisterForm() {
       navigate("/");
       toast.success("Đăng nhập thành công!");
     } catch (error) {
+      if (error.message === "EMAIL_NOT_VERIFIED") {
+        setShowResendLink(true);
+      }
       console.error("Lỗi BE trả về:", error.message);
       setLoginErrors(mapLoginError(error.message));
     } finally {
@@ -150,6 +156,21 @@ export default function LoginRegisterForm() {
     }, 2000);
   };
 
+  // Xử lý gửi lại email xác minh
+  const handleResendVerification = async () => {
+    try {
+      await resendVerificationEmailApi(loginData.login);
+      toast.success("Đã gửi lại email xác minh. Vui lòng kiểm tra hộp thư.");
+      setShowResendLink(false);
+    } catch (error) {
+      const errorCode = error.response?.data?.message || "UNKNOWN_ERROR";
+      console.error(errorCode);
+      const mapped = mapAuthError("resend", errorCode);
+      toast.error(mapped.general || "Đã có lỗi.");
+    }
+  };
+
+  // ------------------------------------------------------
   return (
     <div className="login-register-wrapper">
       <div className={`container${isRegisterActive ? " active" : ""}`}>
@@ -168,11 +189,23 @@ export default function LoginRegisterForm() {
                 onBlur={() => handleLoginBlur("login")}
               />
               <i className="bx bxs-user"></i>
-              {(loginErrors.emailOrUsername || loginErrors.login) && (
-                <p className="absolute sm:left-[20px] sm:bottom-[-40px] bottom-[-35px] text-red-500 sm:!text-base !text-md mt-1 ">
-                  {loginErrors.emailOrUsername || loginErrors.login}
-                </p>
-              )}
+              <div className="relative">
+                {(loginErrors.emailOrUsername || loginErrors.login) && (
+                  <p className="absolute sm:left-[20px] sm:bottom-[-40px] bottom-[-35px] text-red-500 sm:!text-base !text-md mt-1 ">
+                    {loginErrors.emailOrUsername || loginErrors.login}
+                  </p>
+                )}
+                {showResendLink && (
+                  <span className="absolute right-0 text-sm text-blue-600 text-left px-1 mt-1">
+                    <button
+                      type="button"
+                      className="hover:underline"
+                      onClick={handleResendVerification}>
+                      Gửi lại email?
+                    </button>
+                  </span>
+                )}
+              </div>
             </div>
             <div className="input-box">
               <input
@@ -321,6 +354,7 @@ export default function LoginRegisterForm() {
               onClick={() => {
                 setIsRegisterActive(true);
                 resetLoginForm(); // xoá form login
+                setShowResendLink(false);
               }}>
               Đăng ký
             </button>
@@ -333,6 +367,7 @@ export default function LoginRegisterForm() {
               onClick={() => {
                 setIsRegisterActive(false);
                 resetRegisterForm(); // xoá form đăng ký
+                setShowResendLink(false);
               }}>
               Đăng nhập
             </button>

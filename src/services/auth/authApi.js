@@ -53,3 +53,10 @@ export const resetPasswordApi = async ({ token, newPassword }) => {
   });
   return res.data;
 };
+
+// API Resend verification email
+// (gửi lại email kích hoạt tài khoản)
+export const resendVerificationEmailApi = async (email) => {
+  const res = await axios.post(`${BASE_URL}/api/auth/resend-verification`, { email });
+  return res.data;
+};

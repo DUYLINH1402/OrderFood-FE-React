@@ -11,6 +11,8 @@ export const mapLoginError = (errorCode) => {
 
     case "EMAIL_NOT_VERIFIED":
       return { login: "Tài khoản chưa được kích hoạt" };
+    case "TOO_MANY_REQUESTS_RESEND_VERIFICATION":
+      return { login: "Yêu cầu quá 3 lần. Vui lòng thử lại sau" };
 
     case "USER_LOCKED":
       return { login: "Tài khoản đã bị khóa" };
@@ -51,6 +53,9 @@ export const mapAuthError = (type, errorCode) => {
       USER_NOT_FOUND: { login: "Tài khoản không tồn tại" },
       EMAIL_NOT_VERIFIED: { login: "Tài khoản chưa được kích hoạt" },
       USER_LOCKED: { login: "Tài khoản đã bị khóa" },
+      TOO_MANY_REQUESTS_RESEND_VERIFICATION: {
+        login: "Yêu cầu quá 3 lần. Vui lòng thử lại sau",
+      },
     },
     register: {
       EMAIL_ALREADY_EXISTS: { email: "Email đã được sử dụng" },
@@ -74,6 +79,13 @@ export const mapAuthError = (type, errorCode) => {
       INVALID_CURRENT_PASSWORD: { currentPassword: "Mật khẩu cũ không đúng" },
       TOO_MANY_REQUESTS_CHANGE_PASSWORD: {
         general: "Bạn đã đổi mật khẩu quá nhiều lần. Vui lòng thử lại sau 1 giờ.",
+      },
+    },
+    resend: {
+      EMAIL_NOT_FOUND: { general: "Tài khoản không tồn tại" },
+      EMAIL_ALREADY_VERIFIED: { general: "Tài khoản này đã được xác minh." },
+      TOO_MANY_REQUESTS_RESEND_VERIFICATION: {
+        general: "Yêu cầu quá 3 lần. Vui lòng thử lại sau",
       },
     },
   };
