@@ -1,5 +1,5 @@
 import React from "react";
-import "./styles/ServiceHighlights.scss";
+import "../assets/styles/components/ServiceHighlights.scss";
 import home_icon_1 from "../assets/icons/home_icon_1.webp";
 import home_icon_2 from "../assets/icons/home_icon_2.webp";
 import home_icon_3 from "../assets/icons/home_icon_3.webp";

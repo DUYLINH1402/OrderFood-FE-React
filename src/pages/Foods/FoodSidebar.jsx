@@ -6,7 +6,7 @@ import {
 import { FontAwesomeIcon, faChevronUp, faChevronDown } from "../../utils/icons.js";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
-import "../styles/FoodSidebar.scss";
+import "../../assets/styles/pages/FoodSidebar.scss";
 const FoodSidebar = ({ onSelectCategory }) => {
   const [categories, setCategories] = useState([{ id: null, name: "Tất cả" }]);
   const [expandedParent, setExpandedParent] = useState(null);

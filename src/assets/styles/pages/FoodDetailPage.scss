@@ -1,0 +1,24 @@
+@import "../base/variables";
+
+.food-detail-wrap {
+  background-color: #fff; // nền trắng
+  border: 1px solid #e5e7eb; // viền xám nhạt (Tailwind: border-gray-200)
+  border-radius: 1rem; // bo góc (16px)
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); // đổ bóng nhẹ, chuyên nghiệp
+  padding: 2rem; // nếu chưa có
+}
+
+@keyframes cartBounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.cart-bounce {
+  animation: cartBounce 0.5s ease;
+}

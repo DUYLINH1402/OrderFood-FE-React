@@ -6,7 +6,6 @@ export const getToken = () => {
   const token = localStorage.getItem("accessToken");
   return token || null;
 };
-
 // API Get Profile
 export const getProfileApi = async () => {
   const token = getToken();

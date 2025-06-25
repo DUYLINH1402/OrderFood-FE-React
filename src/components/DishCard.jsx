@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import React, { useRef } from "react";
-import { useDispatch } from "react-redux";
-import "./styles/DishCard.scss";
+import { useDispatch, useSelector } from "react-redux";
+import "../assets/styles/components/DishCard.scss";
 import { addToCart } from "../store/slices/cartSlice";
 import { flyToCart } from "../utils/action";
 import FlyImage from "./FlyImage";
 import { addToCartApi } from "../services/service/cartService";
 import { getToken } from "../services/auth/authApi";
+import { addToFavorites, removeFromFavorites } from "../services/service/favoriteService";
+import { addFavorite, removeFavorite } from "../store/slices/favoriteSlice";
 
 const DishCard = ({
   foodName,
@@ -25,7 +27,29 @@ const DishCard = ({
   const token = getToken();
 
   const currentVariant = Array.isArray(variants) ? variants[0] : null;
+  const variantId = currentVariant?.id || null;
   const variantName = currentVariant?.name || "Mặc định";
+
+  // ✅ Lấy danh sách yêu thích từ Redux
+  const favoriteList = useSelector((state) => state.favorite.list);
+  const isFavorite = favoriteList.some(
+    (item) => item.foodId === id && item.variantId === variantId
+  );
+
+  const toggleFavorite = async (e) => {
+    e.stopPropagation();
+    try {
+      if (isFavorite) {
+        await removeFromFavorites(id, variantId, token);
+        dispatch(removeFavorite({ foodId: id, variantId }));
+      } else {
+        await addToFavorites(id, variantId, token);
+        dispatch(addFavorite({ foodId: id, variantId }));
+      }
+    } catch (err) {
+      console.error("Lỗi cập nhật yêu thích:", err);
+    }
+  };
 
   const handleClick = () => {
     navigate(`/foods/slug/${slug}`);
@@ -46,13 +70,13 @@ const DishCard = ({
       price: currentVariant?.price || price,
       imageUrl,
       variant: variantName,
-      variantId: currentVariant?.id || null,
+      variantId: variantId,
       quantity: 1,
     };
 
-    dispatch(addToCart(cartItem)); // cập nhật UI ngay
+    dispatch(addToCart(cartItem));
     try {
-      await addToCartApi(cartItem, token); // gọi API backend
+      await addToCartApi(cartItem, token);
     } catch (err) {
       console.error("Lỗi thêm vào giỏ hàng:", err);
     }
@@ -60,7 +84,21 @@ const DishCard = ({
 
   return (
     <div className="dish-card cursor-pointer" onClick={handleClick}>
-      <div className="card_box">
+      <div className="card_box relative">
+        {token && variants?.length === 0 && (
+          <button
+            onClick={toggleFavorite}
+            className="favorite-icon absolute w-9 h-9 flex items-center justify-center rounded-full shadow border border-red-300 bg-white/90 backdrop-blur-sm hover:scale-110 transition z-10"
+            title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}>
+            <i
+              className={
+                isFavorite
+                  ? "fa-solid fa-heart text-red-500 p-3 bg-white rounded-full shadow border-2 border-red-500"
+                  : "fa-regular fa-heart text-red-500 p-3 bg-white rounded-full shadow border-2 border-red-500 "
+              }></i>
+          </button>
+        )}
+
         {isNew && <span className="is-new-foods"></span>}
         {isFeatured && <span className="is-featured-foods"></span>}
         {isBestSeller && <span className="is-best-seller-foods"></span>}

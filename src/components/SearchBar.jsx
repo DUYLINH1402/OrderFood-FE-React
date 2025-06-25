@@ -1,5 +1,5 @@
 // ✅ SearchBar.jsx
-import "./styles//SearchBar.modul.scss";
+import "../assets/styles/components/SearchBar.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon, faSearch, faTimes } from "../utils/icons.js";
 import FullPageSkeleton from "./Skeleton/FullPageSkeleton";

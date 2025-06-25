@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/icons//logo.webp";
 import shopping_cart from "../../assets/icons/shopping_cart.png";
 import user_avatar from "../../assets/icons/user_avatar.png";
-import "../styles/Header.scss";
+import "../../assets/styles/components/Header.scss";
 import LazyImage from "../LazyImage";
 import SearchBar from "../SearchBar";
 import { useSelector, useDispatch } from "react-redux";
@@ -143,6 +143,12 @@ const Header = () => {
                         onClick={() => setDropdownOpen(false)} // Đóng dropdown
                         className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
                         Trang cá nhân
+                      </Link>
+                      <Link
+                        to="/favorites"
+                        onClick={() => setDropdownOpen(false)} // Đóng dropdown
+                        className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
+                        Món Yêu thích
                       </Link>
                       <Link
                         to="/orders"

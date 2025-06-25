@@ -5,7 +5,7 @@ import FavoriteDishesSection from "../components/FavoriteDishesSection";
 import NewsSection from "../components/NewsSection";
 import CustomerReviews from "../components/CustomerReviews";
 import LazyImage from "../components/LazyImage";
-import "./styles/Home.scss";
+import "../assets/styles/pages/Home.scss";
 import ServiceHighlights from "../components/ServiceHighlights";
 import SkeletonSection from "../components/Skeleton/SkeletonSection";
 

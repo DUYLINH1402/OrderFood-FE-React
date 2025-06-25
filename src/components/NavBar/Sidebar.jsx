@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/Sidebar.scss";
+import "../../assets/styles/components/Sidebar.scss";
 import { FontAwesomeIcon, faTimes, faChevronDown } from "../../utils/icons";
 import { Link, useLocation } from "react-router-dom";
 

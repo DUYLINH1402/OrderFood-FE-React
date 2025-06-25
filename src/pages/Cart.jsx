@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./styles/CartPage.scss";
+import "../assets/styles/pages/CartPage.scss";
 import { removeFromCart, updateQuantity, clearCart } from "../store/slices/cartSlice";
 import { getToken } from "../services/auth/authApi";
 import { clearCartApi, removeCartItemApi, updateCartApi } from "../services/service/cartService";

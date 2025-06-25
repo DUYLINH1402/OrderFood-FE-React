@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
-import "../styles/Layout.scss";
+import "../../assets/styles/components/Layout.scss";
 import Footer from "./Footer";
 import Header from "./Header";
 import { FontAwesomeIcon, faBars } from "../../utils/icons";

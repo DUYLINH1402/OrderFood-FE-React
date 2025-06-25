@@ -41,10 +41,10 @@ export const getAllFoods = async (page, size) => {
 };
 
 // LẤY DANH SÁCH MÓN ĂN THEO DANH MỤC BẰNG ID
-export const getFoodsByCategoryID = async (slug, page, size) => {
+export const getFoodsByCategoryID = async (categoryId, page, size) => {
   return useFirebase
-    ? await getFoodsByCategoryFromFirebase(slug, page, size)
-    : await getFoodsByCategoryIDFromSQL(slug, page, size);
+    ? await getFoodsByCategoryFromFirebase(categoryId, page, size)
+    : await getFoodsByCategoryIDFromSQL(categoryId, page, size);
 };
 // LẤY DANH SÁCH MÓN ĂN THEO DANH MỤC BẰNG SLUG
 export const getFoodsByCategorySlug = async (slug, page, size) => {

@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/LoadingButton.scss";
+import "../../assets/styles/components/LoadingButton.scss";
 
 export const LoadingButton = ({ isLoading, children, className = "", ...props }) => {
   return (

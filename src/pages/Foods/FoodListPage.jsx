@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import FoodSidebar from "./FoodSidebar";
 import FoodGrid from "./FoodGrid";
-import "../styles/FoodListPage.scss";
+import "../../assets/styles/pages/FoodListPage.scss";
 import LoadingPage from "../../components/Skeleton/LoadingPage";
 import {
   getCategoryBySlug,

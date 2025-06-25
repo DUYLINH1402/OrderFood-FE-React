@@ -1,4 +1,4 @@
-@import "../../assets/styles/base/variables";
+@import "../base/variables";
 
 .dish-card-wrap {
   display: grid;
@@ -23,6 +23,12 @@
     background-color: #fff;
     text-align: center;
     gap: 10px;
+    .favorite-icon {
+      position: absolute;
+      font-size: 15px;
+      right: 10px;
+      top: 10px;
+    }
     img {
       border-radius: $border-radius;
       object-fit: cover;
@@ -58,6 +64,7 @@
         border: none;
         border-top-right-radius: 20px;
         border-bottom-right-radius: 20px;
+
         .fa-shopping-basket {
           padding: 8px;
           transform: translateX(-3px);
@@ -73,6 +80,7 @@
           }
         }
       }
+
       .shopping-cart-icon {
         position: absolute;
         right: 20px;

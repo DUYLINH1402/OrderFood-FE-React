@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "../styles/FoodGrid.scss";
 import DishCard from "../../components/DishCard";
 import {
   getAllFoods,
@@ -7,6 +6,7 @@ import {
   getFoodsByCategorySlug,
 } from "../../services/service/foodService";
 import { SkeletonFood } from "../../components/Skeleton/SkeletonFood";
+import "../../assets/styles/pages/FoodGrid.scss";
 
 const FoodGrid = ({ slug }) => {
   const [foods, setFoods] = useState([]);

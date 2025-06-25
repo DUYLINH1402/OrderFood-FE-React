@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/SkeletonFood.scss";
+import "../../assets/styles/components/SkeletonFood.scss";
 export const SkeletonFood = () => {
   return (
     <div>

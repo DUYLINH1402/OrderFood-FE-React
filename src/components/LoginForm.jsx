@@ -1,6 +1,6 @@
 import { useState } from "react";
 import React from "react";
-import "./styles/LoginForm.scss";
+import "../assets/styles/components/LoginForm.scss";
 import facebook from "../assets/icons/facebook.svg";
 import google from "../assets/icons/google.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

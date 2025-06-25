@@ -1,5 +1,6 @@
-@import "../../assets/styles/base/variables";
+@import "../base/variables";
 .footer {
+  position: relative;
   background-color: #000;
   background-image: url("https://bizweb.dktcdn.net/100/400/734/themes/795402/assets/bg-footer.jpg?1739761841827");
   background-size: cover;
@@ -9,7 +10,19 @@
   line-height: 1.6;
   text-align: justify;
   padding: 10px 20px;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); // lớp phủ mờ màu đen
+    z-index: 1;
+  }
   &__grid {
+    position: relative;
+    z-index: 2;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
@@ -49,5 +62,11 @@
 
   .footer__column {
     width: 100%; // chiếm toàn bộ chiều rộng khi xuống dòng
+  }
+}
+// Responsive cho màn hình rất nhỏ (iPhone)
+@media (max-width: 480px) {
+  .footer {
+    background-position: 90% top; // tuỳ ảnh, có thể dùng 0% nếu muốn thấy phần đầu ảnh
   }
 }

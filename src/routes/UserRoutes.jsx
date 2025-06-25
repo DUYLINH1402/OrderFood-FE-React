@@ -7,11 +7,12 @@ import CartPage from "../pages/Cart";
 import Layout from "../components/NavBar/Layout";
 import LoginRegisterForm from "../components/LoginForm";
 import FoodListPage from "../pages/Foods/FoodListPage";
-import FoodDetailPage from "../components/FoodDetailPage";
 import DongXanhIntro from "../pages/DongXanhIntro";
 import RewardPointsIntro from "../pages/RewardPointsIntro";
 import ProfilePage from "../pages/Profile/ProfilePage";
 import ResetPasswordPage from "../components/ResetPasswordPage";
+import FoodDetailPage from "../pages/Foods/FoodDetailPage/FoodDetailPage";
+import FavoriteDishes from "../pages/FavoriteDishes";
 
 export const UserRoutes = [
   {
@@ -26,6 +27,7 @@ export const UserRoutes = [
       { path: "/tich-diem", element: <RewardPointsIntro /> },
       { path: "/login", element: <LoginRegisterForm /> },
       { path: "/profile", element: <ProfilePage /> },
+      { path: "/favorites", element: <FavoriteDishes /> },
       { path: "/foods/:slug", element: <FoodListPage /> },
       { path: "/foods/slug/:slug", element: <FoodDetailPage /> },
     ],

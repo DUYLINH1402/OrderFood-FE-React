@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/Footer.scss";
+import "../../assets/styles/components/Footer.scss";
 import logo_da_thong_bao_bct from "../../assets/images/logo_da_thong_bao_bct.webp";
 import LazyImage from "../LazyImage";
 const Footer = () => {
