@@ -139,13 +139,13 @@ const Header = () => {
                     {/* Menu items */}
                     <div className="flex flex-col">
                       <Link
-                        to="/profile"
+                        to="/ho-so"
                         onClick={() => setDropdownOpen(false)} // Đóng dropdown
                         className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
                         Trang cá nhân
                       </Link>
                       <Link
-                        to="/favorites"
+                        to="/yeu-thich"
                         onClick={() => setDropdownOpen(false)} // Đóng dropdown
                         className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
                         Món Yêu thích
@@ -170,7 +170,7 @@ const Header = () => {
                 )}
               </div>
             ) : (
-              <Link to="/login" className="btn-login whitespace-nowrap">
+              <Link to="/dang-nhap" className="btn-login whitespace-nowrap">
                 Đăng nhập
               </Link>
             )}
@@ -178,7 +178,7 @@ const Header = () => {
         )}
 
         <Link
-          to="/cart"
+          to="/gio-hang"
           className={`header__cart relative transition-opacity duration-1000
   ${isSearchExpanded && window.innerWidth < 768 ? "opacity-0 pointer-events-none" : "opacity-100"}
   ${hideLoginCart ? "hidden" : ""}

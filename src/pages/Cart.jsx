@@ -86,7 +86,7 @@ export default function CartPage() {
                 className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 py-4">
                 <div
                   className="flex sm:items-center w-full cursor-pointer hover:bg-gray-100 transition duration-200 rounded-lg p-2"
-                  onClick={() => navigate(`/foods/slug/${item.slug}`)}>
+                  onClick={() => navigate(`/mon-an/chi-tiet/${item.slug}`)}>
                   <LazyImage
                     src={item.imageUrl}
                     alt={item.foodName}
@@ -135,14 +135,35 @@ export default function CartPage() {
           </ul>
 
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <button
-              onClick={handleClearCart}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm sm:text-base">
-              Xóa toàn bộ
-            </button>
-            <p className="text-sm sm:text-base text-gray-800">
+            <p className="text-base text-gray-800 font-bold mb-2 sm:mb-0 text-center w-full sm:w-auto">
               Tổng cộng: <span className="font-bold">{totalPrice.toLocaleString()}₫</span>
             </p>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center justify-center">
+              <button
+                onClick={handleClearCart}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm sm:text-base w-full sm:w-auto">
+                Xóa toàn bộ
+              </button>
+              <button
+                onClick={() => {
+                  // Truyền đầy đủ thông tin variant khi sang trang thanh toán
+                  const checkoutItems = items.map((item) => ({
+                    foodId: item.foodId,
+                    slug: item.slug,
+                    foodName: item.foodName,
+                    price: item.price,
+                    imageUrl: item.imageUrl,
+                    variant: item.variant, // Cách chế biến
+                    variantId: item.variantId,
+                    quantity: item.quantity,
+                  }));
+                  navigate("/thanh-toan", { state: { checkoutItems } });
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm sm:text-base w-full sm:w-auto whitespace-nowrap"
+                disabled={items.length === 0}>
+                Thanh toán
+              </button>
+            </div>
           </div>
         </>
       )}

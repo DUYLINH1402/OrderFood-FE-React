@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
     try {
       await resetPasswordApi({ token, newPassword: formData.newPassword });
       toast.success("Cập nhật mật khẩu thành công!");
-      navigate("/login");
+      navigate("/dang-nhap");
     } catch (err) {
       toast.error("Cập nhật mật khẩu thất bại!");
     } finally {

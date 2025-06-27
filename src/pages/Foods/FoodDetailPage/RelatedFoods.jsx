@@ -68,7 +68,7 @@ export default function RelatedFoods({ categoryId, excludeId, categoryName }) {
             <div
               key={item.id}
               className="related-card cursor-pointer hover:shadow-lg border rounded-xl p-3 transition hover:scale-105"
-              onClick={() => navigate(`/foods/slug/${item.slug}`)}>
+              onClick={() => navigate(`/mon-an/chi-tiet/${item.slug}`)}>
               <img
                 src={item.imageUrl}
                 alt={item.name}

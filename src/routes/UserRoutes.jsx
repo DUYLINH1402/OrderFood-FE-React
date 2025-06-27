@@ -13,6 +13,7 @@ import ProfilePage from "../pages/Profile/ProfilePage";
 import ResetPasswordPage from "../components/ResetPasswordPage";
 import FoodDetailPage from "../pages/Foods/FoodDetailPage/FoodDetailPage";
 import FavoriteDishes from "../pages/FavoriteDishes";
+import CheckoutPage from "../pages/CheckoutPage";
 
 export const UserRoutes = [
   {
@@ -22,14 +23,15 @@ export const UserRoutes = [
     children: [
       { path: "/gioi-thieu", element: <DongXanhIntro /> },
       { path: "/", element: <Home /> },
-      { path: "/cart", element: <CartPage /> },
+      { path: "/gio-hang", element: <CartPage /> },
       { path: "/thuc-don", element: <FoodListPage /> },
       { path: "/tich-diem", element: <RewardPointsIntro /> },
-      { path: "/login", element: <LoginRegisterForm /> },
-      { path: "/profile", element: <ProfilePage /> },
-      { path: "/favorites", element: <FavoriteDishes /> },
-      { path: "/foods/:slug", element: <FoodListPage /> },
-      { path: "/foods/slug/:slug", element: <FoodDetailPage /> },
+      { path: "/dang-nhap", element: <LoginRegisterForm /> },
+      { path: "/ho-so", element: <ProfilePage /> },
+      { path: "/yeu-thich", element: <FavoriteDishes /> },
+      { path: "/mon-an/:slug", element: <FoodListPage /> },
+      { path: "/mon-an/chi-tiet/:slug", element: <FoodDetailPage /> },
+      { path: "/thanh-toan", element: <CheckoutPage /> },
     ],
   },
   {

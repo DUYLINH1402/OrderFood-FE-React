@@ -30,7 +30,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
   const accessToken = localStorage.getItem("accessToken");
   if (!accessToken) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/dang-nhap" replace />;
   }
   return (
     <div className="content-spacing flex flex-col md:flex-row gap-4 text-sm md:text-base rounded-xl shadow-md">

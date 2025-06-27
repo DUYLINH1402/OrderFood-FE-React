@@ -92,6 +92,22 @@ export default function FoodDetailPage() {
     }
   };
 
+  const handleOrderNow = () => {
+    const variantObj = food.variants?.find((v) => v.id === selectedVariantId);
+    const variantName = variantObj?.name || "Mặc định";
+    const cartItem = {
+      foodId: food.id,
+      slug: food.slug,
+      foodName: food.name,
+      price: selectedPrice,
+      imageUrl: mainImage,
+      variant: variantName,
+      variantId: selectedVariantId,
+      quantity: quantity,
+    };
+    navigate("/thanh-toan", { state: { checkoutItems: [cartItem] } });
+  };
+
   if (!food) return <LoadingPage />;
 
   return (
@@ -212,7 +228,9 @@ export default function FoodDetailPage() {
               onClick={handleAddToCart}>
               Thêm vào giỏ hàng
             </button>
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-semibold">
+            <button
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-semibold"
+              onClick={handleOrderNow}>
               Đặt ngay
             </button>
           </div>

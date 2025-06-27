@@ -12,13 +12,13 @@ const FavoriteDishes = () => {
 
   useEffect(() => {
     fetchFavorites();
-    // eslint-disable-next-line
   }, [token]);
 
   const fetchFavorites = async () => {
     setLoading(true);
     try {
       const res = await getFavorites(token);
+      console.log("Fetched favorites:", res);
       const favoritesArr = Array.isArray(res?.data) ? res.data : [];
       setFavorites(favoritesArr);
     } catch (error) {
@@ -66,7 +66,7 @@ const FavoriteDishes = () => {
               className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 py-4">
               <div
                 className="flex sm:items-center w-full cursor-pointer hover:bg-gray-100 transition duration-200 rounded-lg p-2"
-                onClick={() => navigate(`/foods/slug/${item.foodId}`)}>
+                onClick={() => navigate(`/mon-an/chi-tiet/${item.foodSlug}`)}>
                 <img
                   src={item.foodImageUrl}
                   alt={item.foodName}
@@ -79,12 +79,17 @@ const FavoriteDishes = () => {
                   <p className="text-gray-500 text-sm sm:text-base">
                     {item.variantName ? `Cách chế biến: ${item.variantName}` : ""}
                   </p>
+                  {item.totalPrice !== undefined && (
+                    <p className="text-green-600 font-bold text-sm sm:text-base">
+                      Giá: {item.totalPrice.toLocaleString()}₫
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-center">
                 <Link
-                  to={`/foods/slug/${item.foodId}`}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm sm:text-base">
+                  to={`/mon-an/chi-tiet/${item.foodSlug}`}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm sm:text-base whitespace-nowrap">
                   Xem chi tiết
                 </Link>
                 <button

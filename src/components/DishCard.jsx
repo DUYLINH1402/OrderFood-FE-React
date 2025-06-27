@@ -52,7 +52,7 @@ const DishCard = ({
   };
 
   const handleClick = () => {
-    navigate(`/foods/slug/${slug}`);
+    navigate(`/mon-an/chi-tiet/${slug}`);
   };
 
   const handleAddToCart = async (e) => {
@@ -122,7 +122,7 @@ const DishCard = ({
             className="dish-card-action-btn"
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/foods/slug/${slug}`);
+              navigate(`/mon-an/chi-tiet/${slug}`);
             }}>
             {variants?.length > 0 ? "Tuỳ chọn" : "Đặt ngay"}
             <i className="fa fa-shopping-basket"></i>

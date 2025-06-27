@@ -39,9 +39,9 @@ const FoodListPage = () => {
 
         if (child.parentId) {
           const parent = await getCategoryById(child.parentId);
-          breadcrumbChain.push({ name: parent.name, path: `/foods/${parent.slug}` });
+          breadcrumbChain.push({ name: parent.name, path: `/mon-an/${parent.slug}` });
         }
-        breadcrumbChain.push({ name: child.name, path: `/foods/${child.slug}` });
+        breadcrumbChain.push({ name: child.name, path: `/mon-an/${child.slug}` });
 
         setCategoryNameChain(breadcrumbChain);
         setChildCategories(children);
@@ -88,8 +88,8 @@ const FoodListPage = () => {
         <aside className="sidebar-menu-foods hidden lg:block">
           <FoodSidebar
             onSelectCategory={(id) => {
-              if (id) navigate(`/foods/${id}`);
-              else navigate(`/foods`);
+              if (id) navigate(`/mon-an/${id}`);
+              else navigate(`/mon-an`);
             }}
           />
         </aside>
@@ -98,8 +98,8 @@ const FoodListPage = () => {
         <div className="block lg:hidden">
           <FoodSidebarMobileWrapper
             onSelectCategory={(id) => {
-              if (id) navigate(`/foods/${id}`);
-              else navigate(`/foods`);
+              if (id) navigate(`/mon-an/${id}`);
+              else navigate(`/mon-an`);
             }}
           />
         </div>
@@ -126,7 +126,7 @@ const FoodListPage = () => {
                     {childCategories.map((child) => (
                       <div
                         key={child.slug}
-                        onClick={() => navigate(`/foods/${child.slug}`)}
+                        onClick={() => navigate(`/mon-an/${child.slug}`)}
                         className="child-category-item">
                         {child.name}
                       </div>
