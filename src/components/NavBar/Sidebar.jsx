@@ -30,8 +30,8 @@ const Sidebar = ({ isOpen, onClose }) => {
               GIỚI THIỆU
             </Link>
           </li>
-          <li className={`has-dropdown ${isActive("/thuc-don") ? "active" : ""}`}>
-            <Link to="/thuc-don" onClick={onClose}>
+          <li className={`has-dropdown ${isActive("/mon-an") ? "active" : ""}`}>
+            <Link to="/mon-an" onClick={onClose}>
               THỰC ĐƠN
             </Link>
           </li>

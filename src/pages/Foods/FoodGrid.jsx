@@ -7,13 +7,19 @@ import {
 } from "../../services/service/foodService";
 import { SkeletonFood } from "../../components/Skeleton/SkeletonFood";
 import "../../assets/styles/pages/FoodGrid.scss";
+import { Breadcrumb } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const FoodGrid = ({ slug }) => {
+const FoodGrid = ({ slug, categoryNameChain = [] }) => {
   const [foods, setFoods] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)
   const pageSize = 12;
+  const navigate = useNavigate();
+
+  // Breadcrumbs logic
+  const breadcrumbs = [{ name: "Trang chủ", path: "/" }, ...(categoryNameChain || [])];
 
   useEffect(() => {
     setPage(0); // reset page khi đổi danh mục
@@ -59,6 +65,7 @@ const FoodGrid = ({ slug }) => {
 
   return (
     <div className="food-grid-container">
+      {/* Breadcrumb đã được chuyển lên FoodListPage, không render ở đây nữa */}
       <div className="food-grid">
         {isLoading
           ? [...Array(pageSize)].map((_, idx) => <SkeletonFood key={idx} />)

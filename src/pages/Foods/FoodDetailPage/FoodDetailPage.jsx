@@ -111,10 +111,17 @@ export default function FoodDetailPage() {
   if (!food) return <LoadingPage />;
 
   return (
-    <div>
-      <div className="food-detail-wrap max-w-6xl mx-auto  mt-[160px] pb-16 text-[14px] md:text-[16px] grid grid-cols-1 md:grid-cols-2 gap-10 ">
+    <div className="wrap-page" style={{ position: "relative", overflow: "hidden" }}>
+      {/* Blob background elements */}
+      <div className="bg-blob bg-blob-1" />
+      <div className="bg-blob bg-blob-2" />
+      <div className="bg-blob bg-blob-3" />
+      <div className="bg-blob bg-blob-4" />
+      <div className="bg-blob bg-blob-5" />
+      <div className="bg-blob bg-blob-6" />
+      <div className="food-detail-wrap max-w-6xl mx-auto mt-[160px] pb-16 text-[14px] md:text-[16px] grid grid-cols-1 md:grid-cols-2 gap-10 cart-wrap glass-box">
         <div className="flex relative flex-col items-center">
-          <button
+          {/* <button
             onClick={() => navigate(-1)}
             className="  top-[-70px] left-[0] bg-green-100 text-center w-48 rounded-2xl h-14 relative text-black text-base group border border-[#199b7e]"
             type="button">
@@ -131,7 +138,7 @@ export default function FoodDetailPage() {
               </svg>
             </div>
             <p className="translate-x-2">Quay lại</p>
-          </button>
+          </button> */}
 
           <img
             ref={imageRef}

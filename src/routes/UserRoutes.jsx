@@ -13,7 +13,8 @@ import ProfilePage from "../pages/Profile/ProfilePage";
 import ResetPasswordPage from "../components/ResetPasswordPage";
 import FoodDetailPage from "../pages/Foods/FoodDetailPage/FoodDetailPage";
 import FavoriteDishes from "../pages/FavoriteDishes";
-import CheckoutPage from "../pages/CheckoutPage";
+import CheckoutPage from "../pages/Order/CheckoutPage";
+import PaymentResultPage from "../pages/Order/PaymentResultPage";
 
 export const UserRoutes = [
   {
@@ -24,7 +25,7 @@ export const UserRoutes = [
       { path: "/gioi-thieu", element: <DongXanhIntro /> },
       { path: "/", element: <Home /> },
       { path: "/gio-hang", element: <CartPage /> },
-      { path: "/thuc-don", element: <FoodListPage /> },
+      { path: "/mon-an", element: <FoodListPage /> },
       { path: "/tich-diem", element: <RewardPointsIntro /> },
       { path: "/dang-nhap", element: <LoginRegisterForm /> },
       { path: "/ho-so", element: <ProfilePage /> },
@@ -32,6 +33,7 @@ export const UserRoutes = [
       { path: "/mon-an/:slug", element: <FoodListPage /> },
       { path: "/mon-an/chi-tiet/:slug", element: <FoodDetailPage /> },
       { path: "/thanh-toan", element: <CheckoutPage /> },
+      { path: "/thanh-toan/ket-qua", element: <PaymentResultPage /> },
     ],
   },
   {

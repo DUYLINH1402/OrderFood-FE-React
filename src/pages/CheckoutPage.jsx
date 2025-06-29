@@ -3,6 +3,10 @@ import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getDistricts, getWardsByDistrict } from "../../services/service/zoneService";
+import LazyImage from "../../components/LazyImage";
+import shopping_cart from "../../assets/icons/shopping_cart.png";
+import PaymentMethodModal from "./PaymentMethodModal";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -11,8 +15,6 @@ export default function CheckoutPage() {
   const user = useSelector((state) => state.auth.user);
 
   const checkoutItems = location.state?.checkoutItems || cartItems;
-  const [shippingZones, setShippingZones] = useState([]);
-  const [selectedZoneId, setSelectedZoneId] = useState(null);
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [useSavedInfo, setUseSavedInfo] = useState(true);
 
@@ -20,16 +22,35 @@ export default function CheckoutPage() {
   const [receiverPhone, setReceiverPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
 
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [selectedWardId, setSelectedWardId] = useState("");
+
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState("COD");
 
   const totalFoodPrice = checkoutItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const totalPrice = totalFoodPrice + deliveryFee;
+  // Đơn hàng từ 500.000đ trở lên sẽ tự động miễn phí giao hàng
+  const effectiveDeliveryFee = totalFoodPrice >= 500000 ? 0 : deliveryFee;
+  const totalPrice = totalFoodPrice + effectiveDeliveryFee;
 
   useEffect(() => {
-    axios.get("/api/shipping-zones").then((res) => {
-      setShippingZones(res.data);
-    });
+    getDistricts().then(setDistricts);
   }, []);
+
+  useEffect(() => {
+    if (selectedDistrictId) {
+      const district = districts.find((d) => String(d.id) === String(selectedDistrictId));
+      setDeliveryFee(district ? district.deliveryFee : 0);
+      getWardsByDistrict(selectedDistrictId).then(setWards);
+    } else {
+      setWards([]);
+      setSelectedWardId("");
+      setDeliveryFee(0);
+    }
+  }, [selectedDistrictId, districts]);
 
   useEffect(() => {
     if (useSavedInfo && user) {
@@ -43,17 +64,28 @@ export default function CheckoutPage() {
     }
   }, [useSavedInfo, user]);
 
-  useEffect(() => {
-    const zone = shippingZones.find((z) => z.id === Number(selectedZoneId));
-    setDeliveryFee(zone ? zone.delivery_fee : 0);
-  }, [selectedZoneId, shippingZones]);
-
   const handlePlaceOrder = async () => {
-    if (!receiverName || !receiverPhone || !deliveryAddress || !selectedZoneId) {
+    if (
+      !receiverName ||
+      !receiverPhone ||
+      !deliveryAddress ||
+      !selectedDistrictId ||
+      !selectedWardId
+    ) {
       toast.warn("Vui lòng điền đầy đủ thông tin người nhận và khu vực giao hàng.");
       return;
     }
+    // Nếu user đã từng đặt hàng thì cho chọn phương thức (COD/MoMo/ZaloPay)
+    if (user && user.hasOrdered) {
+      setShowPaymentModal(true);
+      return;
+    }
+    // Nếu chưa từng đặt thì chỉ cho chọn MoMo hoặc ZaloPay
+    setShowPaymentModal(true);
+    setSelectedPayment("MOMO"); // mặc định chọn MoMo
+  };
 
+  const submitOrder = async (paymentMethod) => {
     try {
       setIsPlacingOrder(true);
       await axios.post("/api/orders", {
@@ -61,8 +93,9 @@ export default function CheckoutPage() {
         receiverName,
         receiverPhone,
         deliveryAddress,
-        shippingZoneId: selectedZoneId,
-        paymentMethod: "COD", // hoặc "ONLINE" nếu có tích hợp MoMo
+        districtId: selectedDistrictId,
+        wardId: selectedWardId,
+        paymentMethod,
         deliveryType: "DELIVERY",
       });
       toast.success("Đặt hàng thành công!");
@@ -71,6 +104,7 @@ export default function CheckoutPage() {
       toast.error("Đặt hàng thất bại!");
     } finally {
       setIsPlacingOrder(false);
+      setShowPaymentModal(false);
     }
   };
 
@@ -80,7 +114,7 @@ export default function CheckoutPage() {
         <h2 className="text-xl font-bold mb-4">Không có món nào để thanh toán!</h2>
         <button
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-          onClick={() => navigate("/thuc-don")}>
+          onClick={() => navigate("/mon-an")}>
           Quay lại thực đơn
         </button>
       </div>
@@ -92,7 +126,7 @@ export default function CheckoutPage() {
       <div className="flex flex-col md:flex-row gap-10 md:gap-12">
         {/* Sản phẩm */}
         <div className="md:w-1/2 bg-white rounded-2xl shadow-lg p-6 mb-6 md:mb-0">
-          <h2 className="font-semibold mb-5 text-green-700 tracking-wide text-md md:text-base text-center">
+          <h2 className="font-semibold mb-5 text-green-700 tracking-wide text-sm md:text-base text-center">
             Sản phẩm
           </h2>
           <ul className="divide-y divide-gray-200 mb-0">
@@ -106,19 +140,19 @@ export default function CheckoutPage() {
                   className="w-24 h-24 object-cover rounded-lg border flex-shrink-0 mt-1"
                 />
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
-                  <div className="font-semibold truncate text-md md:text-base mb-1">
+                  <div className="font-semibold truncate text-sm md:text-base mb-1">
                     {item.foodName}
                   </div>
                   {item.variant && (
-                    <div className="text-gray-500 text-md md:text-base mb-1 leading-tight">
+                    <div className="text-gray-500 text-sm md:text-base mb-1 leading-tight">
                       {item.variant}
                     </div>
                   )}
-                  <div className="text-gray-600 text-md md:text-base leading-tight">
+                  <div className="text-gray-600 text-sm md:text-base leading-tight">
                     Số lượng: {item.quantity}
                   </div>
                 </div>
-                <div className="text-green-700 font-bold min-w-[70px] sm:min-w-[90px] text-right text-md md:text-base pl-2 mt-1">
+                <div className="text-green-700 font-bold min-w-[70px] sm:min-w-[90px] text-right text-sm md:text-base pl-2 mt-1">
                   {item.price.toLocaleString()}₫
                 </div>
               </li>
@@ -128,13 +162,13 @@ export default function CheckoutPage() {
         {/* Thông tin thanh toán */}
         <div className="md:w-1/2 bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between">
           <div>
-            <h2 className="font-semibold mb-5 text-green-700 tracking-wide text-md md:text-base text-center">
+            <h2 className="font-semibold mb-5 text-green-700 tracking-wide text-sm md:text-base text-center">
               Thông tin nhận hàng
             </h2>
-            <p className="text-[12px] text-red-500 mb-4 font-semibold">
+            <p className="text-[12px] text-red-500 mb-4 font-semibold text-center">
               Lưu ý: Nhân viên sẽ liên hệ để xác nhận đơn hàng
             </p>
-            <label className="flex items-center gap-2 mb-3 text-md md:text-base select-none">
+            <label className="flex items-center gap-2 mb-3 text-sm md:text-base select-none">
               <input
                 type="checkbox"
                 checked={useSavedInfo}
@@ -147,38 +181,49 @@ export default function CheckoutPage() {
               <input
                 type="text"
                 placeholder="Tên người nhận"
-                className="border border-gray-300 rounded-lg px-4 py-4 text-md md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm"
+                className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm"
                 value={receiverName}
                 onChange={(e) => setReceiverName(e.target.value)}
               />
               <input
                 type="text"
                 placeholder="Số điện thoại"
-                className="border border-gray-300 rounded-lg px-4 py-4 text-md md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm"
+                className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm"
                 value={receiverPhone}
                 onChange={(e) => setReceiverPhone(e.target.value)}
               />
+
               <select
-                className="border border-gray-300 rounded-lg px-4 py-4 text-md md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal text-gray-700 shadow-sm appearance-none"
-                value={selectedZoneId || ""}
-                onChange={(e) => setSelectedZoneId(e.target.value)}>
+                className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal text-gray-700 shadow-sm appearance-none"
+                value={selectedDistrictId}
+                onChange={(e) => setSelectedDistrictId(e.target.value)}>
                 <option value="" className="text-gray-400">
-                  -- Chọn khu vực giao hàng --
+                  -- Chọn quận/huyện --
                 </option>
-                {shippingZones.map((zone) => (
-                  <option key={zone.id} value={zone.id}>
-                    {zone.name} (
-                    {zone.delivery_fee === 0
-                      ? "Miễn phí"
-                      : `${zone.delivery_fee.toLocaleString()}₫`}
-                    )
+                {districts.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal text-gray-700 shadow-sm appearance-none"
+                value={selectedWardId}
+                onChange={(e) => setSelectedWardId(e.target.value)}
+                disabled={!selectedDistrictId}>
+                <option value="" className="text-gray-400">
+                  -- Chọn phường/xã --
+                </option>
+                {wards.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
                   </option>
                 ))}
               </select>
               <input
                 type="text"
                 placeholder="Địa chỉ cụ thể (Số nhà, tên đường...)"
-                className="border border-gray-300 rounded-lg px-4 py-4 text-md md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm"
+                className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm"
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
               />
@@ -186,30 +231,51 @@ export default function CheckoutPage() {
           </div>
           {/* Tổng tiền */}
           <div className="border-t pt-5 mt-3">
-            <div className="flex justify-between items-center mb-2 text-md md:text-base">
+            <div className="flex justify-between items-center mb-2 text-sm md:text-base">
               <span className="font-bold">Tạm tính:</span>
               <span className="text-gray-700 font-semibold">
                 {totalFoodPrice.toLocaleString()}₫
               </span>
             </div>
-            <div className="flex justify-between items-center mb-2 text-md md:text-base">
+            <div className="flex justify-between items-center mb-2 text-sm md:text-base">
               <span className="font-bold">Phí giao hàng:</span>
               <span className="text-gray-700 font-semibold">
-                {deliveryFee === 0 ? "Miễn phí" : `${deliveryFee.toLocaleString()}₫`}
+                {effectiveDeliveryFee === 0
+                  ? "Miễn phí"
+                  : `${effectiveDeliveryFee.toLocaleString()}₫`}
               </span>
             </div>
             <div className="flex justify-between items-center mb-5">
-              <span className="font-bold text-md md:text-base">Tổng cộng:</span>
-              <span className="text-green-700 font-bold text-md md:text-base">
+              <span className="font-bold text-sm md:text-base">Tổng cộng:</span>
+              <span className="text-green-700 font-bold text-sm md:text-base">
                 {totalPrice.toLocaleString()}₫
               </span>
             </div>
+            <p className="text-[13px] text-orange-500 mb-3 font-semibold text-center">
+              Miễn phí vận chuyển cho đơn từ 500.000đ trở lên!
+            </p>
             <button
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg text-md md:text-base font-semibold disabled:opacity-60 shadow-md transition-all duration-200"
+              className="w-full border border-green-600 text-green-700 bg-white hover:bg-green-50 py-3 rounded-lg text-sm md:text-base font-semibold mb-3 transition-all duration-200 flex items-center justify-center gap-2"
+              type="button"
+              onClick={() => navigate("/mon-an")}>
+              <img src={shopping_cart} alt="Đặt thêm món" className="w-8 h-8 mr-2" />
+              <span>Đặt thêm món</span>
+            </button>
+            <button
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg text-sm md:text-base font-semibold disabled:opacity-60 shadow-md transition-all duration-200"
               onClick={handlePlaceOrder}
               disabled={isPlacingOrder}>
               {isPlacingOrder ? "Đang xử lý..." : "Đặt hàng"}
             </button>
+            <PaymentMethodModal
+              isOpen={showPaymentModal}
+              onClose={() => setShowPaymentModal(false)}
+              selectedPayment={selectedPayment}
+              setSelectedPayment={setSelectedPayment}
+              onConfirm={submitOrder}
+              isPlacingOrder={isPlacingOrder}
+              user={user}
+            />
           </div>
         </div>
       </div>

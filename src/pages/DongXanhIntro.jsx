@@ -1,11 +1,42 @@
-import React from "react";
+import React, { useRef } from "react";
+import useScrollReveal from "../hooks/useScrollReveal";
 import LazyImage from "../components/LazyImage";
 
 const DongXanhIntro = () => {
+  // refs cho hiệu ứng scroll reveal
+  const boxRef = useRef();
+  const imgRefs = useRef([]);
+  const h2Ref = useRef();
+  const h3Refs = useRef([]);
+  useScrollReveal(boxRef);
+  useScrollReveal(imgRefs);
+  useScrollReveal(h2Ref);
+  useScrollReveal(h3Refs);
+  const setImgRef = (el, idx) => {
+    imgRefs.current[idx] = el;
+  };
+  const setH3Ref = (el, idx) => {
+    h3Refs.current[idx] = el;
+  };
+
   return (
-    <section className="bg-white text-gray-800 sm:m-[80px] my-[100px] mx-[30px] sm:px-6 md:px-16 text-justify">
-      <div className="max-w-6xl mx-auto border border-gray-300 rounded-xl p-6 sm:p-10 shadow-lg">
-        <h2 className="text-3xl font-bold mb-6 text-[#199b7e]">Giới thiệu về Đồng Xanh</h2>
+    <div className="wrap-page" style={{ position: "relative", overflow: "hidden" }}>
+      {/* Blob background elements, always at bottom, never break layout */}
+      <div className="bg-blob bg-blob-1" />
+      <div className="bg-blob bg-blob-2" />
+      <div className="bg-blob bg-blob-3" />
+      <div className="bg-blob bg-blob-4" />
+      <div className="bg-blob bg-blob-5" />
+      <div className="bg-blob bg-blob-6" />
+      <div
+        className="scroll-reveal glass-box max-w-6xl mx-auto p-4 sm:p-10 my-[100px] mx-[10px] sm:mx-[30px] sm:px-6 md:px-16 text-justify"
+        ref={boxRef}
+        style={{ position: "relative", zIndex: 1, padding: "30px" }}>
+        <h2
+          className="scroll-reveal text-3xl font-bold mb-6 text-[#fff] dongxanh-section-title"
+          ref={h2Ref}>
+          Giới thiệu về Đồng Xanh
+        </h2>
 
         <p className="mb-4 leading-relaxed text-sm sm:text-base">
           Đồng Xanh là tâm huyết của chúng tôi với mong muốn được mang đến cho quý khách hàng nơi
@@ -22,11 +53,12 @@ const DongXanhIntro = () => {
         <LazyImage
           src="https://bizweb.dktcdn.net/thumb/grande/100/400/734/files/1-min-c0e165b2-0da5-4035-bfb4-5208cf3cd019.png?v=1697257755167"
           alt="Hình ảnh Đồng Xanh"
-          className="w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6 transition-transform duration-500 "
+          className="scroll-reveal-img w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
+          ref={(el) => setImgRef(el, 0)}
         />
 
         <div className="mb-6">
-          <h3 className="text-2xl font-semibold text-[#199b7e] mb-2">
+          <h3 className="scroll-reveal dongxanh-section-title" ref={(el) => setH3Ref(el, 0)}>
             🌿 Không gian và trải nghiệm
           </h3>
           <ul className="list-disc list-inside space-y-2 text-sm sm:text-base leading-relaxed pl-4">
@@ -44,11 +76,14 @@ const DongXanhIntro = () => {
         <LazyImage
           src="https://bizweb.dktcdn.net/thumb/grande/100/400/734/files/1-min-c0e165b2-0da5-4035-bfb4-5208cf3cd019.png?v=1697257755167"
           alt="Hình ảnh Đồng Xanh"
-          className="w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6 transition-transform duration-500 "
+          className="scroll-reveal-img w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
+          ref={(el) => setImgRef(el, 1)}
         />
 
         <div className="mb-6">
-          <h3 className="text-2xl font-semibold text-[#199b7e] mb-2">🎉 Dịch vụ và ưu đãi</h3>
+          <h3 className="scroll-reveal dongxanh-section-title" ref={(el) => setH3Ref(el, 1)}>
+            🎉 Dịch vụ và ưu đãi
+          </h3>
           <ul className="list-disc list-inside space-y-2 text-sm sm:text-base leading-relaxed pl-4">
             <li>Đãi tiệc tận nhà với giá chỉ từ 1.300.000đ.</li>
             <li>Ưu đãi: giảm giá HSSV, quà sinh nhật, tích điểm đổi quà.</li>
@@ -59,11 +94,14 @@ const DongXanhIntro = () => {
         <LazyImage
           src="https://bizweb.dktcdn.net/thumb/grande/100/400/734/files/1-min-c0e165b2-0da5-4035-bfb4-5208cf3cd019.png?v=1697257755167"
           alt="Hình ảnh Đồng Xanh"
-          className="w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6 transition-transform duration-500 "
+          className="scroll-reveal-img w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
+          ref={(el) => setImgRef(el, 2)}
         />
 
         <div>
-          <h3 className="text-2xl font-semibold text-[#199b7e] mb-2">📍 Thông tin liên hệ</h3>
+          <h3 className="scroll-reveal dongxanh-section-title" ref={(el) => setH3Ref(el, 2)}>
+            📍 Thông tin liên hệ
+          </h3>
           <ul className="space-y-2 text-sm sm:text-base leading-relaxed">
             <li>
               <strong>Địa chỉ:</strong> 211 Nguyễn Văn Linh, P. Hưng Lợi, Q. Ninh Kiều, TP. Cần Thơ
@@ -107,7 +145,7 @@ const DongXanhIntro = () => {
           </ul>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

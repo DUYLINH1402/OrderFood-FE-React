@@ -1,11 +1,40 @@
-import React from "react";
+import React, { useRef } from "react";
+import useScrollReveal from "../hooks/useScrollReveal";
 import LazyImage from "../components/LazyImage";
 
 const RewardPointsIntro = () => {
+  // refs cho hiệu ứng scroll reveal
+  const boxRef = useRef();
+  const imgRefs = useRef([]);
+  const h2Ref = useRef();
+  const h3Refs = useRef([]);
+  useScrollReveal(boxRef);
+  useScrollReveal(imgRefs);
+  useScrollReveal(h2Ref);
+  useScrollReveal(h3Refs);
+  const setImgRef = (el, idx) => {
+    imgRefs.current[idx] = el;
+  };
+  const setH3Ref = (el, idx) => {
+    h3Refs.current[idx] = el;
+  };
+
   return (
-    <section className="bg-white text-gray-800 sm:m-[80px] my-[100px] mx-[30px] sm:px-6 md:px-16 text-justify">
-      <div className="max-w-6xl mx-auto border border-gray-300 rounded-xl p-6 sm:p-10 shadow-sm">
-        <h2 className="text-3xl font-bold mb-6 text-[#199b7e]">
+    <div className="wrap-page" style={{ position: "relative", overflow: "hidden" }}>
+      {/* Blob background elements, always at bottom, never break layout */}
+      <div className="bg-blob bg-blob-1" />
+      <div className="bg-blob bg-blob-2" />
+      <div className="bg-blob bg-blob-3" />
+      <div className="bg-blob bg-blob-4" />
+      <div className="bg-blob bg-blob-5" />
+      <div className="bg-blob bg-blob-6" />
+      <div
+        className="scroll-reveal glass-box max-w-6xl mx-auto p-4 sm:p-10 my-[100px] mx-[10px] sm:mx-[30px] sm:px-6 md:px-16 text-justify"
+        ref={boxRef}
+        style={{ position: "relative", zIndex: 1, padding: "30px" }}>
+        <h2
+          className="dongxanh-section-title scroll-reveal text-3xl font-bold mb-6 text-[#fff]"
+          ref={h2Ref}>
           TÍCH ĐIỂM NGAY – NHẬN QUÀ LIỀN TAY
         </h2>
 
@@ -23,11 +52,14 @@ const RewardPointsIntro = () => {
         <LazyImage
           src="https://bizweb.dktcdn.net/100/400/734/files/mo-i-jpeg-d77e3c16-ccc0-4a79-a0ab-2695ed39cff7.jpg?v=1735635780662"
           alt="Chương trình tích điểm Đồng Xanh"
-          className="w-full object-cover rounded-2xl shadow-md mt-6 mb-6 transition-transform duration-500"
+          className="scroll-reveal-img w-full object-cover rounded-2xl shadow-md mt-6 mb-6 transition-transform duration-500"
+          ref={(el) => setImgRef(el, 0)}
         />
 
         <div className="mb-6">
-          <h3 className="text-2xl font-semibold text-[#199b7e] mb-2">🎁 Quà tặng hấp dẫn</h3>
+          <h3 className="scroll-reveal dongxanh-section-title" ref={(el) => setH3Ref(el, 0)}>
+            🎁 Quà tặng hấp dẫn
+          </h3>
           <ul className="list-disc list-inside space-y-2 text-sm sm:text-base leading-relaxed pl-4">
             <li>Voucher giảm giá cho lần ăn kế tiếp.</li>
             <li>Quà tặng đặc biệt vào dịp sinh nhật.</li>
@@ -36,7 +68,9 @@ const RewardPointsIntro = () => {
         </div>
 
         <div>
-          <h3 className="text-2xl font-semibold text-[#199b7e] mb-2">📍 Thông tin liên hệ</h3>
+          <h3 className="scroll-reveal dongxanh-section-title" ref={(el) => setH3Ref(el, 1)}>
+            📍 Thông tin liên hệ
+          </h3>
           <ul className="space-y-2 text-sm sm:text-base leading-relaxed">
             <li>
               <strong>Địa chỉ:</strong> 211 Nguyễn Văn Linh, P. Hưng Lợi, Q. Ninh Kiều, TP. Cần Thơ
@@ -80,7 +114,7 @@ const RewardPointsIntro = () => {
           </ul>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

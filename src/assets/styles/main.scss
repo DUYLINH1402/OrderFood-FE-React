@@ -1,3 +1,158 @@
+// Scroll reveal animation for images
+.scroll-reveal-img {
+  opacity: 0;
+  transform: translateY(40px) scale(0.96);
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  &.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 @import "./base/reset";
 @import "./base/variables";
 @import "./base/mixins";
+
+.wrap-page {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 35px;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(90deg, #e2e2e2, #b7e5b9);
+}
+.animate-fadeIn {
+  animation: fadeInModal 0.25s ease;
+}
+.animate-fadeOut {
+  animation: fadeOutModal 0.25s ease;
+}
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fadeOutModal {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+}
+
+// Hiệu ứng blob nền trang (dùng cho layout ngoài cùng)
+.bg-blob {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.16;
+}
+.bg-blob-1 {
+  top: -120px;
+  left: -120px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle at 60% 40%, #96d199 60%, transparent 100%);
+  border-radius: 50%;
+}
+.bg-blob-2 {
+  bottom: -100px;
+  right: -100px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle at 40% 60%, #d0f1fa 70%, transparent 100%);
+  border-radius: 50%;
+}
+.bg-blob-3 {
+  top: 40%;
+  left: -80px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle at 60% 60%, #b7e5b9 60%, transparent 100%);
+  border-radius: 50%;
+}
+.bg-blob-4 {
+  top: 60%;
+  right: -120px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle at 40% 60%, #d0f1fa 60%, transparent 100%);
+  border-radius: 50%;
+}
+.bg-blob-5 {
+  bottom: 10%;
+  left: 30%;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle at 60% 40%, #b7e5b9 70%, transparent 100%);
+  border-radius: 50%;
+}
+.bg-blob-6 {
+  top: 20%;
+  right: 10%;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at 50% 50%, #d0f1fa 80%, transparent 100%);
+  border-radius: 50%;
+}
+
+// Glassmorphism + bo góc lớn cho box nội dung
+.glass-box {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+// Scroll reveal animation utility
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  &.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Style cho tiêu đề section trong DongXanhIntro
+.dongxanh-section-title {
+  position: relative;
+  display: inline-block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #199b7e 80%, #43e97b 100%);
+  padding: 10px 32px 10px 20px;
+  border-radius: 18px 0 18px 0;
+  box-shadow: 0 4px 24px 0 rgba(25, 155, 126, 0.1);
+  margin-bottom: 18px;
+  z-index: 2;
+  letter-spacing: 0.5px;
+  /* Optional: border for contrast */
+  border-left: 5px solid #43e97b;
+  border-bottom: 2px solid #199b7e;
+}
+
+// Scroll reveal animation for food cards
+.food-card-reveal {
+  opacity: 0;
+  transform: translateY(40px) scale(0.96);
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.food-card-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}

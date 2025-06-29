@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import useScrollReveal from "../../hooks/useScrollReveal";
 import { useParams, useNavigate } from "react-router-dom";
 import FoodSidebar from "./FoodSidebar";
 import FoodGrid from "./FoodGrid";
+import { Breadcrumb } from "antd";
 import "../../assets/styles/pages/FoodListPage.scss";
 import LoadingPage from "../../components/Skeleton/LoadingPage";
 import {
@@ -59,88 +61,129 @@ const FoodListPage = () => {
     fetchCategoryData();
   }, [slug]);
 
-  const breadcrumbs = [{ name: "Trang chủ", path: "/" }, ...categoryNameChain];
+  // Breadcrumbs: Nếu đang ở trang thực đơn gốc, hiển thị "Thực đơn" thay vì chỉ "Trang chủ"
+  // Đường dẫn đúng cho trang thực đơn là "/mon-an"
+  const breadcrumbs =
+    slug || isBestSellerPage
+      ? [
+          { name: "Trang chủ", path: "/" },
+          { name: "Món ăn", path: "/mon-an" },
+          ...categoryNameChain,
+        ]
+      : [
+          { name: "Trang chủ", path: "/" },
+          { name: "Món ăn", path: "/mon-an" },
+        ];
+
+  // Scroll reveal effect for main title and child categories
+  const h2Ref = useRef();
+  const childCatRefs = useRef([]);
+  useScrollReveal(h2Ref);
+  useScrollReveal(childCatRefs);
 
   return (
-    <div className="food-list-page-container">
-      <nav className="breadcrumb">
-        {breadcrumbs.map((crumb, index) => (
-          <span key={index}>
-            <a
-              href={crumb.path}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(crumb.path);
+    <div className="relative overflow-hidden">
+      {/* Hiệu ứng blob nền */}
+      <div className="bg-blob bg-blob-1 pointer-events-none select-none"></div>
+      <div className="bg-blob bg-blob-2 pointer-events-none select-none"></div>
+      <div className="bg-blob bg-blob-3 pointer-events-none select-none"></div>
+      <div className="bg-blob bg-blob-4 pointer-events-none select-none"></div>
+      <div className="bg-blob bg-blob-5 pointer-events-none select-none"></div>
+      <div className="bg-blob bg-blob-6 pointer-events-none select-none"></div>
+      <div className="food-list-page-container">
+        <div className="food-list-page">
+          {/* Sidebar trên desktop */}
+          <aside className="sidebar-menu-foods hidden lg:block">
+            <FoodSidebar
+              onSelectCategory={(id) => {
+                if (id) navigate(`/mon-an/${id}`);
+                else navigate(`/mon-an`);
               }}
-              style={{
-                color: "#007bff",
-                textDecoration: "underline",
-                cursor: "pointer",
-              }}>
-              {crumb.name}
-            </a>
-            {index < breadcrumbs.length - 1 && " > "}
-          </span>
-        ))}
-      </nav>
-      <div className="food-list-page">
-        {/* Sidebar trên desktop */}
-        <aside className="sidebar-menu-foods hidden lg:block">
-          <FoodSidebar
-            onSelectCategory={(id) => {
-              if (id) navigate(`/mon-an/${id}`);
-              else navigate(`/mon-an`);
-            }}
-          />
-        </aside>
-
-        {/* Sidebar trên mobile (dropdown) */}
-        <div className="block lg:hidden">
-          <FoodSidebarMobileWrapper
-            onSelectCategory={(id) => {
-              if (id) navigate(`/mon-an/${id}`);
-              else navigate(`/mon-an`);
-            }}
-          />
-        </div>
-
-        <main className="main-content mt-[80px] md:mt-0">
-          {categoryError ? (
-            <h2 className="title-food-grid title-error">Không tìm thấy danh mục "{slug}"</h2>
-          ) : (
-            <>
-              <h2 className="title-food-grid">
-                {isBestSellerPage
-                  ? "Danh mục BEST SELLER"
-                  : categoryNameChain?.length > 0 &&
-                    categoryNameChain[categoryNameChain.length - 1]?.name
-                  ? `Danh mục ${categoryNameChain[categoryNameChain.length - 1].name}`
-                  : "Tất cả các món"}
-              </h2>
-
-              {isBestSellerPage ? (
-                <FoodGrid filterType="best-seller" />
-              ) : isLoadedChildren ? (
-                childCategories.length > 0 ? (
-                  <div className="child-category-list">
-                    {childCategories.map((child) => (
-                      <div
-                        key={child.slug}
-                        onClick={() => navigate(`/mon-an/${child.slug}`)}
-                        className="child-category-item">
-                        {child.name}
-                      </div>
-                    ))}
-                  </div>
+            />
+          </aside>
+          {/* Sidebar trên mobile (dropdown) */}
+          <div className="block lg:hidden">
+            <FoodSidebarMobileWrapper
+              onSelectCategory={(id) => {
+                if (id) navigate(`/mon-an/${id}`);
+                else navigate(`/mon-an`);
+              }}
+            />
+          </div>
+          <main className="main-content mt-[80px] md:mt-0">
+            {categoryError ? (
+              <h2 className="title-food-grid title-error">Không tìm thấy danh mục "{slug}"</h2>
+            ) : (
+              <>
+                <div
+                  className="breadcrumb-wrapper mb-6 rounded-lg shadow-sm"
+                  style={{
+                    background: "rgba(255,255,255,0.85)",
+                    alignItems: "left",
+                    minHeight: 48,
+                    border: "1px solid #e5e7eb",
+                  }}>
+                  <Breadcrumb
+                    className="breadcrumb"
+                    separator={<span style={{ color: "#bdbdbd", fontWeight: 400 }}>/</span>}
+                    items={breadcrumbs.map((crumb, index) => ({
+                      title:
+                        crumb.path && index !== breadcrumbs.length - 1 ? (
+                          <a
+                            href={crumb.path}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(crumb.path);
+                            }}
+                            style={{
+                              color: "#1976d2",
+                              textDecoration: "none",
+                              fontWeight: 500,
+                              transition: "color 0.2s",
+                            }}
+                            onMouseOver={(e) => (e.target.style.color = "#1565c0")}
+                            onMouseOut={(e) => (e.target.style.color = "#1976d2")}>
+                            {crumb.name}
+                          </a>
+                        ) : (
+                          <span style={{ color: "#222", fontWeight: 600 }}>{crumb.name}</span>
+                        ),
+                    }))}
+                  />
+                </div>
+                <h2 className="scroll-reveal title-food-grid" ref={h2Ref}>
+                  {isBestSellerPage
+                    ? "Danh mục BEST SELLER"
+                    : categoryNameChain?.length > 0 &&
+                      categoryNameChain[categoryNameChain.length - 1]?.name
+                    ? `Danh mục ${categoryNameChain[categoryNameChain.length - 1].name}`
+                    : "Tất cả các món"}
+                </h2>
+                {isBestSellerPage ? (
+                  <FoodGrid filterType="best-seller" categoryNameChain={categoryNameChain} />
+                ) : isLoadedChildren ? (
+                  childCategories.length > 0 ? (
+                    <div className="child-category-list">
+                      {childCategories.map((child, idx) => (
+                        <div
+                          key={child.slug}
+                          onClick={() => navigate(`/mon-an/${child.slug}`)}
+                          className="scroll-reveal child-category-item"
+                          ref={(el) => (childCatRefs.current[idx] = el)}>
+                          {child.name}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <FoodGrid slug={slug} categoryNameChain={categoryNameChain} />
+                  )
                 ) : (
-                  <FoodGrid slug={slug} />
-                )
-              ) : (
-                <LoadingPage />
-              )}
-            </>
-          )}
-        </main>
+                  <LoadingPage />
+                )}
+              </>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );

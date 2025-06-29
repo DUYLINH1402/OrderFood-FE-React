@@ -3,17 +3,14 @@
 // Tạo breadcrumbs cho trang
 .breadcrumb {
   position: relative;
-  margin: 0 auto;
-  margin-top: 50px;
-  padding-left: 80px;
-  font-size: 1.6rem;
+  padding: 10px 20px;
+  font-size: 16px;
   color: #555;
-  max-width: 1170px;
   z-index: 100;
+  background-color: transparent;
   a {
     color: #007bff;
     text-decoration: none;
-    margin-right: 10px;
     &:hover {
       text-decoration: underline;
     }
@@ -29,13 +26,12 @@
 }
 .food-list-page {
   margin: 0 auto;
-  margin-top: 5px;
   display: flex;
   flex-direction: row;
   min-height: 100vh;
-  padding: 20px 80px;
-  max-width: 1170px;
+  padding: 120px 80px;
   justify-content: center;
+  background: linear-gradient(90deg, #e2e2e2, #b7e5b9);
   .sidebar-menu-foods {
     width: 20%;
     position: relative;
@@ -43,11 +39,13 @@
     background: #fff;
     border-right: 1px solid #e5e5e5;
     z-index: 10;
+    background: transparent;
   }
 
   .main-content {
     width: 80%;
     padding: 1rem;
+    padding-top: 0;
 
     .title-food-grid {
       font-size: 2rem;
@@ -98,8 +96,8 @@
 }
 
 @media (max-width: 1024px) {
-  .breadcrumb {
-    display: none;
+  .breadcrumb-wrapper {
+    display: none !important;
   }
 
   .food-list-page {
