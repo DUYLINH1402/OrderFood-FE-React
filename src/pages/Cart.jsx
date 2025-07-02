@@ -1,5 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import React from "react";
+import useInView from "../hooks/useInView";
 import { useNavigate } from "react-router-dom";
 import "../assets/styles/pages/CartPage.scss";
 import "../assets/styles/main.scss";
@@ -88,57 +89,66 @@ export default function CartPage() {
         ) : (
           <>
             <ul className="divide-y divide-gray-200">
-              {items.map((item) => (
-                <li
-                  key={`${item.foodId}-${item.variantId}`}
-                  className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 py-4">
-                  <div
-                    className="flex sm:items-center w-full cursor-pointer hover:bg-gray-100 transition duration-200 rounded-lg p-2"
-                    onClick={() => navigate(`/mon-an/chi-tiet/${item.slug}`)}>
-                    <LazyImage
-                      src={item.imageUrl}
-                      alt={item.foodName}
-                      className="w-40 h-40 sm:w-40 sm:h-40 object-cover rounded-md border flex-shrink-0"
-                    />
-                    <div className="cart-food-infor ml-3 sm:ml-4 mt-2 sm:mt-0 leading-snug text-sm sm:text-base space-y-1">
-                      <h2 className="font-semibold text-gray-800 text-base sm:text-lg">
-                        {item.foodName}
-                      </h2>
-                      <p className="text-gray-500 text-sm sm:text-base">
-                        Cách chế biến: {item.variant}
-                      </p>
-                      <p className="text-gray-600 text-sm sm:text-base">
-                        Giá: {item.price.toLocaleString()}₫ × {item.quantity}
-                      </p>
+              {items.map((item) => {
+                const [ref, inView] = useInView({ threshold: 0.4 });
+                return (
+                  <li
+                    key={`${item.foodId}-${item.variantId}`}
+                    ref={ref}
+                    style={{
+                      opacity: inView ? 1 : 0,
+                      transform: inView ? "translateY(0)" : "translateY(20px)",
+                      transition: "opacity 0.5s, transform 0.5s",
+                    }}
+                    className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 py-4">
+                    <div
+                      className="flex sm:items-center w-full cursor-pointer hover:bg-gray-100 transition duration-200 rounded-lg p-2"
+                      onClick={() => navigate(`/mon-an/chi-tiet/${item.slug}`)}>
+                      <LazyImage
+                        src={item.imageUrl}
+                        alt={item.foodName}
+                        className="w-40 h-40 sm:w-40 sm:h-40 object-cover rounded-md border flex-shrink-0"
+                      />
+                      <div className="cart-food-infor ml-3 sm:ml-4 mt-2 sm:mt-0 leading-snug text-sm sm:text-base space-y-1">
+                        <h2 className="font-semibold text-gray-800 text-base sm:text-lg">
+                          {item.foodName}
+                        </h2>
+                        <p className="text-gray-500 text-sm sm:text-base">
+                          Cách chế biến: {item.variant}
+                        </p>
+                        <p className="text-gray-600 text-sm sm:text-base">
+                          Giá: {item.price.toLocaleString()}₫ × {item.quantity}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-center">
-                    <button
-                      onClick={() =>
-                        handleUpdateQuantity(item.foodId, item.variantId, item.quantity - 1)
-                      }
-                      disabled={item.quantity <= 1}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50">
-                      −
-                    </button>
-                    <span className="w-8 h-8 flex items-center justify-center border border-transparent text-sm sm:text-base">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() =>
-                        handleUpdateQuantity(item.foodId, item.variantId, item.quantity + 1)
-                      }
-                      className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100">
-                      +
-                    </button>
-                    <button
-                      onClick={() => handleRemoveItem(item.foodId, item.variantId)}
-                      className="text-red-500 hover:underline text-sm sm:text-base">
-                      Xóa
-                    </button>
-                  </div>
-                </li>
-              ))}
+                    <div className="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-center">
+                      <button
+                        onClick={() =>
+                          handleUpdateQuantity(item.foodId, item.variantId, item.quantity - 1)
+                        }
+                        disabled={item.quantity <= 1}
+                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50">
+                        −
+                      </button>
+                      <span className="w-8 h-8 flex items-center justify-center border border-transparent text-sm sm:text-base">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          handleUpdateQuantity(item.foodId, item.variantId, item.quantity + 1)
+                        }
+                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100">
+                        +
+                      </button>
+                      <button
+                        onClick={() => handleRemoveItem(item.foodId, item.variantId)}
+                        className="text-red-500 hover:underline text-sm sm:text-base">
+                        Xóa
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
             <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-base text-gray-800 font-bold mb-2 sm:mb-0 text-center w-full sm:w-auto">

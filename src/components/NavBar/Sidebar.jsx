@@ -40,8 +40,8 @@ const Sidebar = ({ isOpen, onClose }) => {
               TÍCH ĐIỂM - NHẬN QUÀ
             </Link>
           </li>
-          <li>
-            <Link to="#" onClick={onClose}>
+          <li className={isActive("/danh-gia-khach-hang") ? "active" : ""}>
+            <Link to="/danh-gia-khach-hang" onClick={onClose}>
               ĐÁNH GIÁ CỦA KHÁCH HÀNG
             </Link>
           </li>

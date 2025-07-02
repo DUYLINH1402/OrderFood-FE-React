@@ -64,7 +64,7 @@ export default function RelatedFoods({ categoryId, excludeId, categoryName }) {
         className="overflow-hidden transition-all duration-500 ease-in-out"
         style={{ maxHeight: listHeight }}>
         <div ref={listRef} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-          {relatedFoods.map((item) => (
+          {(relatedFoods || []).map((item) => (
             <div
               key={item.id}
               className="related-card cursor-pointer hover:shadow-lg border rounded-xl p-3 transition hover:scale-105"

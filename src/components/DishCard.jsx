@@ -32,9 +32,9 @@ const DishCard = ({
 
   // ✅ Lấy danh sách yêu thích từ Redux
   const favoriteList = useSelector((state) => state.favorite.list);
-  const isFavorite = favoriteList.some(
-    (item) => item.foodId === id && item.variantId === variantId
-  );
+  const isFavorite =
+    Array.isArray(favoriteList) &&
+    favoriteList.some((item) => item.foodId === id && item.variantId === variantId);
 
   const toggleFavorite = async (e) => {
     e.stopPropagation();
@@ -88,7 +88,7 @@ const DishCard = ({
         {token && variants?.length === 0 && (
           <button
             onClick={toggleFavorite}
-            className="favorite-icon absolute w-9 h-9 flex items-center justify-center rounded-full shadow border border-red-300 bg-white/90 backdrop-blur-sm hover:scale-110 transition z-10"
+            className="favorite-icon absolute w-15 h-15 flex items-center justify-center rounded-full shadow border border-red-300 bg-white/90 backdrop-blur-sm hover:scale-110 transition z-10"
             title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}>
             <i
               className={

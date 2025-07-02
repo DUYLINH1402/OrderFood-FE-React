@@ -20,7 +20,7 @@ const RewardPointsIntro = () => {
   };
 
   return (
-    <div className="wrap-page" style={{ position: "relative", overflow: "hidden" }}>
+    <div className="wrap-page px-8 sm:px-8" style={{ position: "relative", overflow: "hidden" }}>
       {/* Blob background elements, always at bottom, never break layout */}
       <div className="bg-blob bg-blob-1" />
       <div className="bg-blob bg-blob-2" />

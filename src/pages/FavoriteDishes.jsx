@@ -1,10 +1,59 @@
 import React, { useEffect, useState } from "react";
+import useInView from "../hooks/useInView";
 import { Link, useNavigate } from "react-router-dom";
 import { FaHeartBroken } from "react-icons/fa";
 import { getFavorites, removeFromFavorites } from "../services/service/favoriteService";
 import { toast } from "react-toastify";
 import "../assets/styles/main.scss";
 import { SkeletonFood } from "../components/Skeleton/SkeletonFood";
+
+// Component tách riêng cho từng món yêu thích để dùng hook đúng quy tắc
+function FavoriteDishItem({ item, onRemove, navigate }) {
+  const [ref, inView] = useInView({ threshold: 0.4 });
+  return (
+    <li
+      ref={ref}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.5s, transform 0.5s",
+      }}
+      className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 py-4">
+      <div
+        className="flex sm:items-center w-full cursor-pointer hover:bg-gray-100 transition duration-200 rounded-lg p-2"
+        onClick={() => navigate(`/mon-an/chi-tiet/${item.foodSlug}`)}>
+        <img
+          src={item.foodImageUrl}
+          alt={item.foodName}
+          className="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded-md border flex-shrink-0"
+        />
+        <div className="ml-3 sm:ml-4 mt-2 sm:mt-0 leading-snug text-sm sm:text-base space-y-1">
+          <h2 className="font-semibold text-gray-800 text-base sm:text-lg">{item.foodName}</h2>
+          <p className="text-gray-500 text-sm sm:text-base">
+            {item.variantName ? `Cách chế biến: ${item.variantName}` : ""}
+          </p>
+          {item.totalPrice !== undefined && (
+            <p className="text-green-600 font-bold text-sm sm:text-base">
+              Giá: {item.totalPrice.toLocaleString()}₫
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-center">
+        <Link
+          to={`/mon-an/chi-tiet/${item.foodSlug}`}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm sm:text-base whitespace-nowrap">
+          Xem chi tiết
+        </Link>
+        <button
+          onClick={() => onRemove(item.foodId, item.variantId)}
+          className="text-red-500 hover:underline text-sm sm:text-base">
+          Xóa
+        </button>
+      </div>
+    </li>
+  );
+}
 
 const FavoriteDishes = () => {
   const [favorites, setFavorites] = useState([]);
@@ -57,7 +106,7 @@ const FavoriteDishes = () => {
         {loading ? (
           <div className="flex justify-center items-center py-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-3xl">
-              {[...Array(1)].map((_, idx) => (
+              {Array.from({ length: 1 }).map((_, idx) => (
                 <SkeletonFood key={idx} />
               ))}
             </div>
@@ -76,45 +125,13 @@ const FavoriteDishes = () => {
           </div>
         ) : (
           <ul className="divide-y divide-gray-200">
-            {favorites.map((item) => (
-              <li
+            {(favorites || []).map((item) => (
+              <FavoriteDishItem
                 key={`${item.foodId}-${item.variantId}`}
-                className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 py-4">
-                <div
-                  className="flex sm:items-center w-full cursor-pointer hover:bg-gray-100 transition duration-200 rounded-lg p-2"
-                  onClick={() => navigate(`/mon-an/chi-tiet/${item.foodSlug}`)}>
-                  <img
-                    src={item.foodImageUrl}
-                    alt={item.foodName}
-                    className="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded-md border flex-shrink-0"
-                  />
-                  <div className="ml-3 sm:ml-4 mt-2 sm:mt-0 leading-snug text-sm sm:text-base space-y-1">
-                    <h2 className="font-semibold text-gray-800 text-base sm:text-lg">
-                      {item.foodName}
-                    </h2>
-                    <p className="text-gray-500 text-sm sm:text-base">
-                      {item.variantName ? `Cách chế biến: ${item.variantName}` : ""}
-                    </p>
-                    {item.totalPrice !== undefined && (
-                      <p className="text-green-600 font-bold text-sm sm:text-base">
-                        Giá: {item.totalPrice.toLocaleString()}₫
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-center">
-                  <Link
-                    to={`/mon-an/chi-tiet/${item.foodSlug}`}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm sm:text-base whitespace-nowrap">
-                    Xem chi tiết
-                  </Link>
-                  <button
-                    onClick={() => handleRemoveFavorite(item.foodId, item.variantId)}
-                    className="text-red-500 hover:underline text-sm sm:text-base">
-                    Xóa
-                  </button>
-                </div>
-              </li>
+                item={item}
+                onRemove={handleRemoveFavorite}
+                navigate={navigate}
+              />
             ))}
           </ul>
         )}

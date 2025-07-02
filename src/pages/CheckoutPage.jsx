@@ -130,7 +130,7 @@ export default function CheckoutPage() {
             Sản phẩm
           </h2>
           <ul className="divide-y divide-gray-200 mb-0">
-            {checkoutItems.map((item) => (
+            {(checkoutItems || []).map((item) => (
               <li
                 key={`${item.foodId}-${item.variantId}`}
                 className="flex items-start gap-4 md:gap-6 py-4 border-b last:border-b-0">
@@ -200,7 +200,7 @@ export default function CheckoutPage() {
                 <option value="" className="text-gray-400">
                   -- Chọn quận/huyện --
                 </option>
-                {districts.map((d) => (
+                {(districts || []).map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
                   </option>
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
                 <option value="" className="text-gray-400">
                   -- Chọn phường/xã --
                 </option>
-                {wards.map((w) => (
+                {(wards || []).map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name}
                   </option>

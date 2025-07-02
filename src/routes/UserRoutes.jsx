@@ -15,6 +15,7 @@ import FoodDetailPage from "../pages/Foods/FoodDetailPage/FoodDetailPage";
 import FavoriteDishes from "../pages/FavoriteDishes";
 import CheckoutPage from "../pages/Order/CheckoutPage";
 import PaymentResultPage from "../pages/Order/PaymentResultPage";
+import CustomerFeedbacks from "../pages/CustomerFeedbacks";
 
 export const UserRoutes = [
   {
@@ -34,6 +35,7 @@ export const UserRoutes = [
       { path: "/mon-an/chi-tiet/:slug", element: <FoodDetailPage /> },
       { path: "/thanh-toan", element: <CheckoutPage /> },
       { path: "/thanh-toan/ket-qua", element: <PaymentResultPage /> },
+      { path: "/danh-gia-khach-hang", element: <CustomerFeedbacks /> },
     ],
   },
   {

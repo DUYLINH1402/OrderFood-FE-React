@@ -27,7 +27,7 @@ const services = [
 const ServiceHighlights = () => {
   return (
     <div className="service-highlights">
-      {services.map((item, idx) => (
+      {(services || []).map((item, idx) => (
         <div key={idx} className="service-highlights__item">
           <img src={item.icon} alt={item.label} />
           <span>{item.label}</span>

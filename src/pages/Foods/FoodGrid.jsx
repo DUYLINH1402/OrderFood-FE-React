@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import DishCard from "../../components/DishCard";
 import {
   getAllFoods,
@@ -7,19 +7,41 @@ import {
 } from "../../services/service/foodService";
 import { SkeletonFood } from "../../components/Skeleton/SkeletonFood";
 import "../../assets/styles/pages/FoodGrid.scss";
-import { Breadcrumb } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import useInView from "../../hooks/useInView";
+
+// Component cho từng item để dùng hook đúng quy tắc
+function FoodGridItem({ food }) {
+  const [ref, inView] = useInView({ threshold: 0.4 });
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.5s, transform 0.5s",
+      }}>
+      <DishCard
+        id={food.id}
+        slug={food.slug}
+        foodName={food.name}
+        price={food.price}
+        imageUrl={food.imageUrl}
+        isNew={food.isNew}
+        isFeatured={food.isFeatured}
+        isBestSeller={food.isBestSeller}
+      />
+    </div>
+  );
+}
 
 const FoodGrid = ({ slug, categoryNameChain = [] }) => {
   const [foods, setFoods] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)
-  const pageSize = 12;
+  const pageSize = 24;
   const navigate = useNavigate();
-
-  // Breadcrumbs logic
-  const breadcrumbs = [{ name: "Trang chủ", path: "/" }, ...(categoryNameChain || [])];
 
   useEffect(() => {
     setPage(0); // reset page khi đổi danh mục
@@ -65,23 +87,10 @@ const FoodGrid = ({ slug, categoryNameChain = [] }) => {
 
   return (
     <div className="food-grid-container">
-      {/* Breadcrumb đã được chuyển lên FoodListPage, không render ở đây nữa */}
       <div className="food-grid">
         {isLoading
-          ? [...Array(pageSize)].map((_, idx) => <SkeletonFood key={idx} />)
-          : foods.map((food) => (
-              <DishCard
-                key={food.id}
-                id={food.id}
-                slug={food.slug}
-                foodName={food.name}
-                price={food.price}
-                imageUrl={food.imageUrl}
-                isNew={food.isNew}
-                isFeatured={food.isFeatured}
-                isBestSeller={food.isBestSeller}
-              />
-            ))}
+          ? Array.from({ length: pageSize }).map((_, idx) => <SkeletonFood key={idx} />)
+          : (foods || []).map((food) => <FoodGridItem key={food.id} food={food} />)}
       </div>
       <div className="pagination sm:text-base">
         <button onClick={() => handlePageChange(0)} disabled={page === 0}>
@@ -102,7 +111,7 @@ const FoodGrid = ({ slug, categoryNameChain = [] }) => {
             start = Math.max(0, end - maxVisible);
           }
 
-          return [...Array(totalPages)].map((_, i) => {
+          return Array.from({ length: totalPages }).map((_, i) => {
             if (i < start || i >= end) return null;
             return (
               <button

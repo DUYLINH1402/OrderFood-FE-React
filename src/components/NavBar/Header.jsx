@@ -11,8 +11,8 @@ import { logout } from "../../store/slices/authSlice";
 import { clearCart } from "../../store/slices/cartSlice";
 const Header = () => {
   const cartItems = useSelector((state) => state.cart.items);
-  const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // const [showHeader, setShowHeader] = useState(true);
+  // const [lastScrollY, setLastScrollY] = useState(0);
   const authUser = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -30,30 +30,16 @@ const Header = () => {
     }
   }, [isSearchExpanded]);
 
-  // Ẩn hiện header khi scroll
-  const handleScroll = () => {
-    const currentScrollY = window.scrollY;
+  // Bỏ chức năng ẩn hiện header khi scroll
 
-    const scrollDownEnough = currentScrollY - lastScrollY > 20; // lăn xuống nhanh
-    const scrollUpEnough = lastScrollY - currentScrollY > 10; // lăn lên rõ rệt
-
-    if (currentScrollY <= 0 || scrollUpEnough) {
-      setShowHeader(true);
-    } else if (scrollDownEnough) {
-      setShowHeader(false);
-    }
-
-    setLastScrollY(currentScrollY);
-  };
-
-  useEffect(() => {
-    window.forceShowHeader = () => setShowHeader(true);
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  // useEffect(() => {
+  //   window.forceShowHeader = () => setShowHeader(true);
+  // }, []);
+  //
+  // useEffect(() => {
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, [lastScrollY]);
 
   // Click ngoài avatar dropdown thì tự đóng
   useEffect(() => {
@@ -86,13 +72,13 @@ const Header = () => {
   }, [dropdownOpen]);
   // console.log("User:", authUser);
   return (
-    <header className={`header ${showHeader ? "visible" : "hidden"}`}>
+    <header className="header ">
       <div className="header__left">
         <Link to="/" className="header__logo">
           <LazyImage src={logo} alt="Đồng Xanh" width={70} />
         </Link>
       </div>
-
+      <div className="header__center"></div>
       <div className="header__right">
         <div className="header__search p-3 cursor-pointer relative">
           <SearchBar setIsSearchExpanded={setIsSearchExpanded} />

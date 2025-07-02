@@ -123,7 +123,7 @@ const HorizontalScrollSection = ({ items, renderItem }) => {
           ref={scrollRef}
           className="flex overflow-x-auto no-scrollbar pb-2 scroll-smooth gap-6 px-14"
           style={{ scrollbarWidth: "none" }}>
-          {items.map((item, index) => (
+          {(items || []).map((item, index) => (
             <div key={index} className="flex-shrink-0 w-[300px]">
               {renderItem(item)}
             </div>

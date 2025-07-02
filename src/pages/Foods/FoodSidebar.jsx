@@ -49,7 +49,7 @@ const FoodSidebar = ({ onSelectCategory }) => {
             <LoadingIcon size="22px" />
           </li>
         ) : (
-          categories.map((cat) => (
+          (categories || []).map((cat) => (
             <React.Fragment key={cat.slug}>
               <li className="mb-1">
                 <button
@@ -106,7 +106,7 @@ const FoodSidebar = ({ onSelectCategory }) => {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}>
-                    {childrenMap[cat.slug].map((child) => (
+                    {(childrenMap[cat.slug] || []).map((child) => (
                       <li key={child.slug} className="mb-1">
                         <button
                           onClick={() => {

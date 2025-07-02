@@ -41,7 +41,7 @@ const SearchBar = ({ onSearch, placeholder, setIsSearchExpanded }) => {
       className={`p-3 overflow-hidden
         ${isExpanded ? "w-[270px]" : "w-[30px] md:w-[40px]"}
         h-[30px] md:h-[40px]
-        bg-[#279736] shadow-[2px_2px_20px_rgba(0,0,0,0.08)] 
+        bg-[#199b7e] shadow-[2px_2px_20px_rgba(0,0,0,0.08)] 
         rounded-full flex group items-center transition-all duration-1000 ease-in-out`}
       onMouseEnter={() => {
         if (!isMobile) handleExpand();

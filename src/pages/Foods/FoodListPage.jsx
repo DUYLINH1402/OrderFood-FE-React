@@ -126,7 +126,7 @@ const FoodListPage = () => {
                   <Breadcrumb
                     className="breadcrumb"
                     separator={<span style={{ color: "#bdbdbd", fontWeight: 400 }}>/</span>}
-                    items={breadcrumbs.map((crumb, index) => ({
+                    items={(breadcrumbs || []).map((crumb, index) => ({
                       title:
                         crumb.path && index !== breadcrumbs.length - 1 ? (
                           <a
@@ -164,7 +164,7 @@ const FoodListPage = () => {
                 ) : isLoadedChildren ? (
                   childCategories.length > 0 ? (
                     <div className="child-category-list">
-                      {childCategories.map((child, idx) => (
+                      {(childCategories || []).map((child, idx) => (
                         <div
                           key={child.slug}
                           onClick={() => navigate(`/mon-an/${child.slug}`)}

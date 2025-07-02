@@ -26,9 +26,9 @@ export default function FoodDetailPage() {
   const token = getToken();
 
   const favoriteList = useSelector((state) => state.favorite.list);
-  const isFavorite = favoriteList?.some(
-    (item) => item.foodId === food?.id && item.variantId === selectedVariantId
-  );
+  const isFavorite =
+    Array.isArray(favoriteList) &&
+    favoriteList.some((item) => item.foodId === food?.id && item.variantId === selectedVariantId);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -149,7 +149,7 @@ export default function FoodDetailPage() {
 
           {food.images?.length > 1 && (
             <div className="flex gap-3 mt-4 flex-wrap justify-center">
-              {food.images.map((img, idx) => (
+              {(food.images || []).map((img, idx) => (
                 <img
                   key={idx}
                   src={img}
@@ -196,7 +196,7 @@ export default function FoodDetailPage() {
             <div className="mb-5">
               <h2 className="font-semibold  mb-2">Các biến thể khác:</h2>
               <div className="flex flex-wrap gap-3 ">
-                {food.variants.map((v, idx) => (
+                {(food.variants || []).map((v, idx) => (
                   <button
                     key={idx}
                     onClick={() => {
