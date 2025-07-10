@@ -1,51 +1,28 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-import axios from "axios";
+import apiClient from "../apiClient";
 
 export const syncCartFromSQL = async (cartItems, token) => {
-  return axios.post(`${BASE_URL}/api/cart/sync`, cartItems, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  return apiClient.post("/api/cart/sync", cartItems);
 };
 
 export const getUserCartFromSQL = async (token) => {
-  const res = await axios.get(`${BASE_URL}/api/cart`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const res = await apiClient.get("/api/cart");
   return res.data;
 };
 
 export const addToCartFromSQL = async (cartItem, token) => {
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  return await axios.post(`${BASE_URL}/api/cart/add`, cartItem, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  return await apiClient.post("/api/cart/add", cartItem);
 };
 
 export const updateCartFromSQL = async (foodId, variantId, quantity, token) => {
-  return axios.post(
-    `${BASE_URL}/api/cart/update`,
-    { foodId, variantId, quantity },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+  return apiClient.post("/api/cart/update", { foodId, variantId, quantity });
 };
 
 export const removeFromCartSQL = async (foodId, variantId, token) => {
-  return axios.delete(`${BASE_URL}/api/cart/remove`, {
+  return apiClient.delete("/api/cart/remove", {
     params: { foodId, variantId },
-    headers: { Authorization: `Bearer ${token}` },
   });
 };
 
 export const clearCartFromSQL = async (token) => {
-  return axios.delete(`${BASE_URL}/api/cart/clear`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return apiClient.delete("/api/cart/clear");
 };

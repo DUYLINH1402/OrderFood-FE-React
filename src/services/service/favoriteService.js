@@ -5,16 +5,16 @@ import {} from "../api/categoriesApi.js";
 import { getFavoritesApi, addToFavoritesApi, removeFromFavoritesApi } from "../api/favoriteApi";
 
 // [GET]
-export const getFavorites = async (token) => {
-  return useFirebase ? [] : await getFavoritesApi(token);
+export const getFavorites = async () => {
+  return useFirebase ? [] : await getFavoritesApi();
 };
 
 // [POST]
-export const addToFavorites = async (foodId, variantId, token) => {
-  return useFirebase ? null : await addToFavoritesApi(foodId, variantId, token);
+export const addToFavorites = async (foodId, variantId) => {
+  return useFirebase ? null : await addToFavoritesApi(foodId, variantId);
 };
 
 // [DELETE]
-export const removeFromFavorites = async (foodId, variantId, token) => {
-  return useFirebase ? null : await removeFromFavoritesApi(foodId, variantId, token);
+export const removeFromFavorites = async (foodId, variantId) => {
+  return useFirebase ? null : await removeFromFavoritesApi(foodId, variantId);
 };

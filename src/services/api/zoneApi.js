@@ -1,16 +1,13 @@
-import axios from "axios";
+import { publicClient } from "../apiClient";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-// LẤY DANH SÁCH QUẬN/HUYỆN
+// LẤY DANH SÁCH QUẬN/HUYỆN - API công khai
 export const getDistrictsFromSQL = async () => {
-  const response = await axios.get(`${BASE_URL}/api/districts`);
-  //   console.log("Districts response:", response.data);
+  const response = await publicClient.get("/api/districts");
   return response.data;
 };
 
-// LẤY DANH SÁCH PHƯỜNG/XÃ THEO QUẬN/HUYỆN
+// LẤY DANH SÁCH PHƯỜNG/XÃ THEO QUẬN/HUYỆN - API công khai
 export const getWardsByDistrictFromSQL = async (districtId) => {
-  const response = await axios.get(`${BASE_URL}/api/wards/by-district/${districtId}`);
+  const response = await publicClient.get(`/api/wards/by-district/${districtId}`);
   return response.data;
 };

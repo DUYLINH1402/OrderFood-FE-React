@@ -17,6 +17,12 @@ export const mapLoginError = (errorCode) => {
     case "USER_LOCKED":
       return { login: "Tài khoản đã bị khóa" };
 
+    case "JWT_TOKEN_EXPIRED":
+      return { general: "Phiên đăng nhập đã hết hạn" };
+
+    case "JWT_TOKEN_INVALID":
+      return { general: "Token không hợp lệ" };
+
     default:
       return { general: errorCode }; // fallback: hiển thị lỗi raw nếu không match
   }
@@ -53,6 +59,8 @@ export const mapAuthError = (type, errorCode) => {
       USER_NOT_FOUND: { login: "Tài khoản không tồn tại" },
       EMAIL_NOT_VERIFIED: { login: "Tài khoản chưa được kích hoạt" },
       USER_LOCKED: { login: "Tài khoản đã bị khóa" },
+      JWT_TOKEN_EXPIRED: { general: "Phiên đăng nhập đã hết hạn" },
+      JWT_TOKEN_INVALID: { general: "Token không hợp lệ" },
       TOO_MANY_REQUESTS_RESEND_VERIFICATION: {
         login: "Yêu cầu quá 3 lần. Vui lòng thử lại sau",
       },

@@ -75,7 +75,7 @@ const Header = () => {
     <header className="header ">
       <div className="header__left">
         <Link to="/" className="header__logo">
-          <LazyImage src={logo} alt="Đồng Xanh" width={70} />
+          <LazyImage src={logo} alt="Đồng Xanh" width={60} />
         </Link>
       </div>
       <div className="header__center"></div>

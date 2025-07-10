@@ -8,19 +8,12 @@ import {
 import { SkeletonFood } from "../../components/Skeleton/SkeletonFood";
 import "../../assets/styles/pages/FoodGrid.scss";
 import { useNavigate } from "react-router-dom";
-import useInView from "../../hooks/useInView";
+import ScrollRevealContainer from "../../components/ScrollRevealContainer";
 
-// Component cho từng item để dùng hook đúng quy tắc
-function FoodGridItem({ food }) {
-  const [ref, inView] = useInView({ threshold: 0.4 });
+// Component cho từng item với scroll reveal animation
+function FoodGridItem({ food, index = 0 }) {
   return (
-    <div
-      ref={ref}
-      style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? "translateY(0)" : "translateY(20px)",
-        transition: "opacity 0.5s, transform 0.5s",
-      }}>
+    <ScrollRevealContainer index={index}>
       <DishCard
         id={food.id}
         slug={food.slug}
@@ -30,8 +23,9 @@ function FoodGridItem({ food }) {
         isNew={food.isNew}
         isFeatured={food.isFeatured}
         isBestSeller={food.isBestSeller}
+        variants={food.variants}
       />
-    </div>
+    </ScrollRevealContainer>
   );
 }
 
@@ -90,7 +84,9 @@ const FoodGrid = ({ slug, categoryNameChain = [] }) => {
       <div className="food-grid">
         {isLoading
           ? Array.from({ length: pageSize }).map((_, idx) => <SkeletonFood key={idx} />)
-          : (foods || []).map((food) => <FoodGridItem key={food.id} food={food} />)}
+          : (foods || []).map((food, index) => (
+              <FoodGridItem key={food.id} food={food} index={index} />
+            ))}
       </div>
       <div className="pagination sm:text-base">
         <button onClick={() => handlePageChange(0)} disabled={page === 0}>

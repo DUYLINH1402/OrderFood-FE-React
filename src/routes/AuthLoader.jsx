@@ -16,19 +16,23 @@ export default function AuthLoader({ children }) {
         const user = JSON.parse(userStr);
         dispatch(loginSuccess({ accessToken: token, user }));
 
-        //  Gọi API lấy danh sách yêu thích
+        //  Gọi API lấy danh sách yêu thích - sử dụng apiClient
         const fetchFavorites = async () => {
           try {
-            const res = await getFavorites(token);
+            const res = await getFavorites(); // Không cần truyền token nữa
             dispatch(setFavorites(res.data));
           } catch (err) {
             console.error("Lỗi khi load favorites:", err);
+            // Nếu lỗi JWT, apiClient sẽ tự xử lý logout
           }
         };
 
         fetchFavorites();
       } catch (err) {
         console.error("Lỗi parse user từ localStorage:", err);
+        // Clear invalid data
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
       }
     }
   }, []);

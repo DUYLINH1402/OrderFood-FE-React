@@ -29,7 +29,7 @@ const DongXanhIntro = () => {
       <div className="bg-blob bg-blob-5" />
       <div className="bg-blob bg-blob-6" />
       <div
-        className="scroll-reveal glass-box max-w-6xl mx-auto p-4 sm:p-10 my-[100px] mx-[10px] sm:mx-[30px] sm:px-6 md:px-16 text-justify"
+        className="scroll-reveal glass-box max-w-6xl mx-auto p-4 sm:p-10 mx-[10px] sm:mx-[30px] sm:px-6 md:px-16 text-justify"
         ref={boxRef}
         style={{ position: "relative", zIndex: 1, padding: "30px" }}>
         <h2

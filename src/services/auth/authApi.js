@@ -1,62 +1,51 @@
-import axios from "axios";
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { publicClient } from "../apiClient";
 
 export const getToken = () => {
   const token = localStorage.getItem("accessToken");
   return token || null;
 };
 
-// API Login
+// API Login - dùng publicClient vì chưa có token
 export const loginApi = async (loginData) => {
-  const response = await fetch(`${BASE_URL}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(loginData),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Login failed");
+  try {
+    const response = await publicClient.post("/api/auth/login", loginData);
+    return response.data;
+  } catch (error) {
+    const errorCode =
+      error.response?.data?.errorCode || error.response?.data?.message || "Login failed";
+    throw new Error(errorCode);
   }
-
-  return await response.json(); // trả về token hoặc user info
 };
 
-// API Register
+// API Register - dùng publicClient vì chưa có token
 export const registerApi = async (registerData) => {
-  const response = await fetch(`${BASE_URL}/api/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(registerData),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Register failed");
+  try {
+    const response = await publicClient.post("/api/auth/register", registerData);
+    return response.data;
+  } catch (error) {
+    const errorCode =
+      error.response?.data?.errorCode || error.response?.data?.message || "Register failed";
+    throw new Error(errorCode);
   }
-
-  return await response.json();
 };
 
-// API ForgotPassword Password (nhập email để gửi email reset mật khẩu)
+// API ForgotPassword Password - dùng publicClient vì chưa cần đăng nhập
 export const sendForgotPasswordEmailApi = async (email) => {
-  const res = await axios.post(`${BASE_URL}/api/auth/forgot-password`, { email });
+  const res = await publicClient.post("/api/auth/forgot-password", { email });
   return res.data;
 };
 
-// API Đặt lại mật khẩu mới
+// API Đặt lại mật khẩu mới - dùng publicClient vì reset bằng token trong email
 export const resetPasswordApi = async ({ token, newPassword }) => {
-  const res = await axios.post(`${BASE_URL}/api/auth/reset-password`, {
+  const res = await publicClient.post("/api/auth/reset-password", {
     token,
     newPassword,
   });
   return res.data;
 };
 
-// API Resend verification email
-// (gửi lại email kích hoạt tài khoản)
+// API Resend verification email - dùng publicClient
 export const resendVerificationEmailApi = async (email) => {
-  const res = await axios.post(`${BASE_URL}/api/auth/resend-verification`, { email });
+  const res = await publicClient.post("/api/auth/resend-verification", { email });
   return res.data;
 };

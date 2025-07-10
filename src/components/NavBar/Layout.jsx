@@ -1,14 +1,21 @@
 import React, { useState } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import "../../assets/styles/components/Layout.scss";
 import Footer from "./Footer";
 import Header from "./Header";
 import { FontAwesomeIcon, faBars } from "../../utils/icons";
 import Sidebar from "./Sidebar";
 import ScrollToTop from "../../utils/ScrollToTop";
+import GuideModal from "../GuideModal/GuideModal";
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Kiểm tra có phải trang checkout không
+  const isCheckoutPage =
+    location.pathname.includes("/checkout") || location.pathname.includes("/thanh-toan");
+
   return (
     <div className="layout min-h-screen flex flex-col">
       <ScrollToTop />
@@ -32,6 +39,9 @@ const Layout = () => {
       <footer className="layout__footer">
         <Footer />
       </footer>
+
+      {/* GuideModal luôn hiển thị FAB, chỉ auto-open ở checkout */}
+      <GuideModal autoOpen={isCheckoutPage} />
     </div>
   );
 };

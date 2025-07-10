@@ -1,0 +1,36 @@
+// Chỉ giữ lại animation, phần còn lại sẽ dùng Tailwind CSS
+.modalShrink {
+  animation: shrink-to-corner 0.5s forwards; /* Áp dụng animation thu nhỏ */
+}
+
+.modalExpand {
+  animation: expand-from-corner 0.5s forwards; /* Áp dụng animation phóng to */
+}
+
+/* Animation thu nhỏ từ kích thước đầy đủ về góc */
+@keyframes shrink-to-corner {
+  from {
+    transform: scale(1); /* Kích thước ban đầu */
+    opacity: 1; /* Độ trong suốt ban đầu */
+    transform-origin: center; /* Gốc tọa độ ở trung tâm */
+  }
+  to {
+    transform: scale(0.8) translate(-50vw, 50vh); /* Thu nhỏ và di chuyển về góc dưới bên trái */
+    opacity: 0;
+    transform-origin: bottom left; /* Gốc tọa độ ở góc dưới bên trái */
+  }
+}
+
+/* Animation phóng to từ góc trở về kích thước đầy đủ */
+@keyframes expand-from-corner {
+  from {
+    transform: scale(0.8) translate(-50vw, 50vh); /* Kích thước nhỏ và ở góc dưới bên trái */
+    opacity: 0; /* Bắt đầu với độ trong suốt */
+    transform-origin: bottom left; /* Gốc tọa độ ở góc dưới bên trái */
+  }
+  to {
+    transform: scale(1); /* Phóng to về kích thước đầy đủ */
+    opacity: 1;
+    transform-origin: center; /* Gốc tọa độ trở về trung tâm */
+  }
+}

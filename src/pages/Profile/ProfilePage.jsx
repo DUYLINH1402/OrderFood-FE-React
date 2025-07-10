@@ -12,7 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { ProfileTab } from "./ProfileTab";
 import ChangePasswordTab from "./ChangePasswordTab";
-import ResetPasswordPage from "../../components/ResetPasswordPage";
+import ResetPasswordPage from "../ResetPasswordPage";
 import { Navigate } from "react-router-dom";
 
 const tabs = [
@@ -138,7 +138,6 @@ export default function ProfilePage() {
           <>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Liên hệ / Hỗ trợ</h3>
             <p>Form gửi yêu cầu hỗ trợ, khiếu nại, góp ý,...</p>
-            <ResetPasswordPage />
           </>
         )}
       </div>

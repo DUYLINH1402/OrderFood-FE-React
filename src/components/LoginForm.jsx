@@ -76,12 +76,11 @@ export default function LoginRegisterForm() {
       // Đồng bộ giỏ hàng nếu có
       const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
       if (cartItems.length > 0) {
-        await syncCart(cartItems, data.token);
+        await syncCart(cartItems);
       }
       // Lấy lại cart từ backend và cập nhật Redux
-      const serverCart = await getUserCart(data.token);
+      const serverCart = await getUserCart();
       dispatch(setCartItems(serverCart));
-      console.log("Giỏ hàng đã đồng bộ từ BE:", serverCart);
 
       // Đăng nhập thành công → chuyển về trang chủ
       navigate("/");

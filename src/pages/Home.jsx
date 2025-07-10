@@ -1,15 +1,19 @@
 import React, { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import useScrollReveal from "../hooks/useScrollReveal";
 import NewDishesSection from "../components/NewDishesSection";
 import FeaturedDishesSection from "../components/FeaturedDishesSection";
 import FavoriteDishesSection from "../components/FavoriteDishesSection";
 import NewsSection from "../components/NewsSection";
-import CustomerReviews from "../components/CustomerReviews";
+import TailwindGallery from "../components/FeedbacksGallery";
 import LazyImage from "../components/LazyImage";
 import "../assets/styles/pages/Home.scss";
 import ServiceHighlights from "../components/ServiceHighlights";
+import Ribbons from "../components/Ribbons/Ribbons";
+import FeedbacksGallery from "../components/FeedbacksGallery";
 
 const Home = () => {
+  const navigate = useNavigate();
   const highlightRefs = useRef([]);
   useScrollReveal(highlightRefs);
   const sectionRefs = useRef([]);
@@ -25,7 +29,23 @@ const Home = () => {
   const getDelayStyle = (idx, base = 0.12) => ({ transitionDelay: `${base * idx}s` });
 
   return (
-    <div className="wrap-page home" style={{ position: "relative", overflow: "hidden" }}>
+    <div className=" home pt-36" style={{ position: "relative", overflow: "hidden" }}>
+      {/* <div style={{ height: "500px", position: "relative", overflow: "hidden" }}>
+        <Ribbons
+          colors={["#199b7e"]}
+          baseSpring={0.03}
+          baseFriction={0.9}
+          baseThickness={4}
+          offsetFactor={0.05}
+          maxAge={500}
+          pointCount={50}
+          speedMultiplier={0.45}
+          enableFade={true}
+          enableShaderEffect={true}
+          effectAmplitude={3}
+          backgroundColor={[0, 0, 0, 0]}
+        />
+      </div> */}
       {/* Blob background elements */}
       <div className="bg-blob bg-blob-1" />
       <div className="bg-blob bg-blob-2" />
@@ -157,7 +177,10 @@ const Home = () => {
             style={getDelayStyle(8, 0.12)}>
             Đánh giá khách hàng
           </h2>
-          <CustomerReviews />
+          <FeedbacksGallery
+            onViewMore={() => navigate("/danh-gia-khach-hang")}
+            showViewMoreButton={true}
+          />
         </div>
         <div className="block sm:hidden">
           <h2
@@ -166,7 +189,10 @@ const Home = () => {
             style={getDelayStyle(9, 0.12)}>
             Đánh giá khách hàng
           </h2>
-          <CustomerReviews />
+          <FeedbacksGallery
+            onViewMore={() => navigate("/danh-gia-khach-hang")}
+            showViewMoreButton={true}
+          />
         </div>
       </section>
     </div>

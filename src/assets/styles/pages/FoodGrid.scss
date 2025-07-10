@@ -1,8 +1,33 @@
 @import "../base/variables";
+@import "../main.scss"; // Import để có scroll-reveal styles
 .food-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
+
+  // Mobile: Luôn hiển thị 2 cột
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem; // Giảm gap cho mobile
+  }
+
+  // Tablet nhỏ: 3 cột với minmax nhỏ hơn
+  @media (min-width: 641px) and (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 0.75rem;
+  }
+
+  // Tablet lớn: 3-4 cột
+  @media (min-width: 769px) and (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  // Desktop: auto-fit với minmax
+  @media (min-width: 1025px) {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
 }
 .pagination {
   display: flex;

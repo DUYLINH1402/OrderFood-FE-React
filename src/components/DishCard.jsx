@@ -30,7 +30,7 @@ const DishCard = ({
   const variantId = currentVariant?.id || null;
   const variantName = currentVariant?.name || "Mặc định";
 
-  // ✅ Lấy danh sách yêu thích từ Redux
+  // Lấy danh sách yêu thích từ Redux
   const favoriteList = useSelector((state) => state.favorite.list);
   const isFavorite =
     Array.isArray(favoriteList) &&
