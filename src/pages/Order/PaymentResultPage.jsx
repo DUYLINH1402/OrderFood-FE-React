@@ -8,6 +8,8 @@ function PaymentResultPage() {
   const navigate = useNavigate();
   const [paymentProcessed, setPaymentProcessed] = useState(false);
   const [backendUpdateStatus, setBackendUpdateStatus] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isModalClosing, setIsModalClosing] = useState(false);
 
   // Parse query params from ZaloPay callback
   const query = useMemo(() => {
@@ -110,6 +112,27 @@ function PaymentResultPage() {
     processPaymentResult();
   }, [query, paymentProcessed]);
 
+  // Tắt scroll khi modal mở
+  useEffect(() => {
+    if (showLoginModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showLoginModal]);
+
+  // Hàm đóng modal với animation
+  const closeModal = () => {
+    setIsModalClosing(true);
+    setTimeout(() => {
+      setShowLoginModal(false);
+      setIsModalClosing(false);
+    }, 300);
+  };
+
   // Xác định phương thức thanh toán
   const getPaymentMethodName = () => {
     if (query.paymentMethod) {
@@ -196,68 +219,137 @@ function PaymentResultPage() {
   const orderId = getOrderIdFromAppTransId();
 
   return (
-    <GlassPageWrapper>
-      {paymentResult.icon}
-      <h1 className="text-2xl font-bold mb-2">{paymentResult.title}</h1>
-      <p className="text-gray-600 mb-6 text-center text-sm md:text-base">
-        {paymentResult.description}
-      </p>
+    <>
+      <GlassPageWrapper>
+        {paymentResult.icon}
+        <h1 className="text-2xl font-bold mb-2">{paymentResult.title}</h1>
+        <p className="text-gray-600 mb-6 text-center text-sm md:text-base">
+          {paymentResult.description}
+        </p>
 
-      {/* Hiển thị status backend update nếu đang xử lý */}
-      {paymentProcessed && backendUpdateStatus === null && paymentResult.type === "failed" && (
-        <div className="bg-blue-50 rounded-lg p-3 mb-4 text-sm">
-          <p className="text-blue-600">Đang cập nhật trạng thái đơn hàng...</p>
-        </div>
-      )}
-
-      {/* Hiển thị thông tin giao dịch */}
-      {(query.appTransId || query.apptransid || orderId) && (
-        <div className="rounded-lg p-4 mb-6 text-sm">
-          <h3 className="font-semibold mb-2">Thông tin giao dịch:</h3>
-          <p className="text-gray-600 mb-1">Phương thức: {getPaymentMethodName()}</p>
-          {(query.appTransId || query.apptransid) && (
-            <p className="text-gray-600 mb-1">
-              Mã giao dịch: {query.appTransId || query.apptransid}
-            </p>
-          )}
-          {orderId && <p className="text-gray-600 mb-1">Mã đơn hàng: #{orderId}</p>}
-          {query.amount && (
-            <p className="text-gray-600 mb-1">
-              Số tiền: {parseInt(query.amount).toLocaleString("vi-VN")} VND
-            </p>
-          )}
-          {query.status && <p className="text-gray-600">Mã trạng thái: {query.status}</p>}
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2 items-center">
-        <div className="flex flex-col gap-3 mb-3 justify-center items-center">
-          <button
-            className="flex-1 min-w-[180px] px-8 py-3 rounded-xl bg-green-500 text-white font-semibold shadow-md hover:bg-green-600 transition-all text-sm md:text-base"
-            onClick={() => navigate("/mon-an")}>
-            Tiếp tục mua sắm
-          </button>
-          <button
-            className="flex-1 min-w-[180px] px-8 py-3 rounded-xl bg-white text-green-600 border border-green-400 font-semibold shadow-md hover:bg-green-50 transition-all text-sm md:text-base"
-            onClick={() => {
-              if (orderId) {
-                navigate(`/order/${orderId}`);
-              } else {
-                navigate("/ho-so");
-              }
-            }}>
-            Xem đơn hàng
-          </button>
-        </div>
-        {paymentResult.type === "failed" && (
-          <button
-            className="text-sm text-blue-600 hover:underline mt-1"
-            onClick={() => window.open("tel:0123456789")}>
-            Liên hệ hỗ trợ
-          </button>
+        {/* Hiển thị status backend update nếu đang xử lý */}
+        {paymentProcessed && backendUpdateStatus === null && paymentResult.type === "failed" && (
+          <div className="bg-blue-50 rounded-lg p-3 mb-4 text-sm">
+            <p className="text-blue-600">Đang cập nhật trạng thái đơn hàng...</p>
+          </div>
         )}
-      </div>
-    </GlassPageWrapper>
+
+        {/* Hiển thị thông tin giao dịch */}
+        {(query.appTransId || query.apptransid || orderId) && (
+          <div className="rounded-lg p-4 mb-6 text-sm">
+            <h3 className="font-semibold mb-2">Thông tin giao dịch:</h3>
+            <p className="text-gray-600 mb-1">Phương thức: {getPaymentMethodName()}</p>
+            {(query.appTransId || query.apptransid) && (
+              <p className="text-gray-600 mb-1">
+                Mã giao dịch: {query.appTransId || query.apptransid}
+              </p>
+            )}
+            {orderId && <p className="text-gray-600 mb-1">Mã đơn hàng: #{orderId}</p>}
+            {query.amount && (
+              <p className="text-gray-600 mb-1">
+                Số tiền: {parseInt(query.amount).toLocaleString("vi-VN")} VND
+              </p>
+            )}
+            <p className="text-gray-600 mb-1">
+              Thời gian:{" "}
+              {query.paymentTime
+                ? new Date(query.paymentTime).toLocaleString("vi-VN")
+                : new Date().toLocaleString("vi-VN")}
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2 items-center">
+          <div className="flex flex-col gap-3 mb-3 justify-center items-center">
+            <button
+              className="flex-1 min-w-[180px] px-8 py-3 rounded-xl bg-green-500 text-white font-semibold shadow-md hover:bg-green-600 transition-all text-sm md:text-base"
+              onClick={() => navigate("/mon-an")}>
+              Tiếp tục mua sắm
+            </button>
+            <button
+              className="flex-1 min-w-[180px] px-8 py-3 rounded-xl bg-white text-green-600 border border-green-400 font-semibold shadow-md hover:bg-green-50 transition-all text-sm md:text-base"
+              onClick={() => {
+                const accessToken = localStorage.getItem("accessToken");
+                if (accessToken) {
+                  navigate("/ho-so?tab=orders");
+                } else {
+                  // Lưu thông tin redirect để sau khi đăng nhập sẽ chuyển đến tab orders
+                  localStorage.setItem("redirectAfterLogin", "/ho-so?tab=orders");
+                  setShowLoginModal(true);
+                }
+              }}>
+              Xem đơn hàng
+            </button>
+          </div>
+          {paymentResult.type === "failed" && (
+            <button
+              className="text-sm text-blue-600 hover:underline mt-1"
+              onClick={() => window.open("tel:0123456789")}>
+              Liên hệ hỗ trợ
+            </button>
+          )}
+        </div>
+      </GlassPageWrapper>
+
+      {/* Modal thông báo cho người dùng chưa đăng nhập */}
+      {(showLoginModal || isModalClosing) && (
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-black transition-all duration-300 ease-in-out ${
+            showLoginModal && !isModalClosing ? "bg-opacity-40" : "bg-opacity-0"
+          }`}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              closeModal();
+            }
+          }}>
+          <div
+            className={`w-full max-w-md tablet:max-w-lg laptop:max-w-xl mx-4 bg-white rounded-2xl p-6 tablet:p-8 laptop:p-10 shadow-2xl transform transition-all duration-300 ease-out ${
+              showLoginModal && !isModalClosing
+                ? "translate-y-0 opacity-100 scale-100"
+                : "translate-y-16 opacity-0 scale-95"
+            }`}>
+            <div className="text-center">
+              <div className="w-20 h-20 tablet:w-22 tablet:h-22 laptop:w-24 laptop:h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-6 tablet:mb-7 laptop:mb-8">
+                <svg
+                  className="w-10 h-10 tablet:w-11 tablet:h-11 laptop:w-12 laptop:h-12 text-blue-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg tablet:text-xl font-bold text-gray-900 mb-4">
+                Theo dõi đơn hàng
+              </h3>
+              <p className="text-gray-600 mb-10 text-md tablet:text-base leading-relaxed max-w-md mx-auto">
+                Bạn có thể theo dõi tình trạng đơn hàng qua email hoặc đăng nhập để xem chi tiết đơn
+                hàng.
+              </p>
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => {
+                    closeModal();
+                    setTimeout(() => navigate("/dang-nhap"), 300);
+                  }}
+                  className="px-8 tablet:px-10 py-3 tablet:py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 text-md tablet:text-base shadow-lg hover:shadow-xl transform hover:scale-105">
+                  Đăng nhập
+                </button>
+                <button
+                  onClick={closeModal}
+                  className="px-8 tablet:px-10 py-3 tablet:py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200 text-md tablet:text-base">
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

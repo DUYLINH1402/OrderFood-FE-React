@@ -82,8 +82,15 @@ export default function LoginRegisterForm() {
       const serverCart = await getUserCart();
       dispatch(setCartItems(serverCart));
 
-      // Đăng nhập thành công → chuyển về trang chủ
-      navigate("/");
+      // Kiểm tra có redirect sau khi đăng nhập không
+      const redirectPath = localStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        localStorage.removeItem("redirectAfterLogin");
+        navigate(redirectPath);
+      } else {
+        // Đăng nhập thành công → chuyển về trang chủ
+        navigate("/");
+      }
       toast.success("Đăng nhập thành công!");
     } catch (error) {
       if (error.message === "EMAIL_NOT_VERIFIED") {

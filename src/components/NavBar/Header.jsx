@@ -137,7 +137,7 @@ const Header = () => {
                         Món Yêu thích
                       </Link>
                       <Link
-                        to="/orders"
+                        to="ho-so?tab=orders"
                         onClick={() => setDropdownOpen(false)} // Đóng dropdown
                         className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
                         Đơn hàng của tôi

@@ -16,7 +16,7 @@ import FoodDetailPage from "../pages/Foods/FoodDetailPage/FoodDetailPage";
 import FavoriteDishes from "../pages/FavoriteDishes/FavoriteDishesPage";
 import CheckoutPage from "../pages/Order/CheckoutPage";
 import PaymentResultPage from "../pages/Order/PaymentResultPage";
-import CustomerFeedbacks from "../pages/CustomerFeedbacks";
+import CustomerFeedbacksPage from "../pages/CustomerFeedbacks/CustomerFeedbacksPage";
 import Error404Page from "../pages/Error404Page";
 
 export const UserRoutes = [
@@ -51,7 +51,7 @@ export const UserRoutes = [
       { path: "/mon-an/chi-tiet/:slug", element: <FoodDetailPage /> },
       { path: "/thanh-toan", element: <CheckoutPage /> },
       { path: "/thanh-toan/ket-qua", element: <PaymentResultPage /> },
-      { path: "/danh-gia-khach-hang", element: <CustomerFeedbacks /> },
+      { path: "/danh-gia-khach-hang", element: <CustomerFeedbacksPage /> },
       { path: "*", element: <Error404Page /> },
     ],
   },

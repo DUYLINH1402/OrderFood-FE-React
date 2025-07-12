@@ -110,4 +110,4 @@ publicClient.interceptors.response.use(
 );
 
 export default apiClient;
-export { publicClient };
+export { publicClient, apiClient };

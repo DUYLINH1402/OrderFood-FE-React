@@ -11,9 +11,10 @@ import {
   faPhone,
 } from "@fortawesome/free-solid-svg-icons";
 import { ProfileTab } from "./ProfileTab";
+import OrdersTab from "./OrdersTab";
 import ChangePasswordTab from "./ChangePasswordTab";
 import ResetPasswordPage from "../ResetPasswordPage";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 const tabs = [
   { id: "profile", label: "Hồ sơ cá nhân", icon: faUser },
@@ -26,11 +27,23 @@ const tabs = [
 ];
 
 export default function ProfilePage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
   const [pendingTab, setPendingTab] = useState(null); // tab sẽ chuyển đến
   const [showTabs, setShowTabs] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const accessToken = localStorage.getItem("accessToken");
+
+  // Xử lý query parameter để chuyển đến tab được chỉ định
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const tabParam = urlParams.get("tab");
+
+    if (tabParam && tabs.some((tab) => tab.id === tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
   useEffect(() => {
     setShowTabs(true);
     // Hiệu ứng xuất hiện lần đầu cho content bên phải
@@ -46,9 +59,18 @@ export default function ProfilePage() {
       setActiveTab(pendingTab);
       setShowContent(true);
       setPendingTab(null);
+
+      // Cập nhật URL theo tab hiện tại
+      if (pendingTab === "profile") {
+        // Nếu chuyển về tab profile, xóa query parameter
+        navigate("/ho-so", { replace: true });
+      } else {
+        // Nếu chuyển sang tab khác, cập nhật query parameter
+        navigate(`/ho-so?tab=${pendingTab}`, { replace: true });
+      }
     }, 350); // thời gian khớp duration-500 (ẩn xong mới đổi tab)
     return () => clearTimeout(timeout);
-  }, [pendingTab]);
+  }, [pendingTab, navigate]);
 
   if (!accessToken) {
     return <Navigate to="/dang-nhap" replace />;
@@ -111,8 +133,8 @@ export default function ProfilePage() {
         )}
         {activeTab === "orders" && (
           <>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Đơn hàng của tôi</h3>
-            <p>Danh sách đơn hàng, trạng thái đơn, nút xem chi tiết,...</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Đơn hàng của tôi</h3>
+            <OrdersTab />
           </>
         )}
         {activeTab === "payment" && (
