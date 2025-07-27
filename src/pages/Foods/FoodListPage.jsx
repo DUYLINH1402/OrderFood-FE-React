@@ -151,7 +151,7 @@ const FoodListPage = () => {
                     }))}
                   />
                 </div>
-                <h2 className="scroll-reveal title-food-grid" ref={h2Ref}>
+                <h2 className="scroll-reveal title-food-grid dongxanh-section-title" ref={h2Ref}>
                   {isBestSellerPage
                     ? "Danh mục BEST SELLER"
                     : categoryNameChain?.length > 0 &&

@@ -4,9 +4,9 @@ import { getUserPoints, getPointsHistory } from "../../services/service/pointsSe
 // Async thunks
 export const fetchUserPoints = createAsyncThunk(
   "points/fetchUserPoints",
-  async (userId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await getUserPoints(userId);
+      const response = await getUserPoints();
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -64,7 +64,20 @@ const pointsSlice = createSlice({
       })
       .addCase(fetchUserPoints.fulfilled, (state, action) => {
         state.loading = false;
-        state.availablePoints = action.payload.points || 0;
+        // Đảm bảo lấy đúng field từ API (có thể là availablePoints hoặc points)
+        const newPoints = action.payload.availablePoints ?? action.payload.points ?? 0;
+        state.availablePoints = newPoints;
+        // Đồng bộ lại điểm vào localStorage user nếu có
+        try {
+          const userStr = localStorage.getItem("user");
+          if (userStr) {
+            const userObj = JSON.parse(userStr);
+            userObj.point = newPoints;
+            localStorage.setItem("user", JSON.stringify(userObj));
+          }
+        } catch (e) {
+          // ignore
+        }
       })
       .addCase(fetchUserPoints.rejected, (state, action) => {
         state.loading = false;

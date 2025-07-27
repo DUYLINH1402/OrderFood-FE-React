@@ -6,7 +6,7 @@ import { getDistricts, getWardsByDistrict } from "../../services/service/zoneSer
 import shopping_cart from "../../assets/icons/shopping_cart.png";
 import PaymentMethodModal from "./PaymentMethodModal";
 import { LoadingButton } from "../../components/Skeleton/LoadingButton";
-import PointsUsageSection from "../../components/PointsUsageSection";
+import PointsUsageSection from "./PointsUsageSection";
 import { validateName, validatePhoneNumber, validateEmail } from "../../utils/validation";
 import { fetchUserPoints } from "../../store/slices/pointsSlice";
 import "../../assets/styles/main.scss";
@@ -38,13 +38,13 @@ export default function CheckoutPage() {
   // Redux selectors
   const cartItems = useSelector((state) => state.cart.items); // Lấy items từ cart store
   const userFromStore = useSelector((state) => state.auth.user); // Lấy thông tin user từ auth store
+  const userPoints = useSelector((state) => state.points.value); // Lấy điểm thưởng từ slice points
 
   // Lấy user thực từ localStorage hoặc Redux store
   const user = userFromStore;
 
-  // Lấy điểm thưởng từ user hoặc từ Redux store (thêm một ít điểm test nếu = 0)
-  const userPoints = user?.points || 0;
-  const availablePoints = userPoints > 0 ? userPoints : 50000; // Test với 50k điểm nếu user chưa có điểm
+  // Lấy điểm thưởng mới nhất từ Redux store nếu có, fallback sang user.point nếu chưa có
+  const availablePoints = userPoints ?? user?.point ?? 0;
 
   // Data từ location state hoặc cart
   const checkoutItems = location.state?.checkoutItems || cartItems; // Items cần thanh toán
@@ -138,20 +138,9 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (user?.id) {
       console.log("Fetching points for user:", user.id);
-      dispatch(fetchUserPoints(user.id));
+      dispatch(fetchUserPoints());
     }
   }, [user?.id, dispatch]);
-
-  // Debug: Log để kiểm tra state
-  useEffect(() => {
-    console.log("CheckoutPage Debug:", {
-      user: !!user,
-      userId: user?.id,
-      userPoints: user?.points,
-      availablePoints,
-      fullUser: user,
-    });
-  }, [user, availablePoints]);
 
   // Animation cho giá khi thay đổi
   useEffect(() => {
@@ -256,8 +245,7 @@ export default function CheckoutPage() {
         paymentMethod,
         totalPrice,
         checkoutItems,
-        pointsToUse: usePoints ? pointsToUse : 0,
-        pointsDiscount: usePoints ? pointsDiscount : 0,
+        discountAmount: usePoints ? pointsDiscount : 0,
       };
 
       // Gọi function xử lý đặt hàng từ orderUtils
@@ -271,6 +259,10 @@ export default function CheckoutPage() {
       // Only show success message if no payment URL redirect
       if (!result.hasPaymentUrl) {
         toast.success("Đặt hàng thành công!");
+        // Fetch lại điểm thưởng mới nhất cho user
+        if (user?.id) {
+          dispatch(fetchUserPoints());
+        }
       }
     } catch (err) {
       console.error("Order submission error:", err);

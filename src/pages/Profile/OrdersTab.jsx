@@ -40,8 +40,8 @@ const OrdersTab = () => {
       setError(null);
       try {
         const result = await getOrders({
-          page: 0,
-          size: 100,
+          // page: 0,
+          // size: 100,
         });
         if (result.success) {
           setOrders(result.data || []);
@@ -218,19 +218,26 @@ const OrdersTab = () => {
   return (
     <div className="space-y-6">
       {/* Filter tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-4">
+      <div className="grid grid-cols-2 tablet:flex tablet:flex-wrap gap-2 border-b border-gray-200 pb-4">
         {statusTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setSelectedStatus(tab.id)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm tablet:text-md ${
+            className={`w-full tablet:w-auto px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm tablet:text-md flex items-center justify-center ${
               selectedStatus === tab.id
                 ? "bg-green-500 text-white shadow-md"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}>
-            {tab.label}
+            <span>{tab.label}</span>
             {tab.count > 0 && (
-              <span className="ml-2 px-2 py-1 text-xs rounded-full bg-white bg-opacity-20">
+              <span
+                className={`ml-2 px-2 py-1 text-xs rounded-full border transition-colors duration-200
+                  ${
+                    selectedStatus === tab.id
+                      ? "bg-white bg-opacity-20 border-white text-white"
+                      : "bg-gray-200 border-gray-300 text-gray-600"
+                  }
+                `}>
                 {tab.count}
               </span>
             )}

@@ -194,8 +194,7 @@ export const prepareOrderPayload = (orderData) => {
     paymentMethod,
     totalPrice,
     checkoutItems,
-    pointsToUse = 0,
-    pointsDiscount = 0,
+    discountAmount = 0,
   } = orderData;
 
   return {
@@ -209,8 +208,7 @@ export const prepareOrderPayload = (orderData) => {
     deliveryType,
     paymentMethod,
     totalPrice: Math.round(totalPrice),
-    pointsToUse: parseInt(pointsToUse) || 0,
-    pointsDiscount: Math.round(pointsDiscount) || 0,
+    discountAmount: Math.round(discountAmount) || 0,
     items: checkoutItems.map((item) => ({
       foodId: parseInt(item.foodId),
       variantId: item.variantId ? parseInt(item.variantId) : null,

@@ -4,14 +4,15 @@ module.exports = {
     extend: {
       fontSize: {
         xs: "11px",
-        sm: "13px",
-        md: "14px",
-        base: "16px",
+        sm: "13px", //cho Mobile
+        md: "14px", //cho Tablet
+        base: "16px", //cho desktop
         lg: "20px",
         xl: "24px",
       },
       spacing: {
         50: "50px",
+        100: "100px",
         120: "120px",
       },
       screens: {

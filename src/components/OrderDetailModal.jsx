@@ -1,14 +1,11 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTimes,
-  faCalendarAlt,
   faMapMarkerAlt,
   faCreditCard,
-  faBox,
-  faPhone,
   faUser,
-  faEnvelope,
   faTruck,
   faCheckCircle,
   faTimesCircle,
@@ -68,9 +65,10 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
     );
   };
 
-  return (
+  // Modal content
+  const modalContent = (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto mt-100 mb-4 text-md tablet:text-base laptop:text-base desktop:text-base">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -78,11 +76,11 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
               className={`w-10 h-10 rounded-full ${statusConfig.bgColor} flex items-center justify-center`}>
               <FontAwesomeIcon
                 icon={getStatusIcon(order.status)}
-                className={`w-5 h-5 ${statusConfig.color}`}
+                className={`w-6 h-6 tablet:w-7 tablet:h-7 ${statusConfig.color}`}
               />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-lg font-bold text-gray-900">
                 Chi tiết đơn hàng #{order.orderCode || order.id}
               </h2>
               <p className="text-sm text-gray-600">
@@ -96,7 +94,6 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
             <FontAwesomeIcon icon={faTimes} className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Order Status */}
@@ -105,7 +102,7 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
             <div className="flex items-center gap-3">
               <FontAwesomeIcon
                 icon={getStatusIcon(order.status)}
-                className={`w-6 h-6 ${statusConfig.color}`}
+                className={`w-7 h-7 tablet:w-8 tablet:h-8 ${statusConfig.color}`}
               />
               <div>
                 <h3 className={`font-semibold ${statusConfig.color}`}>{statusConfig.label}</h3>
@@ -119,7 +116,7 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
           {/* Customer Information */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FontAwesomeIcon icon={faUser} className="w-4 h-4" />
+              <FontAwesomeIcon icon={faUser} className="w-4 h-4 tablet:w-6 tablet:h-6" />
               Thông tin khách hàng
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,7 +144,7 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
           {/* Delivery Information */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 h-4" />
+              <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 h-4 tablet:w-6 tablet:h-6" />
               Thông tin giao hàng
             </h3>
             <div className="space-y-2">
@@ -181,7 +178,7 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
           {/* Order Items */}
           <div>
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FontAwesomeIcon icon={faShoppingCart} className="w-4 h-4" />
+              <FontAwesomeIcon icon={faShoppingCart} className="w-4 h-4 tablet:w-6 tablet:h-6" />
               Món ăn đã đặt
             </h3>
             <div className="space-y-3">
@@ -211,7 +208,7 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
           {/* Payment Information */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FontAwesomeIcon icon={faCreditCard} className="w-4 h-4" />
+              <FontAwesomeIcon icon={faCreditCard} className="w-4 h-4 tablet:w-6 tablet:h-6" />
               Thông tin thanh toán
             </h3>
             <div className="space-y-2">
@@ -237,7 +234,7 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
                   <span>-{formatPrice(order.pointsDiscount)}</span>
                 </div>
               )}
-              <div className="flex justify-between font-semibold text-lg pt-2 border-t border-gray-200">
+              <div className="flex justify-between font-semibold text-base pt-2 border-t border-gray-200">
                 <span>Tổng cộng:</span>
                 <span className="text-green-600">
                   {formatPrice(order.totalPrice || order.total)}
@@ -250,7 +247,7 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
           {order.cancelReason && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <h3 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
-                <FontAwesomeIcon icon={faTimesCircle} className="w-4 h-4" />
+                <FontAwesomeIcon icon={faTimesCircle} className="w-4 h-4 tablet:w-6 tablet:h-6" />
                 Lý do hủy đơn hàng
               </h3>
               <p className="text-red-700">{order.cancelReason}</p>
@@ -267,7 +264,7 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
               Đóng
             </button>
             <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2">
-              <FontAwesomeIcon icon={faReceipt} className="w-4 h-4" />
+              <FontAwesomeIcon icon={faReceipt} className="w-4 h-4 tablet:w-6 tablet:h-6" />
               Tải hóa đơn
             </button>
           </div>
@@ -275,6 +272,9 @@ const OrderDetailModal = ({ order, isOpen, onClose }) => {
       </div>
     </div>
   );
+
+  // Use portal to render modal at document.body
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default OrderDetailModal;

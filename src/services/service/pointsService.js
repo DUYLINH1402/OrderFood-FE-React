@@ -1,13 +1,13 @@
 import apiClient from "../apiClient";
 
 /**
- * Lấy thông tin điểm thưởng của user
- * @param {string} userId - ID của user
+ * Lấy thông tin điểm thưởng của user hiện tại (BE lấy userId từ token)
  * @returns {Promise} Promise chứa thông tin điểm thưởng
  */
-export const getUserPoints = async (userId) => {
+export const getUserPoints = async () => {
   try {
-    const response = await apiClient.get(`/users/${userId}/points`);
+    // Truyền token qua header (apiClient đã tự động thêm nếu có)
+    const response = await apiClient.get("/api/points/current");
     return response.data;
   } catch (error) {
     console.error("Error fetching user points:", error);
@@ -36,9 +36,19 @@ export const usePointsForOrder = async (pointsData) => {
  * @param {Object} params - Tham số phân trang
  * @returns {Promise} Promise chứa lịch sử điểm thưởng
  */
-export const getPointsHistory = async (userId, params = {}) => {
+/**
+ * Lấy lịch sử điểm thưởng của user hiện tại (BE tự lấy userId từ token)
+ * @param {Object} params - Tham số phân trang
+ * @returns {Promise} Promise chứa lịch sử điểm thưởng
+ */
+export const getPointsHistory = async (params = {}) => {
   try {
-    const response = await apiClient.get(`/users/${userId}/points/history`, { params });
+    const response = await apiClient.get("/api/points/history", { params });
+    // Đảm bảo luôn trả về object có items là mảng
+    if (Array.isArray(response.data)) {
+      return { items: response.data, totalItems: response.data.length, totalPages: 1 };
+    }
+    console.warn("Unexpected response format for points history:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching points history:", error);
