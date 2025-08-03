@@ -14,16 +14,8 @@ const PointsUsageSection = ({
   onPointsInputChange,
   onUseMaxPoints,
 }) => {
-  // Debug: Log để kiểm tra giá trị
-  // console.log("PointsUsageSection Props:", { user, availablePoints, usePoints });
-
-  // Chỉ ẩn nếu user chưa đăng nhập
-  if (!user) {
-    return null;
-  }
-
   return (
-    <div className="mb-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200 transition-all duration-300 hover:shadow-md">
+    <div className=" p-4  transition-all duration-300 ">
       <label className="flex items-center gap-2 mb-3 text-sm md:text-base select-none cursor-pointer">
         <input
           type="checkbox"

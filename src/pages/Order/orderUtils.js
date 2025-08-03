@@ -1,6 +1,7 @@
 import { toast } from "react-toastify";
 import { validateName, validatePhoneNumber, validateEmail } from "../../utils/validation";
 import { createOrder } from "../../services/service/orderService";
+import { mapOrderError } from "../../utils/ErrorMapper";
 
 /**
  * Tính tổng giá tiền thực phẩm
@@ -93,16 +94,22 @@ export const validatePointsUsage = (
   pointsToVndRate = 1
 ) => {
   if (pointsToUse < 0) {
-    return { isValid: false, message: "Số điểm không thể âm" };
+    const mappedError = mapOrderError("POINTS_INVALID");
+    return { isValid: false, message: mappedError.points || "Số điểm không thể âm" };
   }
 
   if (pointsToUse > availablePoints) {
-    return { isValid: false, message: "Không đủ điểm thưởng" };
+    const mappedError = mapOrderError("POINTS_EXCEED");
+    return { isValid: false, message: mappedError.points || "Không đủ điểm thưởng" };
   }
 
   const discountAmount = calculateDiscountFromPoints(pointsToUse, pointsToVndRate);
   if (discountAmount > maxPointsDiscount) {
-    return { isValid: false, message: "Chỉ được sử dụng tối đa 50% tổng tiền" };
+    const mappedError = mapOrderError("POINTS_INVALID");
+    return {
+      isValid: false,
+      message: mappedError.points || "Chỉ được sử dụng tối đa 50% tổng tiền",
+    };
   }
 
   return { isValid: true, message: "" };
@@ -152,20 +159,22 @@ export const validateOrderInfo = (orderInfo) => {
   // Kiểm tra địa chỉ giao hàng nếu là giao tận nơi
   if (deliveryType === "DELIVERY") {
     if (!deliveryAddress.trim() || !selectedDistrictId || !selectedWardId) {
+      const mappedError = mapOrderError("DELIVERY_ADDRESS_INVALID");
       return {
         isValid: false,
         errors,
-        message: "Vui lòng điền đầy đủ thông tin giao hàng.",
+        message: mappedError.delivery || "Vui lòng điền đầy đủ thông tin giao hàng.",
       };
     }
   }
 
   // Kiểm tra sản phẩm
   if (!checkoutItems || checkoutItems.length === 0) {
+    const mappedError = mapOrderError("ORDER_ITEMS_EMPTY");
     return {
       isValid: false,
       errors,
-      message: "Không có món nào để đặt hàng.",
+      message: mappedError.general || "Không có món nào để đặt hàng.",
     };
   }
 
@@ -194,6 +203,7 @@ export const prepareOrderPayload = (orderData) => {
     paymentMethod,
     totalPrice,
     checkoutItems,
+    couponCode,
     discountAmount = 0,
   } = orderData;
 
@@ -209,6 +219,7 @@ export const prepareOrderPayload = (orderData) => {
     paymentMethod,
     totalPrice: Math.round(totalPrice),
     discountAmount: Math.round(discountAmount) || 0,
+    couponCode: couponCode || null,
     items: checkoutItems.map((item) => ({
       foodId: parseInt(item.foodId),
       variantId: item.variantId ? parseInt(item.variantId) : null,
@@ -242,9 +253,29 @@ export const handleOrderSubmission = async (orderData, navigate) => {
     return { success: true, hasPaymentUrl: false };
   } catch (err) {
     console.error("Order submission error:", err);
-    const errorMessage = err?.response?.data?.message || err?.message || "Đặt hàng thất bại!";
+
+    // Xử lý lỗi dựa trên errorCode từ backend
+    const errorCode = err?.response?.data?.errorCode;
+    let errorMessage = "Đặt hàng thất bại!";
+
+    if (errorCode) {
+      const mappedError = mapOrderError(errorCode);
+
+      // Ưu tiên lấy lỗi cụ thể từ mapOrderError
+      errorMessage =
+        mappedError.coupon ||
+        mappedError.points ||
+        mappedError.delivery ||
+        mappedError.payment ||
+        mappedError.general ||
+        errorMessage;
+    } else {
+      // Fallback cho lỗi không có errorCode
+      errorMessage = err?.response?.data?.message || err?.message || errorMessage;
+    }
+
     toast.error(errorMessage);
-    return { success: false, error: errorMessage };
+    return { success: false, error: errorMessage, errorCode };
   }
 };
 

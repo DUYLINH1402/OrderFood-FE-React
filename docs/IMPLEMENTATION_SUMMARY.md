@@ -1,10 +1,10 @@
 # Order Management System - Implementation Summary
 
-## 🎯 Project Overview
+## Project Overview
 
 Hoàn thiện hệ thống quản lý đơn hàng cho ứng dụng đặt đồ ăn với khả năng chuyển đổi linh hoạt giữa API backend (Spring Boot) và Firebase.
 
-## ✅ Completed Features
+## Completed Features
 
 ### 1. Backend API System
 
@@ -85,7 +85,7 @@ VITE_USE_FIREBASE=true
 # + Firebase configuration
 ```
 
-## 🎨 UI/UX Features
+## UI/UX Features
 
 ### OrdersTab Component
 
@@ -103,7 +103,7 @@ VITE_USE_FIREBASE=true
 - **Payment Breakdown**: Chi tiết thanh toán
 - **Action Buttons**: Tải hóa đơn, liên hệ
 
-## 🔄 Data Flow
+## Data Flow
 
 ### Order Creation
 
@@ -314,17 +314,17 @@ VITE_USE_FIREBASE=true
 
 ### Technical Metrics
 
-- ✅ API response time < 500ms
-- ✅ Component load time < 2s
-- ✅ Error rate < 1%
-- ✅ Test coverage > 80%
+- API response time < 500ms
+- Component load time < 2s
+- Error rate < 1%
+- Test coverage > 80%
 
 ### Business Metrics
 
-- ✅ Order completion rate > 95%
-- ✅ User satisfaction > 4.5/5
-- ✅ Support tickets < 5/day
-- ✅ System uptime > 99.9%
+- Order completion rate > 95%
+- User satisfaction > 4.5/5
+- Support tickets < 5/day
+- System uptime > 99.9%
 
 ## 📝 Conclusion
 

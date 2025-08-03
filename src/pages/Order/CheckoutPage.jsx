@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { mapOrderError } from "../../utils/ErrorMapper";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getDistricts, getWardsByDistrict } from "../../services/service/zoneService";
+import { getUserCoupons } from "../../services/service/couponService";
+import { validateCoupon } from "../../services/service/couponService";
 import shopping_cart from "../../assets/icons/shopping_cart.png";
 import PaymentMethodModal from "./PaymentMethodModal";
 import { LoadingButton } from "../../components/Skeleton/LoadingButton";
@@ -28,33 +31,43 @@ import {
   handleDistrictChange,
   handleUserInfoChange,
 } from "./orderUtils";
+import LoadingIcon from "../../components/Skeleton/LoadingIcon";
 
 export default function CheckoutPage() {
+  // State cho kiểm tra coupon
+  const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
   // React Router hooks
-  const navigate = useNavigate(); // Điều hướng giữa các trang
-  const location = useLocation(); // Lấy thông tin location hiện tại
-  const dispatch = useDispatch(); // Redux dispatch
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
   // Redux selectors
-  const cartItems = useSelector((state) => state.cart.items); // Lấy items từ cart store
-  const userFromStore = useSelector((state) => state.auth.user); // Lấy thông tin user từ auth store
-  const userPoints = useSelector((state) => state.points.value); // Lấy điểm thưởng từ slice points
+  const cartItems = useSelector((state) => state.cart.items);
+  const userFromStore = useSelector((state) => state.auth.user);
+  const userPoints = useSelector((state) => state.points.value);
 
-  // Lấy user thực từ localStorage hoặc Redux store
+  // Lấy user thực từ Redux store
   const user = userFromStore;
 
-  // Lấy điểm thưởng mới nhất từ Redux store nếu có, fallback sang user.point nếu chưa có
+  // Lấy điểm thưởng mới nhất từ Redux store
   const availablePoints = userPoints ?? user?.point ?? 0;
 
   // Data từ location state hoặc cart
-  const checkoutItems = location.state?.checkoutItems || cartItems; // Items cần thanh toán
+  const checkoutItems = location.state?.checkoutItems || cartItems;
+
+  // State cho coupon
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [userCoupons, setUserCoupons] = useState([]);
+  const [selectedCouponId, setSelectedCouponId] = useState("");
 
   // State cho delivery
-  const [deliveryFee, setDeliveryFee] = useState(0); // Phí giao hàng
-  const [useSavedInfo, setUseSavedInfo] = useState(true); // Checkbox sử dụng thông tin đã lưu
+  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [useSavedInfo, setUseSavedInfo] = useState(true);
 
   // Constant cho UI
-  const ITEMS_TO_SHOW = 5; // Số lượng items hiển thị mặc định trước khi cần "Xem thêm"
+  const ITEMS_TO_SHOW = 5;
 
   // State cho thông tin người nhận
   const [receiverName, setReceiverName] = useState("");
@@ -63,46 +76,137 @@ export default function CheckoutPage() {
   const [deliveryAddress, setDeliveryAddress] = useState("");
 
   // State cho địa chỉ giao hàng
-  const [districts, setDistricts] = useState([]); // Danh sách quận/huyện
-  const [wards, setWards] = useState([]); // Danh sách phường/xã
-  const [selectedDistrictId, setSelectedDistrictId] = useState(""); // ID quận/huyện được chọn
-  const [selectedWardId, setSelectedWardId] = useState(""); // ID phường/xã được chọn
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [selectedWardId, setSelectedWardId] = useState("");
 
   // State cho UI và loading
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false); // Trạng thái đang đặt hàng
-  const [showPaymentModal, setShowPaymentModal] = useState(false); // Hiển thị modal chọn phương thức thanh toán
-  const [selectedPayment, setSelectedPayment] = useState("COD"); // Phương thức thanh toán được chọn
-  const [deliveryType, setDeliveryType] = useState("DELIVERY"); // Loại giao hàng: DELIVERY hoặc TAKE_AWAY
-  const [showAllItems, setShowAllItems] = useState(false); // Hiển thị tất cả items hay chỉ 5 items đầu
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState("COD");
+  const [deliveryType, setDeliveryType] = useState("DELIVERY");
+  const [showAllItems, setShowAllItems] = useState(false);
 
   // State cho validation errors
   const [errors, setErrors] = useState({ name: "", phone: "", email: "" });
 
   // State cho điểm thưởng
-  const [usePoints, setUsePoints] = useState(false); // Checkbox sử dụng điểm thưởng
-  const [pointsToUse, setPointsToUse] = useState(0); // Số điểm muốn sử dụng
-  const [pointsError, setPointsError] = useState(""); // Lỗi validation điểm thưởng
-  const [priceAnimated, setPriceAnimated] = useState(false); // Animation cho giá
+  const [usePoints, setUsePoints] = useState(false);
+  const [pointsToUse, setPointsToUse] = useState(0);
+  const [pointsError, setPointsError] = useState("");
+  const [priceAnimated, setPriceAnimated] = useState(false);
 
-  // Giả định user có điểm thưởng (trong thực tế sẽ lấy từ Redux store hoặc API)
-  // User object cần có field rewardPoints để hiển thị số điểm có sẵn
+  // Kiểm tra thông tin đơn hàng có hợp lệ không
+  const isOrderInfoValid = checkOrderInfoValid({
+    receiverName,
+    receiverPhone,
+    receiverEmail,
+    deliveryAddress,
+    selectedDistrictId,
+    selectedWardId,
+    deliveryType,
+  });
+
   const pointsToVndRate = 1; // 1 điểm = 1 VND
 
-  // Calculated values từ orderUtils
-  const totalFoodPrice = calculateTotalFoodPrice(checkoutItems); // Tổng giá tiền thực phẩm
-  const effectiveDeliveryFee = calculateEffectiveDeliveryFee(totalFoodPrice, deliveryFee); // Phí giao hàng hiệu quả (miễn phí nếu >= 500k)
-  const maxPointsDiscount = calculateMaxPointsDiscount(totalFoodPrice, effectiveDeliveryFee); // Số tiền giảm tối đa từ điểm
-  const pointsDiscount = usePoints ? calculateDiscountFromPoints(pointsToUse, pointsToVndRate) : 0; // Số tiền được giảm từ điểm
-  const totalPrice = usePoints
-    ? calculateTotalPriceWithPoints(totalFoodPrice, effectiveDeliveryFee, pointsDiscount)
-    : calculateTotalPrice(totalFoodPrice, effectiveDeliveryFee); // Tổng tiền cuối cùng
+  // Calculated values
+  const totalFoodPrice = calculateTotalFoodPrice(checkoutItems);
+  const effectiveDeliveryFee = calculateEffectiveDeliveryFee(totalFoodPrice, deliveryFee);
+  const maxPointsDiscount = calculateMaxPointsDiscount(totalFoodPrice, effectiveDeliveryFee);
+  const pointsDiscount = usePoints ? calculateDiscountFromPoints(pointsToUse, pointsToVndRate) : 0;
 
-  // Display items logic từ orderUtils
+  // Tổng tiền sau khi trừ điểm thưởng và coupon
+  const totalPrice = usePoints
+    ? calculateTotalPriceWithPoints(totalFoodPrice, effectiveDeliveryFee, pointsDiscount) -
+      couponDiscount
+    : calculateTotalPrice(totalFoodPrice, effectiveDeliveryFee) - couponDiscount;
+
+  const finalTotalPrice = Math.max(totalPrice, 0);
+
+  // Display items logic
   const { hasMoreItems, displayedItems, hiddenItemsCount } = getDisplayItemsInfo(
     checkoutItems,
     showAllItems,
     ITEMS_TO_SHOW
   );
+
+  // Lấy danh sách coupon của user
+  useEffect(() => {
+    async function fetchUserCoupons() {
+      if (user?.id) {
+        try {
+          const coupons = await getUserCoupons();
+          console.log("Fetched user coupons:", coupons);
+          setUserCoupons(coupons || []);
+        } catch (err) {
+          console.error("Error fetching user coupons:", err);
+          setUserCoupons([]);
+        }
+      }
+    }
+    fetchUserCoupons();
+  }, [user?.id]);
+
+  // Hàm xử lý nhập coupon (không kiểm tra, chỉ lưu mã)
+  const handleCouponInputChange = (e) => {
+    const code = e.target.value.trim();
+    setCouponCode(code);
+    setCouponError("");
+    setSelectedCouponId("");
+    setCouponDiscount(0);
+  };
+
+  // Hàm chọn coupon từ danh sách
+  const handleSelectCoupon = (coupon) => {
+    setSelectedCouponId(coupon.id);
+    setCouponCode(coupon.code);
+    setCouponError("");
+    setCouponDiscount(0);
+  };
+
+  // Hàm kiểm tra và áp dụng coupon
+  const handleCheckCoupon = async () => {
+    if (!couponCode) return;
+    setIsCheckingCoupon(true); // Start loading state
+    setCouponError("");
+
+    const foodIds = checkoutItems.map((item) => item.foodId);
+    const payload = {
+      couponCode: couponCode,
+      orderAmount: totalFoodPrice,
+      foodIds: foodIds,
+    };
+
+    try {
+      const res = await validateCoupon(payload);
+      if (res && res.success) {
+        setCouponDiscount(res.discountAmount || 0);
+        setCouponError("");
+      } else {
+        setCouponDiscount(0);
+        if (res?.errorCode) {
+          const mapped = mapOrderError(res.errorCode);
+          setCouponError(
+            mapped.coupon || mapped.general || res?.message || "Mã coupon không hợp lệ!"
+          );
+        } else {
+          setCouponError(res?.message || "Mã coupon không hợp lệ!");
+        }
+      }
+    } catch (err) {
+      setCouponDiscount(0);
+      const errorCode = err?.response?.data?.errorCode;
+      if (errorCode) {
+        const mapped = mapOrderError(errorCode);
+        setCouponError(mapped.coupon || mapped.general || "Có lỗi khi kiểm tra coupon!");
+      } else {
+        setCouponError("Có lỗi khi kiểm tra coupon!");
+      }
+    } finally {
+      setIsCheckingCoupon(false); // End loading state
+    }
+  };
 
   useEffect(() => {
     getDistricts().then(setDistricts);
@@ -137,7 +241,6 @@ export default function CheckoutPage() {
   // Fetch điểm thưởng khi user đăng nhập
   useEffect(() => {
     if (user?.id) {
-      console.log("Fetching points for user:", user.id);
       dispatch(fetchUserPoints());
     }
   }, [user?.id, dispatch]);
@@ -154,10 +257,12 @@ export default function CheckoutPage() {
     const err = validateName(receiverName);
     setErrors((prev) => ({ ...prev, name: err }));
   };
+
   const handlePhoneBlur = () => {
     const err = validatePhoneNumber(receiverPhone);
     setErrors((prev) => ({ ...prev, phone: err }));
   };
+
   const handleEmailBlur = () => {
     const err = validateEmail(receiverEmail);
     setErrors((prev) => ({ ...prev, email: err }));
@@ -176,7 +281,6 @@ export default function CheckoutPage() {
     const points = parseInt(value) || 0;
     setPointsToUse(points);
 
-    // Validate điểm thưởng
     const validation = validatePointsUsage(
       points,
       availablePoints,
@@ -195,7 +299,6 @@ export default function CheckoutPage() {
 
   // Validate trước khi đặt hàng
   const handlePlaceOrder = async () => {
-    // Tạo object chứa thông tin đơn hàng để validate
     const orderInfo = {
       receiverName,
       receiverPhone,
@@ -207,7 +310,6 @@ export default function CheckoutPage() {
       checkoutItems,
     };
 
-    // Validate thông tin từ orderUtils
     const validation = validateOrderInfo(orderInfo);
     setErrors(validation.errors);
 
@@ -216,15 +318,13 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Nếu user đã từng đặt hàng thì cho chọn phương thức (COD/MoMo/ZaloPay)
     if (user && user.hasOrdered) {
       setShowPaymentModal(true);
       return;
     }
 
-    // Nếu chưa từng đặt thì chỉ cho chọn MoMo hoặc ZaloPay
     setShowPaymentModal(true);
-    setSelectedPayment("MOMO"); // mặc định chọn MoMo
+    setSelectedPayment("MOMO");
   };
 
   // Xử lý submit đơn hàng
@@ -232,7 +332,6 @@ export default function CheckoutPage() {
     try {
       setIsPlacingOrder(true);
 
-      // Chuẩn bị dữ liệu đơn hàng
       const orderData = {
         user,
         receiverName,
@@ -243,46 +342,50 @@ export default function CheckoutPage() {
         selectedWardId,
         deliveryType,
         paymentMethod,
-        totalPrice,
+        totalPrice: finalTotalPrice,
         checkoutItems,
         discountAmount: usePoints ? pointsDiscount : 0,
+        couponCode: couponCode || undefined, // Gửi mã coupon cho BE xử lý
       };
 
-      // Gọi function xử lý đặt hàng từ orderUtils
       const result = await handleOrderSubmission(orderData, navigate);
 
       if (!result.success) {
-        // Error already handled in handleOrderSubmission
+        // Xử lý lỗi dựa trên errorCode nếu có
+        if (result.errorCode) {
+          const mappedError = mapOrderError(result.errorCode);
+
+          // Set lỗi cụ thể cho từng field
+          if (mappedError.coupon) {
+            setCouponError(mappedError.coupon);
+          }
+          if (mappedError.points) {
+            setPointsError(mappedError.points);
+          }
+        } else {
+          // Fallback cho lỗi không có errorCode (để tương thích với code cũ)
+          if (result.error && result.error.toLowerCase().includes("coupon")) {
+            setCouponError(result.error);
+          }
+        }
         return;
       }
 
-      // Only show success message if no payment URL redirect
       if (!result.hasPaymentUrl) {
         toast.success("Đặt hàng thành công!");
-        // Fetch lại điểm thưởng mới nhất cho user
         if (user?.id) {
           dispatch(fetchUserPoints());
         }
       }
     } catch (err) {
       console.error("Order submission error:", err);
-      toast.error("Đặt hàng thất bại!");
+      // Lỗi đã được xử lý trong handleOrderSubmission, chỉ cần log ở đây
+      toast.error("Có lỗi không mong muốn xảy ra!");
     } finally {
       setIsPlacingOrder(false);
       setShowPaymentModal(false);
     }
   };
-
-  // Kiểm tra thông tin đơn hàng có hợp lệ không (từ orderUtils)
-  const isOrderInfoValid = checkOrderInfoValid({
-    receiverName,
-    receiverPhone,
-    receiverEmail,
-    deliveryAddress,
-    selectedDistrictId,
-    selectedWardId,
-    deliveryType,
-  });
 
   if (!checkoutItems || checkoutItems.length === 0) {
     return (
@@ -306,6 +409,7 @@ export default function CheckoutPage() {
       <div className="bg-blob bg-blob-4" />
       <div className="bg-blob bg-blob-5" />
       <div className="bg-blob bg-blob-6" />
+
       <div className="cart-wrap mx-auto mt-10 md:mt-20 p-2 sm:p-6">
         <div className="flex flex-col md:flex-row gap-10 md:gap-12">
           {/* Sản phẩm */}
@@ -383,7 +487,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Lớp phủ gradient mờ - chỉ hiển thị khi có items ẩn */}
+              {/* Lớp phủ gradient mờ */}
               {hasMoreItems && !showAllItems && (
                 <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/95 to-transparent pointer-events-none z-10"></div>
               )}
@@ -401,6 +505,7 @@ export default function CheckoutPage() {
               />
             )}
           </div>
+
           {/* Thông tin thanh toán */}
           <div className="glass-box md:w-1/2 bg-white p-6 flex flex-col justify-between">
             <div>
@@ -410,9 +515,9 @@ export default function CheckoutPage() {
               <p className="text-[12px] text-red-500 mb-4 font-semibold text-center">
                 Lưu ý: Nhân viên sẽ liên hệ để xác nhận đơn hàng
               </p>
-              {/* Ẩn checkbox nếu chưa đăng nhập */}
+              {/* Checkbox sử dụng thông tin đã lưu */}
               {user && (
-                <label className="flex items-center gap-2 mb-3 text-sm md:text-base select-none">
+                <label className="flex items-center gap-2 mb-3 text-sm md:text-base select-none ">
                   <input
                     type="checkbox"
                     checked={useSavedInfo}
@@ -422,8 +527,11 @@ export default function CheckoutPage() {
                   <span>Dùng thông tin cá nhân đã lưu</span>
                 </label>
               )}
-              <div className="grid grid-cols-1 gap-4 mb-6">
-                {/* Chọn hình thức nhận hàng */}
+              {/* Khung 1: Chọn hình thức nhận hàng */}
+              <div className="mb-4 border border-gray-400 rounded-lg px-5 py-4 bg-white shadow-md">
+                <h3 className="font-semibold text-sm md:text-base mb-3 text-gray-700">
+                  Chọn hình thức nhận hàng
+                </h3>
                 <div className="flex gap-4 mb-2">
                   <label className="flex items-center gap-2 cursor-pointer text-sm md:text-base">
                     <input
@@ -448,108 +556,189 @@ export default function CheckoutPage() {
                     <span>Nhận tại quán</span>
                   </label>
                 </div>
-                {/* Tên và SĐT luôn hiển thị */}
-                <input
-                  type="text"
-                  placeholder="Tên người nhận"
-                  className={`border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm ${
-                    errors.name ? "border-red-500" : ""
-                  }`}
-                  value={receiverName}
-                  onChange={(e) => setReceiverName(e.target.value)}
-                  onBlur={handleNameBlur}
-                />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-                <input
-                  type="text"
-                  placeholder="Số điện thoại"
-                  className={`border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm ${
-                    errors.phone ? "border-red-500" : ""
-                  }`}
-                  value={receiverPhone}
-                  onChange={(e) => setReceiverPhone(e.target.value)}
-                  onBlur={handlePhoneBlur}
-                />
-                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                <input
-                  type="email"
-                  placeholder="Email nhận thông báo"
-                  className={`border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm ${
-                    errors.email ? "border-red-500" : ""
-                  }`}
-                  value={receiverEmail}
-                  onChange={(e) => setReceiverEmail(e.target.value)}
-                  onBlur={handleEmailBlur}
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                {/* Animation chỉ cho phần địa chỉ/quận/huyện/phường/xã */}
-                <div
-                  className={`transition-all duration-500 overflow-hidden flex flex-col gap-4 ${
-                    deliveryType === "DELIVERY"
-                      ? "max-h-[1000px] opacity-100 mt-0"
-                      : "max-h-0 opacity-0 -mt-4 pointer-events-none"
-                  }`}
-                  style={{ willChange: "max-height, opacity, margin-top" }}>
-                  <select
-                    className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal text-gray-700 shadow-sm appearance-none"
-                    value={selectedDistrictId}
-                    onChange={(e) => setSelectedDistrictId(e.target.value)}>
-                    <option value="" className="text-gray-400 text-sm md:text-base">
-                      -- Chọn quận/huyện --
-                    </option>
-                    {districts.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal text-gray-700 shadow-sm appearance-none"
-                    value={selectedWardId}
-                    onChange={(e) => setSelectedWardId(e.target.value)}
-                    disabled={!selectedDistrictId}>
-                    <option value="" className="text-gray-400 text-sm md:text-base">
-                      -- Chọn phường/xã --
-                    </option>
-                    {wards.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.name}
-                      </option>
-                    ))}
-                  </select>
+              </div>
+
+              {/* Khung 2: Thông tin người nhận */}
+              <div className="mb-4 border border-gray-400 rounded-lg px-5 py-4 bg-white shadow-md">
+                <h3 className="font-semibold text-sm md:text-base mb-3 text-gray-700">
+                  Thông tin người nhận
+                </h3>
+                <div className="grid grid-cols-1 gap-4">
                   <input
                     type="text"
-                    placeholder="Địa chỉ cụ thể (Số nhà, tên đường...)"
-                    className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    placeholder="Tên người nhận"
+                    className={`border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm ${
+                      errors.name ? "border-red-500" : ""
+                    }`}
+                    value={receiverName}
+                    onChange={(e) => setReceiverName(e.target.value)}
+                    onBlur={handleNameBlur}
                   />
+                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+
+                  <input
+                    type="text"
+                    placeholder="Số điện thoại"
+                    className={`border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm ${
+                      errors.phone ? "border-red-500" : ""
+                    }`}
+                    value={receiverPhone}
+                    onChange={(e) => setReceiverPhone(e.target.value)}
+                    onBlur={handlePhoneBlur}
+                  />
+                  {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+
+                  <input
+                    type="email"
+                    placeholder="Email nhận thông báo"
+                    className={`border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm ${
+                      errors.email ? "border-red-500" : ""
+                    }`}
+                    value={receiverEmail}
+                    onChange={(e) => setReceiverEmail(e.target.value)}
+                    onBlur={handleEmailBlur}
+                  />
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+
+                  {/* Địa chỉ giao hàng - chỉ hiện khi chọn giao tận nơi */}
+                  <div
+                    className={`transition-all duration-500 overflow-hidden flex flex-col gap-4 ${
+                      deliveryType === "DELIVERY"
+                        ? "max-h-[1000px] opacity-100 mt-0"
+                        : "max-h-0 opacity-0 -mt-4 pointer-events-none"
+                    }`}
+                    style={{ willChange: "max-height, opacity, margin-top" }}>
+                    <select
+                      className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal text-gray-700 shadow-sm appearance-none"
+                      value={selectedDistrictId}
+                      onChange={(e) => setSelectedDistrictId(e.target.value)}>
+                      <option value="" className="text-gray-400 text-sm md:text-base">
+                        -- Chọn quận/huyện --
+                      </option>
+                      {districts.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal text-gray-700 shadow-sm appearance-none"
+                      value={selectedWardId}
+                      onChange={(e) => setSelectedWardId(e.target.value)}
+                      disabled={!selectedDistrictId}>
+                      <option value="" className="text-gray-400 text-sm md:text-base">
+                        -- Chọn phường/xã --
+                      </option>
+                      {wards.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="text"
+                      placeholder="Địa chỉ cụ thể (Số nhà, tên đường...)"
+                      className="border border-gray-300 rounded-lg px-4 py-4 text-sm md:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 transition placeholder:text-gray-400 placeholder:font-normal shadow-sm"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-            {/* Tổng tiền */}
-            <div className="border-t pt-5 mt-3">
-              {/* Phần sử dụng điểm thưởng */}
-              <PointsUsageSection
-                user={user}
-                availablePoints={availablePoints}
-                usePoints={usePoints}
-                pointsToUse={pointsToUse}
-                pointsError={pointsError}
-                maxPointsDiscount={maxPointsDiscount}
-                pointsToVndRate={pointsToVndRate}
-                pointsDiscount={pointsDiscount}
-                onUsePointsChange={handleUsePointsChange}
-                onPointsInputChange={handlePointsInputChange}
-                onUseMaxPoints={handleUseMaxPoints}
-              />
+            {/* Khung 3: Sử dụng coupon */}
+            {user && (
+              <div className="mb-4 border border-gray-400 rounded-lg px-5 py-4 bg-white shadow-md">
+                <h3 className="font-semibold text-sm md:text-base mb-3 text-gray-700">Mã Coupon</h3>
 
+                {/* Danh sách coupon của user */}
+                {userCoupons.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-xs text-gray-500 mb-2">Chọn mã giảm giá có sẵn:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {userCoupons.map((coupon) => (
+                        <button
+                          key={coupon.id}
+                          type="button"
+                          className={`border px-3 py-1 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                            selectedCouponId === coupon.id
+                              ? "bg-green-600 text-white border-green-600"
+                              : "bg-white text-green-700 border-green-600 hover:bg-green-50"
+                          }`}
+                          onClick={() => handleSelectCoupon(coupon)}>
+                          {coupon.code}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={handleCouponInputChange}
+                    placeholder="Hoặc nhập mã...."
+                    className="border border-gray-300 rounded-lg px-4 py-2 flex-1 text-sm md:text-base"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCheckCoupon}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold text-sm md:text-base flex items-center justify-center gap-2 min-w-[100px]"
+                    disabled={isCheckingCoupon || !couponCode}>
+                    {isCheckingCoupon ? <LoadingIcon size="16px" /> : "Áp dụng"}
+                  </button>
+                </div>
+
+                {/* Hiển thị lỗi coupon từ BE hoặc API kiểm tra coupon */}
+                {couponError && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {mapOrderError(couponError)?.coupon || couponError}
+                  </p>
+                )}
+
+                {/* Thông báo coupon đã áp dụng */}
+                {couponDiscount > 0 && (
+                  <p className="text-green-600 text-sm mt-1">
+                    Đã áp dụng giảm giá: -{couponDiscount.toLocaleString()}₫
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Khung 4: Sử dụng điểm thưởng */}
+            {user && (
+              <div className="mb-4 border border-gray-400 rounded-lg px-5 py-4 bg-white shadow-md">
+                <PointsUsageSection
+                  user={user}
+                  availablePoints={availablePoints}
+                  usePoints={usePoints}
+                  pointsToUse={pointsToUse}
+                  pointsError={pointsError}
+                  maxPointsDiscount={maxPointsDiscount}
+                  pointsToVndRate={pointsToVndRate}
+                  pointsDiscount={pointsDiscount}
+                  onUsePointsChange={handleUsePointsChange}
+                  onPointsInputChange={handlePointsInputChange}
+                  onUseMaxPoints={handleUseMaxPoints}
+                />
+              </div>
+            )}
+
+            {/* Khung 5: Tổng tiền */}
+            <div className="border border-gray-400 rounded-lg px-5 py-4 bg-white shadow-md">
+              <h3 className="font-semibold text-sm md:text-base mb-3 text-gray-700">
+                Tổng thanh toán
+              </h3>
               <div className="flex justify-between items-center mb-2 text-sm md:text-base">
                 <span className="font-bold">Tạm tính:</span>
                 <span className="text-gray-700 font-semibold">
                   {totalFoodPrice.toLocaleString()}₫
                 </span>
               </div>
+
               <div className="flex justify-between items-center mb-2 text-sm md:text-base">
                 <span className="font-bold">Phí giao hàng:</span>
                 <span className="text-gray-700 font-semibold">
@@ -581,12 +770,14 @@ export default function CheckoutPage() {
                   className={`text-green-700 font-bold text-sm md:text-base transition-all duration-300 ${
                     priceAnimated ? "transform scale-110" : "transform scale-100"
                   }`}>
-                  {totalPrice.toLocaleString()}₫
+                  {finalTotalPrice.toLocaleString()}₫
                 </span>
               </div>
+
               <p className="text-[13px] text-orange-500 mb-3 font-semibold text-center">
                 Miễn phí vận chuyển cho đơn từ 500.000đ trở lên!
               </p>
+
               <button
                 className="w-full border border-green-600 text-green-700 bg-white hover:bg-green-50 py-3 rounded-lg text-sm md:text-base font-semibold mb-3 transition-all duration-200 flex items-center justify-center gap-2"
                 type="button"
@@ -594,6 +785,7 @@ export default function CheckoutPage() {
                 <img src={shopping_cart} alt="Đặt thêm món" className="w-8 h-8 mr-2" />
                 <span>Đặt thêm món</span>
               </button>
+
               <LoadingButton
                 isLoading={isPlacingOrder}
                 className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg text-sm md:text-base font-semibold disabled:opacity-60 shadow-md transition-all duration-200"
@@ -608,6 +800,7 @@ export default function CheckoutPage() {
                 }>
                 Đặt hàng
               </LoadingButton>
+
               <PaymentMethodModal
                 isOpen={showPaymentModal}
                 onClose={() => setShowPaymentModal(false)}
@@ -618,7 +811,7 @@ export default function CheckoutPage() {
                 user={user}
               />
             </div>
-          </div>{" "}
+          </div>
         </div>
       </div>
     </div>
