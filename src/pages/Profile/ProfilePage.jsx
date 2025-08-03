@@ -16,6 +16,7 @@ import ChangePasswordTab from "./ChangePasswordTab";
 import ResetPasswordPage from "../ResetPasswordPage";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import PointsTab from "./PointsTab";
+import CouponsTab from "./CouponsTab";
 
 const tabs = [
   { id: "profile", label: "Hồ sơ cá nhân", icon: faUser },
@@ -147,7 +148,7 @@ export default function ProfilePage() {
         {activeTab === "coupons" && (
           <>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Ưu đãi của tôi</h3>
-            <p>Danh sách mã giảm giá còn hạn, mã sắp hết hạn,...</p>
+            <CouponsTab />
           </>
         )}
         {activeTab === "points" && (
