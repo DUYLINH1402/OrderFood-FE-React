@@ -25,7 +25,7 @@ function App() {
           theme="colored" // Chế độ giao diện ('light', 'dark', 'colored')
         />
         <AuthLoader>
-          <AppRoutes /> {/* Bọc router bên trong AuthLoader */}
+          <AppRoutes />
         </AuthLoader>
       </PersistGate>
     </Provider>

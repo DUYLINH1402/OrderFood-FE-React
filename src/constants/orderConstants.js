@@ -1,20 +1,20 @@
-// Order Status Constants
+// Order Status Constants - Matching Backend
 export const ORDER_STATUS = {
-  PENDING: "PENDING",
-  CONFIRMED: "CONFIRMED",
-  PREPARING: "PREPARING",
-  SHIPPING: "SHIPPING",
-  DELIVERED: "DELIVERED",
-  CANCELLED: "CANCELLED",
+  PENDING: "PENDING", // Đơn mới tạo, chưa thanh toán (PaymentStatus = PENDING)
+  PROCESSING: "PROCESSING", // Đã thanh toán, chờ nhà hàng xác nhận (PaymentStatus = PAID)
+  CONFIRMED: "CONFIRMED", // Đã xác nhận, nhà hàng đang chế biến món
+  DELIVERING: "DELIVERING", // Đang giao hàng (món đã chế biến xong)
+  COMPLETED: "COMPLETED", // Đã giao thành công
+  CANCELLED: "CANCELLED", // Đã hủy
 };
 
 // Order Status Labels (Vietnamese)
 export const ORDER_STATUS_LABELS = {
-  [ORDER_STATUS.PENDING]: "Chờ xác nhận",
-  [ORDER_STATUS.CONFIRMED]: "Đã xác nhận",
-  [ORDER_STATUS.PREPARING]: "Đang chuẩn bị",
-  [ORDER_STATUS.SHIPPING]: "Đang giao hàng",
-  [ORDER_STATUS.DELIVERED]: "Đã giao hàng",
+  [ORDER_STATUS.PENDING]: "Chờ thanh toán",
+  [ORDER_STATUS.PROCESSING]: "Chờ xác nhận",
+  [ORDER_STATUS.CONFIRMED]: "Đang chế biến",
+  [ORDER_STATUS.DELIVERING]: "Đang giao hàng",
+  [ORDER_STATUS.COMPLETED]: "Đã hoàn thành",
   [ORDER_STATUS.CANCELLED]: "Đã hủy",
 };
 
@@ -27,29 +27,29 @@ export const ORDER_STATUS_CONFIG = {
     borderColor: "border-orange-200",
     icon: "faClock",
   },
-  [ORDER_STATUS.CONFIRMED]: {
-    label: ORDER_STATUS_LABELS[ORDER_STATUS.CONFIRMED],
+  [ORDER_STATUS.PROCESSING]: {
+    label: ORDER_STATUS_LABELS[ORDER_STATUS.PROCESSING],
     color: "text-blue-600",
     bgColor: "bg-blue-50",
     borderColor: "border-blue-200",
     icon: "faCheckCircle",
   },
-  [ORDER_STATUS.PREPARING]: {
-    label: ORDER_STATUS_LABELS[ORDER_STATUS.PREPARING],
+  [ORDER_STATUS.CONFIRMED]: {
+    label: ORDER_STATUS_LABELS[ORDER_STATUS.CONFIRMED],
     color: "text-yellow-600",
     bgColor: "bg-yellow-50",
     borderColor: "border-yellow-200",
-    icon: "faClock",
+    icon: "faUtensils",
   },
-  [ORDER_STATUS.SHIPPING]: {
-    label: ORDER_STATUS_LABELS[ORDER_STATUS.SHIPPING],
+  [ORDER_STATUS.DELIVERING]: {
+    label: ORDER_STATUS_LABELS[ORDER_STATUS.DELIVERING],
     color: "text-purple-600",
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
     icon: "faTruck",
   },
-  [ORDER_STATUS.DELIVERED]: {
-    label: ORDER_STATUS_LABELS[ORDER_STATUS.DELIVERED],
+  [ORDER_STATUS.COMPLETED]: {
+    label: ORDER_STATUS_LABELS[ORDER_STATUS.COMPLETED],
     color: "text-green-600",
     bgColor: "bg-green-50",
     borderColor: "border-green-200",
@@ -103,21 +103,21 @@ export const ORDER_ACTIONS = {
   CANCEL: "CANCEL",
 };
 
-// Allowed status transitions
+// Allowed status transitions - Matching Backend Logic
 export const STATUS_TRANSITIONS = {
-  [ORDER_STATUS.PENDING]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.CANCELLED],
-  [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.PREPARING, ORDER_STATUS.CANCELLED],
-  [ORDER_STATUS.PREPARING]: [ORDER_STATUS.SHIPPING, ORDER_STATUS.CANCELLED],
-  [ORDER_STATUS.SHIPPING]: [ORDER_STATUS.DELIVERED],
-  [ORDER_STATUS.DELIVERED]: [], // Final state
+  [ORDER_STATUS.PENDING]: [ORDER_STATUS.PROCESSING, ORDER_STATUS.CANCELLED], // Customer pays or cancels
+  [ORDER_STATUS.PROCESSING]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.CANCELLED], // Staff confirms or cancels
+  [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.DELIVERING, ORDER_STATUS.CANCELLED], // Start delivery or cancel
+  [ORDER_STATUS.DELIVERING]: [ORDER_STATUS.COMPLETED], // Complete delivery
+  [ORDER_STATUS.COMPLETED]: [], // Final state
   [ORDER_STATUS.CANCELLED]: [], // Final state
 };
 
 // Status that allow cancellation
 export const CANCELLABLE_STATUSES = [
   ORDER_STATUS.PENDING,
+  ORDER_STATUS.PROCESSING,
   ORDER_STATUS.CONFIRMED,
-  ORDER_STATUS.PREPARING,
 ];
 
 // Common validation constants

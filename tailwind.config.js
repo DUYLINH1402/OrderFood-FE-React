@@ -9,6 +9,7 @@ module.exports = {
         base: "16px", //cho desktop
         lg: "20px",
         xl: "24px",
+        xxl: "30px",
       },
       spacing: {
         50: "50px",

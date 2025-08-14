@@ -40,55 +40,26 @@ export const createOrder = async (payload) => {
 };
 
 // LẤY DANH SÁCH ĐƠN HÀNG
-export const getOrders = async (params = {}) => {
-  try {
-    if (useFirebase) {
-      const result = await getOrdersFromFirebase(params);
-      if (result.success) {
-        return {
-          ...result,
-          data: result.data.map((order) => transformFirebaseOrderToFrontend(order)),
-        };
-      }
-      return result;
-    } else {
-      const result = await getOrdersApi(params);
-      if (result.success) {
-        return {
-          ...result,
-          data: result.data.map((order) => transformApiOrderToFrontend(order)),
-        };
-      }
-      return result;
-    }
-  } catch (error) {
-    console.error("Error in getOrders service:", error);
-    return { success: false, message: error.message };
-  }
+export const getOrders = async () => {
+  return useFirebase ? await getOrdersFromFirebase() : await getOrdersApi();
 };
 
 // LẤY CHI TIẾT ĐƠN HÀNG
 export const getOrderById = async (orderId) => {
   try {
-    if (useFirebase) {
-      const result = await getOrderByIdFromFirebase(orderId);
-      if (result.success) {
-        return {
-          ...result,
-          data: transformFirebaseOrderToFrontend(result.data),
-        };
-      }
-      return result;
-    } else {
-      const result = await getOrderByIdApi(orderId);
-      if (result.success) {
-        return {
-          ...result,
-          data: transformApiOrderToFrontend(result.data),
-        };
-      }
-      return result;
+    const result = useFirebase
+      ? await getOrderByIdFromFirebase(orderId)
+      : await getOrderByIdApi(orderId);
+
+    if (result.success) {
+      return {
+        ...result,
+        data: useFirebase
+          ? transformFirebaseOrderToFrontend(result.data)
+          : transformApiOrderToFrontend(result.data),
+      };
     }
+    return result;
   } catch (error) {
     console.error("Error in getOrderById service:", error);
     return { success: false, message: error.message };

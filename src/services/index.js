@@ -1,5 +1,6 @@
 // Export all services
 export * from "./service/orderService";
+export * from "./service/staffOrderService";
 export * from "./service/paymentService";
 export * from "./service/cartService";
 export * from "./service/foodService";

@@ -48,13 +48,6 @@ apiClient.interceptors.response.use(
     // Xử lý lỗi authentication (401, 403)
     if (response?.status === 401 || response?.status === 403) {
       const errorCode = response.data?.errorCode;
-
-      console.log("Auth error detected:", {
-        status: response.status,
-        errorCode,
-        data: response.data,
-      });
-
       // Kiểm tra nếu là JWT token expired/invalid
       if (
         errorCode === "JWT_TOKEN_EXPIRED" ||

@@ -16,6 +16,10 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.accessToken = null;
+      // Xóa dữ liệu authentication trong localStorage
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("cartItems");
     },
     setUser: (state, action) => {
       state.user = action.payload;

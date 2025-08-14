@@ -16,6 +16,7 @@ import { getUserCart, syncCart } from "../services/service/cartService";
 import { setCartItems } from "../store/slices/cartSlice";
 import { LoadingButton } from "./Skeleton/LoadingButton";
 import ForgotPasswordModal from "./ForgotPasswordModal";
+import { ROLES } from "../utils/roleConfig";
 
 export default function LoginRegisterForm() {
   const [isRegisterActive, setIsRegisterActive] = useState(false);
@@ -65,7 +66,6 @@ export default function LoginRegisterForm() {
     try {
       setLoginErrors({});
       const data = await loginApi(loginData); // gọi authService
-      // console.log("Dữ liệu đăng nhập:", data);
       // Lưu user + token vào Redux
       dispatch(loginSuccess({ user: data, accessToken: data.token }));
 
@@ -88,10 +88,17 @@ export default function LoginRegisterForm() {
         localStorage.removeItem("redirectAfterLogin");
         navigate(redirectPath);
       } else {
-        // Đăng nhập thành công → chuyển về trang chủ
-        navigate("/");
+        // Redirect theo role của user
+        const userRole = data.roleCode;
+        if (userRole === ROLES.ADMIN) {
+          navigate("/admin/dashboard");
+        } else if (userRole === ROLES.STAFF) {
+          navigate("/staff/dashboard");
+        } else {
+          // Customer hoặc role khác về trang chủ
+          navigate("/");
+        }
       }
-      toast.success("Đăng nhập thành công!");
     } catch (error) {
       if (error.message === "EMAIL_NOT_VERIFIED") {
         setShowResendLink(true);

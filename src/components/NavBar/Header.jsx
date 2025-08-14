@@ -11,8 +11,6 @@ import { logout } from "../../store/slices/authSlice";
 import { clearCart } from "../../store/slices/cartSlice";
 const Header = () => {
   const cartItems = useSelector((state) => state.cart.items);
-  // const [showHeader, setShowHeader] = useState(true);
-  // const [lastScrollY, setLastScrollY] = useState(0);
   const authUser = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);

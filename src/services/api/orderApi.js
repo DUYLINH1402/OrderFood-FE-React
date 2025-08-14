@@ -29,21 +29,83 @@ export const createOrderApi = async (payload) => {
 };
 
 // LẤY DANH SÁCH ĐƠN HÀNG
-export const getOrdersApi = async (params = {}) => {
+export const getOrdersApi = async () => {
   try {
-    // Chỉ giữ lại log lỗi khi lấy danh sách đơn hàng
-    const { page, size, sortBy, sortDir } = params;
-    const apiParams = {};
-    if (page !== undefined) apiParams.page = page;
-    if (size !== undefined) apiParams.size = size;
-    if (sortBy !== undefined) apiParams.sortBy = sortBy;
-    if (sortDir !== undefined) apiParams.sortDir = sortDir;
+    const token = localStorage.getItem("accessToken");
+    let user = {};
 
-    const response = await apiClient.get("/api/orders", { params: apiParams });
+    // Safe JSON parsing
+    try {
+      const userStr = localStorage.getItem("user");
+      user = userStr ? JSON.parse(userStr) : {};
+    } catch (parseError) {
+      console.error("Error parsing user from localStorage:", parseError);
+      user = {};
+    }
+
+    let response;
+    let endpointUsed;
+
+    // Thử các endpoint khác nhau dựa trên role
+    const userRole = user.roleCode || user.role;
+
+    try {
+      if (userRole === "ROLE_STAFF") {
+        endpointUsed = "api/management/orders";
+        response = await apiClient.get(endpointUsed);
+      } else if (userRole === "ROLE_ADMIN") {
+        endpointUsed = "api/admin/orders";
+        response = await apiClient.get(endpointUsed);
+      } else {
+        // Fallback cho tất cả roles
+        endpointUsed = "api/management/orders";
+        response = await apiClient.get(endpointUsed);
+      }
+    } catch (endpointError) {
+      // Nếu endpoint đầu tiên thất bại, thử endpoint khác
+      const fallbackEndpoints = [
+        "api/orders",
+        "api/management/orders",
+        "api/staff/orders",
+        "api/admin/orders",
+      ];
+
+      for (const endpoint of fallbackEndpoints) {
+        try {
+          response = await apiClient.get(endpoint);
+          endpointUsed = endpoint;
+          break;
+        } catch (fallbackError) {
+          continue;
+        }
+      }
+
+      if (!response) {
+        throw endpointError; // Ném lỗi gốc nếu tất cả endpoint đều thất bại
+      }
+    }
+
+    // Validate response
+    if (!response || !response.data) {
+      throw new Error("Invalid response from server");
+    }
+
+    // Safe data processing
+    let processedData;
+    try {
+      processedData = Array.isArray(response.data)
+        ? response.data
+        : response.data && typeof response.data === "object"
+        ? Object.values(response.data)
+        : [];
+    } catch (dataError) {
+      console.error("Error processing response data:", dataError);
+      processedData = [];
+    }
 
     return {
       success: true,
-      data: response.data.data || response.data || [],
+      data: processedData,
       pagination: response.data.pagination || {
         page: response.data.page || 0,
         size: response.data.size || 10,

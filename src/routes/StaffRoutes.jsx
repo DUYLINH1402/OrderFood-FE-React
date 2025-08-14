@@ -3,17 +3,15 @@ import { Outlet, Navigate } from "react-router-dom";
 import { ROLES, PERMISSIONS } from "../utils/roleConfig";
 import AuthGuard from "../components/auth/AuthGuard";
 import PermissionGuard from "../components/auth/PermissionGuard";
-import AdminLayout from "../layouts/AdminLayout";
+import StaffLayout from "../layouts/StaffLayout";
 
-// Import các page components cho admin
-const AdminDashboard = React.lazy(() => import("../pages/admin/AdminDashboard"));
-const AdminUsers = React.lazy(() => import("../pages/admin/AdminUsers"));
-const AdminStaff = React.lazy(() => import("../pages/admin/AdminStaff"));
-const AdminOrders = React.lazy(() => import("../pages/admin/AdminOrders"));
-const AdminMenu = React.lazy(() => import("../pages/admin/AdminMenu"));
-const AdminAnalytics = React.lazy(() => import("../pages/admin/AdminAnalytics"));
-const AdminSettings = React.lazy(() => import("../pages/admin/AdminSettings"));
-const AdminPromotions = React.lazy(() => import("../pages/admin/AdminPromotions"));
+// Import các page components cho staff
+const StaffDashboard = React.lazy(() => import("../pages/staff/StaffDashboard"));
+const StaffOrders = React.lazy(() => import("../pages/staff/StaffOrders"));
+const StaffMenu = React.lazy(() => import("../pages/staff/StaffMenu"));
+const StaffCustomers = React.lazy(() => import("../pages/staff/StaffCustomers"));
+const StaffReports = React.lazy(() => import("../pages/staff/StaffReports"));
+const StaffProfile = React.lazy(() => import("../pages/staff/StaffProfile"));
 
 // Trang lỗi chung
 const Unauthorized = () => (
@@ -31,20 +29,20 @@ const Unauthorized = () => (
   </div>
 );
 
-const AdminLayoutWrapper = () => {
+const StaffLayoutWrapper = () => {
   return (
-    <AdminLayout>
+    <StaffLayout>
       <Outlet />
-    </AdminLayout>
+    </StaffLayout>
   );
 };
 
-export const AdminRoutes = [
+export const StaffRoutes = [
   {
-    path: "/admin",
+    path: "/staff",
     element: (
-      <AuthGuard allowedRoles={[ROLES.ADMIN]}>
-        <AdminLayoutWrapper />
+      <AuthGuard allowedRoles={[ROLES.STAFF, ROLES.ADMIN]}>
+        <StaffLayoutWrapper />
       </AuthGuard>
     ),
     errorElement: <Unauthorized />,
@@ -54,28 +52,8 @@ export const AdminRoutes = [
         path: "dashboard",
         element: (
           <React.Suspense fallback={<div>Đang tải...</div>}>
-            <AdminDashboard />
+            <StaffDashboard />
           </React.Suspense>
-        ),
-      },
-      {
-        path: "users",
-        element: (
-          <PermissionGuard requiredPermissions={[PERMISSIONS.MANAGE_USERS]}>
-            <React.Suspense fallback={<div>Đang tải...</div>}>
-              <AdminUsers />
-            </React.Suspense>
-          </PermissionGuard>
-        ),
-      },
-      {
-        path: "staff",
-        element: (
-          <PermissionGuard requiredPermissions={[PERMISSIONS.MANAGE_STAFF]}>
-            <React.Suspense fallback={<div>Đang tải...</div>}>
-              <AdminStaff />
-            </React.Suspense>
-          </PermissionGuard>
         ),
       },
       {
@@ -83,7 +61,7 @@ export const AdminRoutes = [
         element: (
           <PermissionGuard requiredPermissions={[PERMISSIONS.VIEW_ORDERS]}>
             <React.Suspense fallback={<div>Đang tải...</div>}>
-              <AdminOrders />
+              <StaffOrders />
             </React.Suspense>
           </PermissionGuard>
         ),
@@ -93,39 +71,37 @@ export const AdminRoutes = [
         element: (
           <PermissionGuard requiredPermissions={[PERMISSIONS.MANAGE_MENU]}>
             <React.Suspense fallback={<div>Đang tải...</div>}>
-              <AdminMenu />
+              <StaffMenu />
             </React.Suspense>
           </PermissionGuard>
         ),
       },
       {
-        path: "analytics",
+        path: "customers",
         element: (
-          <PermissionGuard requiredPermissions={[PERMISSIONS.VIEW_ANALYTICS]}>
+          <PermissionGuard requiredPermissions={[PERMISSIONS.VIEW_CUSTOMER_INFO]}>
             <React.Suspense fallback={<div>Đang tải...</div>}>
-              <AdminAnalytics />
+              <StaffCustomers />
             </React.Suspense>
           </PermissionGuard>
         ),
       },
       {
-        path: "promotions",
+        path: "reports",
         element: (
-          <PermissionGuard requiredPermissions={[PERMISSIONS.MANAGE_PROMOTIONS]}>
+          <PermissionGuard requiredPermissions={[PERMISSIONS.VIEW_DAILY_REPORTS]}>
             <React.Suspense fallback={<div>Đang tải...</div>}>
-              <AdminPromotions />
+              <StaffReports />
             </React.Suspense>
           </PermissionGuard>
         ),
       },
       {
-        path: "settings",
+        path: "profile",
         element: (
-          <PermissionGuard requiredPermissions={[PERMISSIONS.MANAGE_SYSTEM_SETTINGS]}>
-            <React.Suspense fallback={<div>Đang tải...</div>}>
-              <AdminSettings />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Đang tải...</div>}>
+            <StaffProfile />
+          </React.Suspense>
         ),
       },
     ],

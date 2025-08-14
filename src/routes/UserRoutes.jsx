@@ -1,6 +1,8 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
+import LoginRequired from "../components/auth/LoginRequired";
+import HomeRedirect from "../components/auth/HomeRedirect";
+import GuestOnly from "../components/auth/GuestOnly";
+import CustomerOnlyGuard from "../components/auth/CustomerOnlyGuard";
 
 // Pages
 import Home from "../pages/Home";
@@ -22,29 +24,47 @@ import Error404Page from "../pages/Error404Page";
 export const UserRoutes = [
   {
     path: "/",
-    element: <Layout />,
+    element: (
+      <CustomerOnlyGuard>
+        <Layout />
+      </CustomerOnlyGuard>
+    ),
     // errorElement: <Unauthorized />,
     children: [
       { path: "/gioi-thieu", element: <DongXanhIntro /> },
-      { path: "/", element: <Home /> },
+      {
+        path: "/",
+        element: (
+          <HomeRedirect>
+            <Home />
+          </HomeRedirect>
+        ),
+      },
       { path: "/gio-hang", element: <CartPage /> },
       { path: "/mon-an", element: <FoodListPage /> },
       { path: "/tich-diem", element: <RewardPointsIntro /> },
-      { path: "/dang-nhap", element: <LoginRegisterForm /> },
+      {
+        path: "/dang-nhap",
+        element: (
+          <GuestOnly>
+            <LoginRegisterForm />
+          </GuestOnly>
+        ),
+      },
       {
         path: "/ho-so",
         element: (
-          <ProtectedRoute>
+          <LoginRequired>
             <ProfilePage />
-          </ProtectedRoute>
+          </LoginRequired>
         ),
       },
       {
         path: "/yeu-thich",
         element: (
-          <ProtectedRoute>
+          <LoginRequired>
             <FavoriteDishes />
-          </ProtectedRoute>
+          </LoginRequired>
         ),
       },
       { path: "/mon-an/:slug", element: <FoodListPage /> },
@@ -57,6 +77,10 @@ export const UserRoutes = [
   },
   {
     path: "/reset-password",
-    element: <ResetPasswordPage />,
+    element: (
+      <GuestOnly>
+        <ResetPasswordPage />
+      </GuestOnly>
+    ),
   },
 ];
