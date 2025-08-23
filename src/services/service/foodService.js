@@ -10,6 +10,7 @@ import {
   getFoodsByCategoryIDFromSQL,
   getFoodsByCategorySlugFromSQL,
   getFoodBySlugFromSQL,
+  updateFoodStatusFromSQL,
 } from "../api/foodApi";
 
 // LẤY DANH SÁCH MÓN MỚI
@@ -55,4 +56,10 @@ export const getFoodsByCategorySlug = async (slug, page, size) => {
 // LẤY CHI TIẾT MÓN ĂN THEO SLUG
 export const getFoodBySlug = async (slug) => {
   return useFirebase ? await getFoodBySlugFromFirebase(slug) : await getFoodBySlugFromSQL(slug);
+};
+
+// CẬP NHẬT TRẠNG THÁI MÓN ĂN (CHỈ DÀNH CHO STAFF/ADMIN)
+export const updateFoodStatus = async (foodId, status) => {
+  // Chỉ sử dụng SQL API cho function này vì Firebase không cần update status
+  return await updateFoodStatusFromSQL(foodId, status);
 };

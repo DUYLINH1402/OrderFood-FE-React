@@ -47,6 +47,7 @@ Luôn phản hồi cho người dùng bằng Tiếng Việt trong mọi tình hu
 - Quản lý phân quyền, giao diện động: Hiển thị UI phù hợp cho từng loại user (khách, nhân viên, admin), kiểm tra xác thực trước các thao tác nhạy cảm.
 - Quy trình phát triển: Sử dụng branch cho từng tính năng, commit message rõ ràng, review code trước khi merge, viết test cho các component/page quan trọng, dùng môi trường dev/test trước khi lên production.
 - Lưu ý bảo mật: Sử dụng biến môi trường cho thông tin bảo mật, không lưu thông tin nhạy cảm ở client.
+- Khi console.log không dùng các icon để in ra
 
 ## Cấu trúc thư mục Frontend
 

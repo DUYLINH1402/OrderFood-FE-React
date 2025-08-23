@@ -59,7 +59,7 @@ const OrderActionButtons = ({
           <button
             onClick={() => onStartDelivering(getOrderId(order))}
             className="px-3 py-1 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-base">
-            Hoàn thành & Giao hàng
+            Giao hàng
           </button>
           {canCancel && (
             <button
@@ -76,7 +76,7 @@ const OrderActionButtons = ({
         <button
           onClick={() => onCompleteDelivery(getOrderId(order))}
           className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-base">
-          Hoàn thành giao hàng
+          Hoàn tất giao hàng
         </button>
       );
 

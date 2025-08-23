@@ -238,8 +238,8 @@ export const prepareOrderPayload = (orderData) => {
 export const handleOrderSubmission = async (orderData, navigate) => {
   try {
     const payload = prepareOrderPayload(orderData);
+    console.log("Submitting order with payload:", payload);
     const result = await createOrder(payload);
-
     // Kiểm tra nếu có paymentUrl trong response (dành cho ZaloPay, MoMo, v.v.)
     if (result && result.paymentUrl) {
       // Chuyển hướng người dùng đến trang thanh toán

@@ -24,6 +24,7 @@ export const PERMISSIONS = {
   VIEW_CUSTOMER_INFO: "view_customer_info",
   HANDLE_COMPLAINTS: "handle_complaints",
   VIEW_DAILY_REPORTS: "view_daily_reports",
+  VIEW_STAFF_PROFILE: "view_staff_profile",
 
   // Admin permissions
   MANAGE_USERS: "manage_users",
@@ -57,6 +58,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.VIEW_CUSTOMER_INFO,
     PERMISSIONS.HANDLE_COMPLAINTS,
     PERMISSIONS.VIEW_DAILY_REPORTS,
+    PERMISSIONS.VIEW_STAFF_PROFILE,
   ],
   [ROLES.ADMIN]: [
     // Admin có tất cả permissions
@@ -139,8 +141,8 @@ export const ROLE_NAVIGATION = {
     { path: "/staff/dashboard", label: "Bảng điều khiển", icon: "dashboard" },
     { path: "/staff/orders", label: "Quản lý đơn hàng", icon: "orders" },
     { path: "/staff/menu", label: "Quản lý thực đơn", icon: "menu" },
-    { path: "/staff/customers", label: "Khách hàng", icon: "customers" },
     { path: "/staff/reports", label: "Báo cáo", icon: "reports" },
+    { path: "/staff/profile", label: "Hồ sơ", icon: "customers" },
   ],
   [ROLES.ADMIN]: [
     { path: "/admin/dashboard", label: "Bảng điều khiển", icon: "dashboard" },

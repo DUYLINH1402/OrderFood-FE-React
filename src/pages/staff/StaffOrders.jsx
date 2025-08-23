@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useAuth, usePermissions } from "../../hooks/auth/useAuth";
+import { useStaffOrderWebSocket } from "../../hooks/useStaffOrderWebSocket";
 import { PERMISSIONS } from "../../utils/roleConfig";
 import {
   ORDER_STATUS,
@@ -19,10 +20,156 @@ const StaffOrders = () => {
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetail, setShowOrderDetail] = useState(false);
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    pendingOrders: 0,
+    preparingOrders: 0,
+    completedOrders: 0,
+  });
   const [dateFilter, setDateFilter] = useState({
     from: "",
     to: "",
   });
+
+  // Sử dụng WebSocket hook
+  const {
+    connected: wsConnected,
+    connecting: wsConnecting,
+    error: wsError,
+    addMessageHandler,
+    removeHandlers,
+    acknowledgeOrder,
+    requestOrderDetails,
+    updateOrderStatus,
+    ping,
+    status: wsStatus,
+  } = useStaffOrderWebSocket();
+
+  // Xử lý đơn hàng mới từ WebSocket
+  const handleNewOrder = useCallback(
+    (orderData) => {
+      console.log("🆕 Nhận được đơn hàng mới:", orderData);
+
+      // Hiển thị thông báo
+      toast.info(`🛒 Đơn hàng mới: ${orderData.orderCode}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        onClick: () => {
+          // Có thể mở modal chi tiết đơn hàng
+          requestOrderDetails(orderData.orderId);
+        },
+      });
+
+      // Cập nhật danh sách đơn hàng
+      setOrders((prevOrders) => [orderData, ...prevOrders]);
+
+      // Cập nhật thống kê
+      setStats((prev) => ({
+        ...prev,
+        totalOrders: prev.totalOrders + 1,
+        pendingOrders: prev.pendingOrders + 1,
+      }));
+
+      // Tự động xác nhận đã nhận được đơn hàng
+      acknowledgeOrder(orderData.orderId);
+    },
+    [requestOrderDetails, acknowledgeOrder]
+  );
+
+  // Xử lý cập nhật trạng thái đơn hàng từ WebSocket
+  const handleOrderStatusUpdate = useCallback((updateData) => {
+    console.log("📦 Cập nhật trạng thái đơn hàng:", updateData);
+
+    // Hiển thị thông báo
+    toast.info(
+      `📦 ${updateData.orderCode}: ${updateData.previousStatus} → ${updateData.orderStatus}`,
+      {
+        position: "top-right",
+        autoClose: 4000,
+      }
+    );
+
+    // Cập nhật đơn hàng trong danh sách
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === updateData.orderId
+          ? { ...order, status: updateData.orderStatus, updatedAt: new Date() }
+          : order
+      )
+    );
+
+    // Cập nhật thống kê (tùy vào trạng thái)
+    setStats((prev) => {
+      const newStats = { ...prev };
+
+      // Giảm số lượng trạng thái cũ
+      if (updateData.previousStatus === ORDER_STATUS.PENDING) {
+        newStats.pendingOrders = Math.max(0, prev.pendingOrders - 1);
+      } else if (updateData.previousStatus === ORDER_STATUS.PREPARING) {
+        newStats.preparingOrders = Math.max(0, prev.preparingOrders - 1);
+      }
+
+      // Tăng số lượng trạng thái mới
+      if (updateData.orderStatus === ORDER_STATUS.PENDING) {
+        newStats.pendingOrders = prev.pendingOrders + 1;
+      } else if (updateData.orderStatus === ORDER_STATUS.PREPARING) {
+        newStats.preparingOrders = prev.preparingOrders + 1;
+      } else if (updateData.orderStatus === ORDER_STATUS.DELIVERED) {
+        newStats.completedOrders = prev.completedOrders + 1;
+      }
+
+      return newStats;
+    });
+  }, []);
+
+  // Xử lý cập nhật thống kê từ WebSocket
+  const handleStatsUpdate = useCallback((statsData) => {
+    console.log("📊 Cập nhật thống kê:", statsData);
+    if (statsData && typeof statsData === "object") {
+      setStats((prevStats) => ({ ...prevStats, ...statsData }));
+    }
+  }, []);
+
+  // Xử lý chi tiết đơn hàng từ WebSocket
+  const handleOrderDetails = useCallback((detailsData) => {
+    console.log("📋 Nhận chi tiết đơn hàng:", detailsData);
+    // Có thể mở modal chi tiết hoặc cập nhật state
+  }, []);
+
+  // Setup WebSocket handlers
+  useEffect(() => {
+    if (wsConnected) {
+      console.log("🔗 Đã kết nối WebSocket, đăng ký handlers");
+
+      // Đăng ký các message handlers
+      const unsubscribeNewOrder = addMessageHandler("newOrder", handleNewOrder);
+      const unsubscribeOrderUpdate = addMessageHandler(
+        "orderStatusUpdate",
+        handleOrderStatusUpdate
+      );
+      const unsubscribeStats = addMessageHandler("statsUpdate", handleStatsUpdate);
+      const unsubscribeDetails = addMessageHandler("orderDetails", handleOrderDetails);
+
+      // Cleanup khi component unmount hoặc websocket disconnect
+      return () => {
+        unsubscribeNewOrder();
+        unsubscribeOrderUpdate();
+        unsubscribeStats();
+        unsubscribeDetails();
+      };
+    }
+  }, [
+    wsConnected,
+    handleNewOrder,
+    handleOrderStatusUpdate,
+    handleStatsUpdate,
+    handleOrderDetails,
+    addMessageHandler,
+  ]);
 
   useEffect(() => {
     if (hasPermission(PERMISSIONS.VIEW_ORDERS)) {
@@ -38,9 +185,39 @@ const StaffOrders = () => {
       setLoading(true);
       // Giả định có API getAllOrders cho staff
       // const response = await getAllOrdersForStaff();
-      // Tạm thời dùng dữ liệu mẫu
-      const sampleOrders = [];
+      // Tạm thời dùng dữ liệu mẫu để test WebSocket
+      const sampleOrders = [
+        {
+          id: 1,
+          orderCode: "ORD001",
+          receiverName: "Nguyễn Văn A",
+          receiverPhone: "0123456789",
+          totalPrice: 250000,
+          status: ORDER_STATUS.PENDING,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 2,
+          orderCode: "ORD002",
+          receiverName: "Trần Thị B",
+          receiverPhone: "0987654321",
+          totalPrice: 350000,
+          status: ORDER_STATUS.PREPARING,
+          createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 giờ trước
+          updatedAt: new Date(Date.now() - 3600000).toISOString(),
+        },
+      ];
+
       setOrders(sampleOrders);
+
+      // Cập nhật thống kê ban đầu
+      setStats({
+        totalOrders: sampleOrders.length,
+        pendingOrders: sampleOrders.filter((o) => o.status === ORDER_STATUS.PENDING).length,
+        preparingOrders: sampleOrders.filter((o) => o.status === ORDER_STATUS.PREPARING).length,
+        completedOrders: sampleOrders.filter((o) => o.status === ORDER_STATUS.DELIVERED).length,
+      });
     } catch (err) {
       console.error("Error fetching orders:", err);
       setError("Có lỗi xảy ra khi tải danh sách đơn hàng");
@@ -52,6 +229,35 @@ const StaffOrders = () => {
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
     setShowOrderDetail(true);
+    // Yêu cầu chi tiết đơn hàng qua WebSocket
+    requestOrderDetails(order.id);
+  };
+
+  // Hàm cập nhật trạng thái đơn hàng
+  const handleUpdateOrderStatus = async (orderId, orderCode, newStatus) => {
+    const currentOrder = orders.find((o) => o.id === orderId);
+    if (!currentOrder) return;
+
+    const previousStatus = currentOrder.status;
+
+    // Cập nhật qua WebSocket
+    const success = updateOrderStatus(orderId, orderCode, newStatus, previousStatus);
+
+    if (success) {
+      toast.success(`✅ Đã cập nhật trạng thái đơn hàng ${orderCode}`);
+    } else {
+      toast.error("❌ Không thể cập nhật trạng thái đơn hàng");
+    }
+  };
+
+  // Hàm test ping WebSocket
+  const handlePing = () => {
+    const success = ping();
+    if (success) {
+      toast.info("🏓 Đã gửi ping để kiểm tra kết nối");
+    } else {
+      toast.error("❌ Không thể ping - WebSocket chưa kết nối");
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -98,10 +304,104 @@ const StaffOrders = () => {
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Lịch sử đơn hàng</h1>
-          <p className="text-base text-gray-600">
-            Xem tất cả đơn hàng và theo dõi lịch sử giao dịch
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 mb-2">Quản lý đơn hàng</h1>
+              <p className="text-base text-gray-600">Theo dõi và xử lý đơn hàng real-time</p>
+            </div>
+
+            {/* WebSocket Status */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    wsConnected
+                      ? "bg-green-500 animate-pulse"
+                      : wsConnecting
+                      ? "bg-yellow-500 animate-pulse"
+                      : "bg-red-500"
+                  }`}></div>
+                <span className="text-sm text-gray-600">
+                  {wsConnected ? "Đã kết nối" : wsConnecting ? "Đang kết nối..." : "Mất kết nối"}
+                </span>
+              </div>
+
+              {/* Ping button */}
+              {wsConnected && (
+                <button
+                  onClick={handlePing}
+                  className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
+                  🏓 Ping
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* WebSocket Error */}
+          {wsError && (
+            <div className="mt-4 bg-red-50 border border-red-200 rounded-md p-3">
+              <p className="text-red-800 text-sm">⚠️ Lỗi WebSocket: {wsError}</p>
+            </div>
+          )}
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">📝</span>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Tổng đơn hàng</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalOrders}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">⏳</span>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Chờ xử lý</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.pendingOrders}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">👨‍🍳</span>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Đang chuẩn bị</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.preparingOrders}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">✅</span>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Hoàn thành</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.completedOrders}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
@@ -230,11 +530,42 @@ const StaffOrders = () => {
                         {new Date(order.createdAt).toLocaleString("vi-VN")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleViewOrder(order)}
-                          className="text-blue-600 hover:text-blue-900">
-                          Xem chi tiết
-                        </button>
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={() => handleViewOrder(order)}
+                            className="text-blue-600 hover:text-blue-900 font-medium">
+                            Xem chi tiết
+                          </button>
+
+                          {/* Update Status Buttons */}
+                          {order.status === ORDER_STATUS.PENDING && (
+                            <button
+                              onClick={() =>
+                                handleUpdateOrderStatus(
+                                  order.id,
+                                  order.orderCode,
+                                  ORDER_STATUS.PREPARING
+                                )
+                              }
+                              className="text-green-600 hover:text-green-900 font-medium">
+                              Xác nhận
+                            </button>
+                          )}
+
+                          {order.status === ORDER_STATUS.PREPARING && (
+                            <button
+                              onClick={() =>
+                                handleUpdateOrderStatus(
+                                  order.id,
+                                  order.orderCode,
+                                  ORDER_STATUS.DELIVERED
+                                )
+                              }
+                              className="text-purple-600 hover:text-purple-900 font-medium">
+                              Hoàn thành
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

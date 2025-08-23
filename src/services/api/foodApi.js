@@ -1,4 +1,4 @@
-import { publicClient } from "../apiClient";
+import { publicClient, apiClient } from "../apiClient";
 
 // LẤY DANH SÁCH MÓN MỚI
 export const getNewFoodsFromSQL = async (page = 0, size = 12) => {
@@ -78,5 +78,18 @@ export const getFoodBySlugFromSQL = async (slug) => {
   } catch (error) {
     console.error(`Lỗi khi lấy chi tiết món ăn (${slug}):`, error.message);
     return null;
+  }
+};
+
+// CẬP NHẬT TRẠNG THÁI MÓN ĂN (CHỈ DÀNH CHO STAFF/ADMIN)
+export const updateFoodStatusFromSQL = async (foodId, status) => {
+  try {
+    const response = await apiClient.patch(`/api/foods/${foodId}/status`, {
+      status: status,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Lỗi khi cập nhật trạng thái món ăn (${foodId}):`, error.message);
+    throw error;
   }
 };

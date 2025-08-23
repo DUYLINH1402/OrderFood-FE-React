@@ -6,17 +6,26 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
 const PhoneConfirmModal = ({ open, orderInfo, onConfirm, onCancel, loading = false }) => {
-  const [staffNote, setStaffNote] = useState("");
-
+  const [staffNote, setStaffNote] = useState(""); // Đảm bảo khởi tạo là string rỗng
   if (!orderInfo) return null;
 
-  const handleConfirm = () => {
-    onConfirm(staffNote);
+  const handleConfirm = async () => {
+    // Đảm bảo staffNote là string và xử lý an toàn
+    const noteValue = typeof staffNote === "string" ? staffNote.trim() : "";
+
+    // Gọi callback từ component cha để xử lý API call
+    // Component cha (StaffDashboard) sẽ xử lý API call và cập nhật UI
+    if (onConfirm) {
+      onConfirm(noteValue);
+    }
+    setStaffNote("");
   };
 
   const handleCancel = () => {
-    setStaffNote("");
-    onCancel();
+    if (!loading) {
+      setStaffNote("");
+      onCancel();
+    }
   };
 
   return (
@@ -28,7 +37,7 @@ const PhoneConfirmModal = ({ open, orderInfo, onConfirm, onCancel, loading = fal
         </Space>
       }
       open={open}
-      onCancel={onCancel}
+      onCancel={handleCancel}
       footer={null}
       width={500}
       maskClosable={!loading}
@@ -48,9 +57,6 @@ const PhoneConfirmModal = ({ open, orderInfo, onConfirm, onCancel, loading = fal
               <Title level={5} style={{ margin: 0, color: "#096dd9" }}>
                 Hãy xác nhận đơn hàng với khách qua số điện thoại!
               </Title>
-              <Paragraph style={{ margin: 0, color: "#096dd9", fontSize: 14 }}>
-                Vui lòng gọi điện xác nhận đơn hàng với khách hàng trước khi tiến hành chế biến.
-              </Paragraph>
             </div>
           </Space>
         </Card>
@@ -93,17 +99,37 @@ const PhoneConfirmModal = ({ open, orderInfo, onConfirm, onCancel, loading = fal
 
             <Divider style={{ margin: "8px 0" }} />
 
-            <div>
-              <Text strong>Địa chỉ giao hàng:</Text>
-              <Paragraph
-                style={{
-                  margin: "4px 0 0 0",
-                  color: "#666",
-                  fontSize: 13,
-                }}>
-                {orderInfo.deliveryAddress || "N/A"}
-              </Paragraph>
-            </div>
+            {(orderInfo.deliveryAddress ||
+              orderInfo.wardName ||
+              orderInfo.districtName ||
+              orderInfo.provinceName ||
+              orderInfo.cityName) && (
+              <div>
+                <Text strong>Địa chỉ giao hàng:</Text>
+                <Paragraph
+                  style={{
+                    margin: "4px 0 0 0",
+                    color: "#666",
+                    fontSize: 13,
+                  }}>
+                  {(() => {
+                    // Tạo địa chỉ đầy đủ từ các thành phần
+                    const addressParts = [
+                      orderInfo.deliveryAddress, // Địa chỉ chi tiết từ API
+                      orderInfo.wardName, // Phường/Xã
+                      orderInfo.districtName, // Quận/Huyện
+                      orderInfo.provinceName || orderInfo.cityName, // Tỉnh/Thành phố
+                    ].filter((part) => part && part.trim() !== "");
+
+                    if (addressParts.length > 0) {
+                      return addressParts.join(", ");
+                    }
+
+                    return "Chưa có địa chỉ giao hàng";
+                  })()}
+                </Paragraph>
+              </div>
+            )}
 
             {orderInfo.customerNote && (
               <>
@@ -130,7 +156,7 @@ const PhoneConfirmModal = ({ open, orderInfo, onConfirm, onCancel, loading = fal
           title={
             <Space>
               <EditOutlined />
-              <span>Ghi chú nhân viên</span>
+              <span>Ghi chú của nhân viên</span>
             </Space>
           }
           size="small">
@@ -159,7 +185,7 @@ const PhoneConfirmModal = ({ open, orderInfo, onConfirm, onCancel, loading = fal
             loading={loading}
             icon={<PhoneOutlined />}
             size="large">
-            Đã xác nhận qua điện thoại
+            {loading ? "Đang xác nhận..." : "Đã xác nhận qua điện thoại"}
           </Button>
         </Space>
       </Space>

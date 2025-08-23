@@ -1,380 +1,432 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { staffOrderService } from "../../services/service/staffOrderService";
+import {
+  Clock,
+  DollarSign,
+  ShoppingBag,
+  Users,
+  TrendingUp,
+  Calendar,
+  PlayCircle,
+  PauseCircle,
+  CheckCircle,
+  AlertCircle,
+  Coffee,
+  Moon,
+  Sun,
+  BarChart3,
+} from "lucide-react";
 
 const StaffReports = () => {
-  const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
-  });
+  // States for shift management
+  const [currentShift, setCurrentShift] = useState(null);
+  const [shiftStartTime, setShiftStartTime] = useState(null);
+  const [workingHours, setWorkingHours] = useState("00:00:00");
+  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [breakStartTime, setBreakStartTime] = useState(null);
+  const [totalBreakTime, setTotalBreakTime] = useState(0);
+
+  // States for reports
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [reportData, setReportData] = useState({
-    orderStats: {
-      totalOrders: 0,
-      completedOrders: 0,
-      cancelledOrders: 0,
-      pendingOrders: 0,
-      revenue: 0,
-    },
-    dailyStats: [],
+    totalOrders: 0,
+    totalRevenue: 0,
+    avgOrderValue: 0,
+    completedOrders: 0,
+    pendingOrders: 0,
+    cancelledOrders: 0,
     topDishes: [],
-    customerStats: {
-      totalCustomers: 0,
-      newCustomers: 0,
-      returningCustomers: 0,
-    },
+    hourlyStats: [],
   });
-  const [activeTab, setActiveTab] = useState("overview");
+  const [loading, setLoading] = useState(false);
 
+  // Timer effect for working hours
   useEffect(() => {
-    loadReportData();
-  }, [dateRange]);
+    let interval;
+    if (currentShift && shiftStartTime && !isOnBreak) {
+      interval = setInterval(() => {
+        const now = new Date();
+        const start = new Date(shiftStartTime);
+        const diff = Math.floor((now - start) / 1000) - totalBreakTime;
+        const hours = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = diff % 60;
+        setWorkingHours(
+          `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
+            .toString()
+            .padStart(2, "0")}`
+        );
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [currentShift, shiftStartTime, isOnBreak, totalBreakTime]);
 
-  const loadReportData = async () => {
+  // Load initial data
+  useEffect(() => {
+    fetchReportData();
+    // Check if there's an ongoing shift
+    const savedShift = localStorage.getItem("currentShift");
+    if (savedShift) {
+      const shift = JSON.parse(savedShift);
+      setCurrentShift(shift);
+      setShiftStartTime(shift.startTime);
+      setTotalBreakTime(shift.totalBreakTime || 0);
+    }
+  }, [selectedDate]);
+
+  const fetchReportData = async () => {
     setLoading(true);
     try {
-      // Giả định có API lấy báo cáo
-      // const response = await staffOrderService.getReports(dateRange);
-      // if (response.success) {
-      //   setReportData(response.data);
-      // } else {
-      //   toast.error("Không thể tải dữ liệu báo cáo");
-      // }
+      // Mock API call - replace with actual API
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Mock data cho demo
+      // Mock data
       setReportData({
-        orderStats: {
-          totalOrders: 247,
-          completedOrders: 198,
-          cancelledOrders: 15,
-          pendingOrders: 34,
-          revenue: 45780000,
-        },
-        dailyStats: [
-          { date: "2025-08-01", orders: 12, revenue: 2340000 },
-          { date: "2025-08-02", orders: 18, revenue: 3560000 },
-          { date: "2025-08-03", orders: 15, revenue: 2890000 },
-          { date: "2025-08-04", orders: 22, revenue: 4120000 },
-          { date: "2025-08-05", orders: 19, revenue: 3780000 },
-        ],
+        totalOrders: 47,
+        totalRevenue: 2850000,
+        avgOrderValue: 60600,
+        completedOrders: 42,
+        pendingOrders: 3,
+        cancelledOrders: 2,
         topDishes: [
-          { name: "Phở Bò Tái", quantity: 85, revenue: 8500000 },
-          { name: "Bún Bò Huế", quantity: 72, revenue: 7200000 },
-          { name: "Cơm Tấm Sườn", quantity: 68, revenue: 6800000 },
-          { name: "Bánh Mì Thịt", quantity: 54, revenue: 2700000 },
-          { name: "Chè Ba Màu", quantity: 43, revenue: 1720000 },
+          { name: "Phở Bò Đặc Biệt", quantity: 15, revenue: 450000 },
+          { name: "Cơm Tấm Sườn", quantity: 12, revenue: 360000 },
+          { name: "Bánh Mì Thịt Nướng", quantity: 10, revenue: 200000 },
+          { name: "Bún Bò Huế", quantity: 8, revenue: 240000 },
+          { name: "Chả Cá Lã Vọng", quantity: 6, revenue: 300000 },
         ],
-        customerStats: {
-          totalCustomers: 156,
-          newCustomers: 23,
-          returningCustomers: 133,
-        },
+        hourlyStats: [
+          { hour: "07:00", orders: 5, revenue: 150000 },
+          { hour: "08:00", orders: 8, revenue: 240000 },
+          { hour: "09:00", orders: 12, revenue: 360000 },
+          { hour: "10:00", orders: 15, revenue: 450000 },
+          { hour: "11:00", orders: 18, revenue: 540000 },
+          { hour: "12:00", orders: 22, revenue: 660000 },
+          { hour: "13:00", orders: 16, revenue: 480000 },
+          { hour: "14:00", orders: 10, revenue: 300000 },
+        ],
       });
     } catch (error) {
-      console.error("Error loading report data:", error);
-      toast.error("Có lỗi xảy ra khi tải báo cáo");
+      toast.error("Có lỗi khi tải báo cáo");
+      console.error("Error fetching report data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+  const handleStartShift = (shiftType) => {
+    const now = new Date();
+    const shift = {
+      type: shiftType,
+      startTime: now.toISOString(),
+      totalBreakTime: 0,
+    };
+    setCurrentShift(shift);
+    setShiftStartTime(shift.startTime);
+    setTotalBreakTime(0);
+    localStorage.setItem("currentShift", JSON.stringify(shift));
+    toast.success(`Đã bắt đầu ca ${shiftType}`);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("vi-VN");
+  const handleEndShift = () => {
+    if (currentShift && shiftStartTime) {
+      const endTime = new Date();
+      const startTime = new Date(shiftStartTime);
+      const totalHours = ((endTime - startTime) / 1000 / 3600 - totalBreakTime / 3600).toFixed(2);
+
+      // Save shift record - replace with actual API
+      toast.success(`Đã kết thúc ca làm việc. Tổng thời gian: ${totalHours} giờ`);
+
+      setCurrentShift(null);
+      setShiftStartTime(null);
+      setWorkingHours("00:00:00");
+      setTotalBreakTime(0);
+      setIsOnBreak(false);
+      localStorage.removeItem("currentShift");
+    }
   };
 
-  const exportReport = () => {
-    // Giả định xuất báo cáo
-    toast.success("Đang chuẩn bị file báo cáo...");
-    // Logic xuất file Excel/PDF sẽ được implement sau
+  const handleToggleBreak = () => {
+    if (isOnBreak) {
+      // End break
+      const breakEnd = new Date();
+      const breakDuration = Math.floor((breakEnd - new Date(breakStartTime)) / 1000);
+      setTotalBreakTime((prev) => prev + breakDuration);
+      setIsOnBreak(false);
+      setBreakStartTime(null);
+      toast.info("Đã kết thúc giờ nghỉ");
+    } else {
+      // Start break
+      setIsOnBreak(true);
+      setBreakStartTime(new Date().toISOString());
+      toast.info("Đã bắt đầu giờ nghỉ");
+    }
   };
+
+  const getShiftIcon = (shiftType) => {
+    switch (shiftType) {
+      case "Sáng":
+        return <Sun className="w-5 h-5" />;
+      case "Chiều":
+        return <Coffee className="w-5 h-5" />;
+      case "Tối":
+        return <Moon className="w-5 h-5" />;
+      default:
+        return <Clock className="w-5 h-5" />;
+    }
+  };
+
+  const StatCard = ({ title, value, icon, color = "blue", change = null }) => (
+    <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-xl font-bold text-gray-900">{value}</p>
+          {change && (
+            <p
+              className={`text-sm flex items-center mt-1 ${
+                change.positive ? "text-green-600" : "text-red-600"
+              }`}>
+              <TrendingUp className="w-4 h-4 mr-1" />
+              {change.value}
+            </p>
+          )}
+        </div>
+        <div className={`p-3 rounded-full bg-${color}-100`}>
+          <div className={`text-${color}-600`}>{icon}</div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 mb-2">Báo cáo thống kê</h1>
-            <p className="text-base text-gray-600">
-              Theo dõi hiệu suất và phân tích dữ liệu kinh doanh
-            </p>
-          </div>
-          <button
-            onClick={exportReport}
-            className="mt-4 sm:mt-0 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-base">
-            Xuất báo cáo
-          </button>
+        <div className="mb-8">
+          <h1 className="text-xxl font-bold text-gray-900 mb-2">Báo cáo & Quản lý ca</h1>
+          <p className="text-base text-gray-600">
+            Theo dõi hiệu suất và quản lý thời gian làm việc
+          </p>
         </div>
 
-        {/* Date Range Filter */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Khoảng thời gian</h3>
-          <div className="flex flex-col sm:flex-row sm:items-end space-y-4 sm:space-y-0 sm:space-x-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Từ ngày</label>
-              <input
-                type="date"
-                value={dateRange.startDate}
-                onChange={(e) => setDateRange((prev) => ({ ...prev, startDate: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Đến ngày</label>
-              <input
-                type="date"
-                value={dateRange.endDate}
-                onChange={(e) => setDateRange((prev) => ({ ...prev, endDate: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-              />
-            </div>
-            <button
-              onClick={loadReportData}
-              disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base disabled:opacity-50">
-              {loading ? "Đang tải..." : "Cập nhật"}
-            </button>
-          </div>
-        </div>
+        {/* Shift Management Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Current Shift Card */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Clock className="w-5 h-5 mr-2" />
+              Quản lý ca làm việc
+            </h3>
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab("overview")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "overview"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}>
-                Tổng quan
-              </button>
-              <button
-                onClick={() => setActiveTab("daily")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "daily"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}>
-                Theo ngày
-              </button>
-              <button
-                onClick={() => setActiveTab("dishes")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "dishes"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}>
-                Món ăn
-              </button>
-            </nav>
-          </div>
-
-          {/* Overview Tab */}
-          {activeTab === "overview" && (
-            <div className="p-6">
-              {/* Order Statistics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-lg text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-blue-100 text-sm">Tổng đơn hàng</p>
-                      <p className="text-2xl font-bold">{reportData.orderStats.totalOrders}</p>
-                    </div>
-                    <div className="text-blue-200">
-                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-lg text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-green-100 text-sm">Hoàn thành</p>
-                      <p className="text-2xl font-bold">{reportData.orderStats.completedOrders}</p>
-                    </div>
-                    <div className="text-green-200">
-                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 rounded-lg text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-red-100 text-sm">Đã hủy</p>
-                      <p className="text-2xl font-bold">{reportData.orderStats.cancelledOrders}</p>
-                    </div>
-                    <div className="text-red-200">
-                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 p-6 rounded-lg text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-yellow-100 text-sm">Doanh thu</p>
-                      <p className="text-lg font-bold">
-                        {formatCurrency(reportData.orderStats.revenue)}
-                      </p>
-                    </div>
-                    <div className="text-yellow-200">
-                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Customer Statistics */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Thống kê khách hàng</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">
-                      {reportData.customerStats.totalCustomers}
-                    </p>
-                    <p className="text-base text-gray-600">Tổng khách hàng</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">
-                      {reportData.customerStats.newCustomers}
-                    </p>
-                    <p className="text-base text-gray-600">Khách hàng mới</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">
-                      {reportData.customerStats.returningCustomers}
-                    </p>
-                    <p className="text-base text-gray-600">Khách hàng quay lại</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Daily Stats Tab */}
-          {activeTab === "daily" && (
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ngày
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Số đơn hàng
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Doanh thu
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Trung bình/đơn
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {reportData.dailyStats.map((day, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900">
-                          {formatDate(day.date)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
-                          {day.orders}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
-                          {formatCurrency(day.revenue)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
-                          {formatCurrency(day.revenue / day.orders)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Top Dishes Tab */}
-          {activeTab === "dishes" && (
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Món ăn bán chạy nhất</h3>
+            {currentShift ? (
               <div className="space-y-4">
-                {reportData.topDishes.map((dish, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 font-bold text-base">#{index + 1}</span>
-                      </div>
-                      <div>
-                        <h4 className="text-base font-medium text-gray-900">{dish.name}</h4>
-                        <p className="text-sm text-gray-500">Đã bán: {dish.quantity} phần</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-base font-semibold text-gray-900">
-                        {formatCurrency(dish.revenue)}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {formatCurrency(dish.revenue / dish.quantity)}/phần
+                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center">
+                    {getShiftIcon(currentShift.type)}
+                    <div className="ml-3">
+                      <p className="font-semibold text-green-800">{currentShift.type}</p>
+                      <p className="text-sm text-green-600">
+                        Bắt đầu: {new Date(shiftStartTime).toLocaleTimeString("vi-VN")}
                       </p>
                     </div>
                   </div>
-                ))}
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-green-800">{workingHours}</p>
+                    <p className="text-sm text-green-600">Thời gian làm việc</p>
+                  </div>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleToggleBreak}
+                    className={`flex-1 px-4 py-2 rounded-md flex items-center justify-center ${
+                      isOnBreak
+                        ? "bg-orange-600 hover:bg-orange-700 text-white"
+                        : "bg-yellow-600 hover:bg-yellow-700 text-white"
+                    }`}>
+                    {isOnBreak ? (
+                      <PlayCircle className="w-4 h-4 mr-2" />
+                    ) : (
+                      <PauseCircle className="w-4 h-4 mr-2" />
+                    )}
+                    {isOnBreak ? "Kết thúc nghỉ" : "Nghỉ giải lao"}
+                  </button>
+                  <button
+                    onClick={handleEndShift}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Kết thúc ca
+                  </button>
+                </div>
+
+                {isOnBreak && (
+                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                    <div className="flex items-center text-orange-800">
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      <span className="font-medium">Đang trong giờ nghỉ</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-base text-gray-600 mb-4">Chọn ca làm việc để bắt đầu:</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {["Sáng", "Chiều", "Tối"].map((shift) => (
+                    <button
+                      key={shift}
+                      onClick={() => handleStartShift(shift)}
+                      className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 flex flex-col items-center">
+                      {getShiftIcon(shift)}
+                      <span className="mt-2 text-sm font-medium">{shift}</span>
+                      <span className="text-sm text-gray-500">
+                        {shift === "Sáng"
+                          ? "6:00-14:00"
+                          : shift === "Chiều"
+                          ? "14:00-22:00"
+                          : "22:00-6:00"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2" />
+              Thống kê nhanh
+            </h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                <span className="text-base font-medium text-gray-700">Đơn hàng hôm nay</span>
+                <span className="text-lg font-bold text-blue-600">{reportData.totalOrders}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <span className="text-base font-medium text-gray-700">Doanh thu ca</span>
+                <span className="text-lg font-bold text-green-600">
+                  {reportData.totalRevenue.toLocaleString()} VNĐ
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                <span className="text-base font-medium text-gray-700">Đơn hoàn thành</span>
+                <span className="text-lg font-bold text-purple-600">
+                  {reportData.completedOrders}
+                </span>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Report Section */}
+        <div className="bg-white rounded-lg shadow mb-6">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Báo cáo chi tiết</h3>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={fetchReportData}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+                  {loading ? "Đang tải..." : "Tải báo cáo"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <StatCard
+                title="Tổng đơn hàng"
+                value={reportData.totalOrders}
+                icon={<ShoppingBag className="w-6 h-6" />}
+                color="blue"
+                change={{ positive: true, value: "+12%" }}
+              />
+              <StatCard
+                title="Doanh thu"
+                value={`${(reportData.totalRevenue / 1000000).toFixed(1)}M VNĐ`}
+                icon={<DollarSign className="w-6 h-6" />}
+                color="green"
+                change={{ positive: true, value: "+8%" }}
+              />
+              <StatCard
+                title="Giá trị TB/đơn"
+                value={`${Math.round(reportData.avgOrderValue / 1000)}K VNĐ`}
+                icon={<TrendingUp className="w-6 h-6" />}
+                color="purple"
+                change={{ positive: false, value: "-3%" }}
+              />
+              <StatCard
+                title="Hoàn thành"
+                value={`${Math.round(
+                  (reportData.completedOrders / reportData.totalOrders) * 100
+                )}%`}
+                icon={<CheckCircle className="w-6 h-6" />}
+                color="green"
+                change={{ positive: true, value: "+5%" }}
+              />
+            </div>
+
+            {/* Top Dishes */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Món bán chạy nhất</h4>
+                <div className="space-y-3">
+                  {reportData.topDishes.map((dish, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center">
+                        <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <p className="font-medium text-gray-900">{dish.name}</p>
+                          <p className="text-sm text-gray-500">{dish.quantity} phần</p>
+                        </div>
+                      </div>
+                      <span className="font-semibold text-gray-900">
+                        {dish.revenue.toLocaleString()} VNĐ
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hourly Stats */}
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Thống kê theo giờ</h4>
+                <div className="space-y-2">
+                  {reportData.hourlyStats.map((stat, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="font-medium text-gray-900">{stat.hour}</span>
+                      <div className="flex items-center space-x-4">
+                        <span className="text-base text-gray-600">{stat.orders} đơn</span>
+                        <span className="font-semibold text-gray-900">
+                          {(stat.revenue / 1000).toFixed(0)}K VNĐ
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Loading Overlay */}
-      {loading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <span className="text-base font-medium text-gray-900">Đang tải dữ liệu...</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

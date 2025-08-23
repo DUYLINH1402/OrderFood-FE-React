@@ -9,7 +9,6 @@ import StaffLayout from "../layouts/StaffLayout";
 const StaffDashboard = React.lazy(() => import("../pages/staff/StaffDashboard"));
 const StaffOrders = React.lazy(() => import("../pages/staff/StaffOrders"));
 const StaffMenu = React.lazy(() => import("../pages/staff/StaffMenu"));
-const StaffCustomers = React.lazy(() => import("../pages/staff/StaffCustomers"));
 const StaffReports = React.lazy(() => import("../pages/staff/StaffReports"));
 const StaffProfile = React.lazy(() => import("../pages/staff/StaffProfile"));
 
@@ -77,16 +76,6 @@ export const StaffRoutes = [
         ),
       },
       {
-        path: "customers",
-        element: (
-          <PermissionGuard requiredPermissions={[PERMISSIONS.VIEW_CUSTOMER_INFO]}>
-            <React.Suspense fallback={<div>Đang tải...</div>}>
-              <StaffCustomers />
-            </React.Suspense>
-          </PermissionGuard>
-        ),
-      },
-      {
         path: "reports",
         element: (
           <PermissionGuard requiredPermissions={[PERMISSIONS.VIEW_DAILY_REPORTS]}>
@@ -99,9 +88,11 @@ export const StaffRoutes = [
       {
         path: "profile",
         element: (
-          <React.Suspense fallback={<div>Đang tải...</div>}>
-            <StaffProfile />
-          </React.Suspense>
+          <PermissionGuard requiredPermissions={[PERMISSIONS.VIEW_STAFF_PROFILE]}>
+            <React.Suspense fallback={<div>Đang tải...</div>}>
+              <StaffProfile />
+            </React.Suspense>
+          </PermissionGuard>
         ),
       },
     ],

@@ -5,13 +5,14 @@ import { apiClient } from "../apiClient";
  */
 
 // Lấy tất cả đơn hàng mà staff có thể xử lý (tất cả trạng thái từ PROCESSING trở đi)
-export const getAllStaffOrdersApi = async (page = 0, size = 100) => {
+export const getAllStaffOrdersApi = async (page, size) => {
   try {
     let response;
     try {
       response = await apiClient.get("/api/staff/orders/recent", {
-        params: { page, size },
+        params: { page: page || 0, size: size || 7 },
       });
+      // console.log("Lấy tất cả đơn hàng:", response.data);
     } catch (error) {
       console.error("Lỗi khi lấy tất cả đơn hàng:", error);
       return {
@@ -68,30 +69,30 @@ export const getPendingOrdersApi = async (page = 0, size = 20) => {
 };
 
 // Lấy danh sách đơn hàng đang xử lý (PROCESSING)
-// export const getProcessingOrdersApi = async (page = 0, size = 20) => {
-//   try {
-//     const response = await apiClient.get("/api/staff/orders/processing", {
-//       params: { page, size },
-//     });
-//     return {
-//       success: true,
-//       data: response.data.data || [],
-//       pagination: response.data.pagination || {
-//         page,
-//         size,
-//         total: response.data.totalElements || 0,
-//         totalPages: response.data.totalPages || 0,
-//       },
-//     };
-//   } catch (error) {
-//     console.error("Lỗi khi lấy danh sách đơn hàng đang xử lý:", error);
-//     return {
-//       success: false,
-//       message: error.response?.data?.message || "Không thể tải danh sách đơn hàng đang xử lý",
-//       data: [],
-//     };
-//   }
-// };
+export const getProcessingOrdersApi = async (page = 0, size = 20) => {
+  try {
+    const response = await apiClient.get("/api/staff/orders/processing", {
+      params: { page, size },
+    });
+    return {
+      success: true,
+      data: response.data.data || [],
+      pagination: response.data.pagination || {
+        page,
+        size,
+        total: response.data.totalElements || 0,
+        totalPages: response.data.totalPages || 0,
+      },
+    };
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách đơn hàng đang xử lý:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Không thể tải danh sách đơn hàng đang xử lý",
+      data: [],
+    };
+  }
+};
 
 // Cập nhật trạng thái đơn hàng (dành cho staff)
 export const updateOrderStatusByStaffApi = async (orderId, statusRequest) => {

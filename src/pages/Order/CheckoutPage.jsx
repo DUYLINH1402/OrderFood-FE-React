@@ -137,7 +137,7 @@ export default function CheckoutPage() {
       if (user?.id) {
         try {
           const coupons = await getUserCoupons();
-          console.log("Fetched user coupons:", coupons);
+          // console.log("Fetched user coupons:", coupons);
           setUserCoupons(coupons || []);
         } catch (err) {
           console.error("Error fetching user coupons:", err);

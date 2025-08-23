@@ -7,7 +7,7 @@ const { TextArea } = Input;
  * Modal component để hủy đơn hàng - sử dụng Ant Design
  * @param {Object} props - Props của component
  * @param {boolean} props.open - Trạng thái hiển thị modal
- * @param {string|number} props.orderId - ID của đơn hàng cần hủy
+ * @param {string|number} props.orderCode - ID của đơn hàng cần hủy
  * @param {string} props.cancelReason - Lý do hủy đơn hàng
  * @param {Function} props.onReasonChange - Callback khi thay đổi lý do hủy
  * @param {Function} props.onConfirm - Callback khi xác nhận hủy đơn hàng
@@ -16,7 +16,7 @@ const { TextArea } = Input;
  */
 const CancelOrderModal = ({
   open,
-  orderId,
+  orderCode,
   cancelReason,
   onReasonChange,
   onConfirm,
@@ -68,7 +68,7 @@ const CancelOrderModal = ({
     >
       <div className="py-4">
         <p className="text-sm tablet:text-md desktop:text-base text-gray-600 mb-4">
-          Vui lòng nhập lý do hủy đơn hàng <strong>#{orderId}</strong>
+          Vui lòng nhập lý do hủy đơn hàng <strong>#{orderCode}</strong>
         </p>
         <TextArea
           rows={3}

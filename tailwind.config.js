@@ -3,10 +3,11 @@ module.exports = {
   theme: {
     extend: {
       fontSize: {
-        xs: "11px",
+        sx: "12px",
         sm: "13px", //cho Mobile
         md: "14px", //cho Tablet
         base: "16px", //cho desktop
+        18: "18px",
         lg: "20px",
         xl: "24px",
         xxl: "30px",

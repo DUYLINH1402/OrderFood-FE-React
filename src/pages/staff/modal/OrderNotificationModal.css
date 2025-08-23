@@ -1,0 +1,94 @@
+/* Custom styles for Order Notification Modal */
+.order-notification-modal .ant-modal-header {
+  background: linear-gradient(90deg, #1890ff 0%, #36cfc9 100%);
+  border-radius: 8px 8px 0 0;
+}
+
+.order-notification-modal .ant-modal-title {
+  color: white !important;
+}
+
+.order-notification-modal .ant-modal-close-x {
+  color: white !important;
+}
+
+.order-notification-modal .ant-modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.order-notification-modal .ant-modal-body {
+  padding: 16px 24px;
+}
+
+/* Custom Card styles */
+.order-notification-modal .ant-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.order-notification-modal .ant-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+/* List item hover effect */
+.order-notification-modal .ant-list-item {
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  padding: 8px 12px !important;
+  margin-bottom: 4px;
+}
+
+.order-notification-modal .ant-list-item:hover {
+  background-color: #f0f9ff;
+  transform: translateX(4px);
+}
+
+/* Tag animations */
+.order-notification-modal .ant-tag {
+  transition: all 0.2s ease;
+}
+
+.order-notification-modal .ant-tag:hover {
+  transform: scale(1.05);
+}
+
+/* Description item label styling */
+.order-notification-modal .ant-descriptions-item-label {
+  font-weight: 500;
+  color: #595959;
+}
+
+/* Custom gradient for header card */
+.order-notification-modal .ant-card-head {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.order-notification-modal .ant-card-head .ant-card-head-title {
+  color: white;
+}
+
+/* Button styles */
+.order-notification-modal .ant-btn-primary {
+  background: linear-gradient(90deg, #1890ff 0%, #36cfc9 100%);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.order-notification-modal .ant-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .order-notification-modal {
+    margin: 16px !important;
+  }
+
+  .order-notification-modal .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+  }
+}

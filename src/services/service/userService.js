@@ -31,3 +31,7 @@ export const changePassword = async (data, token) => {
     ? await changePasswordFromFirebase(data, token)
     : await changePasswordApi(data, token);
 };
+
+// GET ALL USERS (for Admin)
+
+// UPDATE USER STATUS (for Admin)
