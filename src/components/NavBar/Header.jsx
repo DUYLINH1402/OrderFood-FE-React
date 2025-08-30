@@ -28,17 +28,6 @@ const Header = () => {
     }
   }, [isSearchExpanded]);
 
-  // Bỏ chức năng ẩn hiện header khi scroll
-
-  // useEffect(() => {
-  //   window.forceShowHeader = () => setShowHeader(true);
-  // }, []);
-  //
-  // useEffect(() => {
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, [lastScrollY]);
-
   // Click ngoài avatar dropdown thì tự đóng
   useEffect(() => {
     const handleClickOutside = (event) => {

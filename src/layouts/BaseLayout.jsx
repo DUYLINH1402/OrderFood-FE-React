@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Dropdown, Avatar, Typography } from "antd";
 import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
-import { FiBell, FiMenu } from "react-icons/fi";
+import { FiMenu } from "react-icons/fi";
 import { useAuth } from "../hooks/auth/useAuth";
 import { logout } from "../store/slices/authSlice";
 import { ROLE_NAVIGATION } from "../utils/roleConfig";
@@ -132,10 +132,10 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
   const headerStyle = headerGradient || defaultHeaderStyle;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen w-full max-w-full bg-gray-50 overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b backdrop-blur-sm" style={headerStyle}>
-        <div className="px-4 laptop:px-6 py-4">
+        <div className=" px-4 laptop:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {/* Menu button for mobile/tablet */}
@@ -176,7 +176,7 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
                 overlayClassName="min-w-[200px]">
                 <div className="flex items-center space-x-2 laptop:space-x-3 p-2 rounded-lg hover:bg-white hover:bg-opacity-15 transition-all duration-200 cursor-pointer">
                   <Avatar
-                    src={user?.avatar || staff_avatar}
+                    src={user?.avatarUrl || staff_avatar}
                     icon={<UserOutlined />}
                     size={isMobile ? 28 : 32}
                     className="border-2 border-white border-opacity-40 shadow-sm"

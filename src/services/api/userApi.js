@@ -11,7 +11,7 @@ export const getProfileApi = async () => {
   return response.data; // trả về UserResponse
 };
 
-// API Update Profile - Cần token
+// API Update Profile - Cần token (chỉ cập nhật thông tin cơ bản, không bao gồm avatar)
 export const updateProfileApi = async (data) => {
   const response = await apiClient.put("/api/users/update-profile", data);
   return response.data;
@@ -21,7 +21,8 @@ export const updateProfileApi = async (data) => {
 export const uploadAvatarApi = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
-
+  // Thêm log để debug
+  console.log("Uploading file:", file);
   const response = await apiClient.post("/api/users/avatar", formData, {
     headers: {
       "Content-Type": "multipart/form-data",

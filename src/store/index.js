@@ -3,6 +3,7 @@ import cartReducer from "./slices/cartSlice";
 import authReducer from "./slices/authSlice";
 import favoriteReducer from "./slices/favoriteSlice";
 import pointsReducer from "./slices/pointsSlice";
+import profileReducer from "./slices/profileSlice";
 
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // mặc định: localStorage
@@ -12,6 +13,7 @@ import { combineReducers } from "redux";
 const rootReducer = combineReducers({
   cart: cartReducer,
   auth: authReducer,
+  profile: profileReducer,
   favorite: favoriteReducer,
   points: pointsReducer,
 });

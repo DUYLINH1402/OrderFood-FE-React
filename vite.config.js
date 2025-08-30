@@ -1,12 +1,49 @@
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  define: {
-    // Fix for SockJS/STOMP global variable issue
-    global: "globalThis",
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": "/src",
+    },
   },
   optimizeDeps: {
-    include: ["@stomp/stompjs", "sockjs-client"],
+    include: [
+      "react",
+      "react-dom",
+      "@mui/material",
+      "@mui/icons-material",
+      "@emotion/react",
+      "@emotion/styled",
+      "antd",
+      "@stomp/stompjs",
+      "sockjs-client",
+    ],
+    exclude: ["framer-motion"],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+          mui: ["@mui/material", "@mui/icons-material"],
+          antd: ["antd"],
+          stomp: ["@stomp/stompjs", "sockjs-client"],
+        },
+      },
+    },
+  },
+  define: {
+    global: "globalThis",
+  },
+  server: {
+    fs: {
+      strict: false,
+    },
   },
 });

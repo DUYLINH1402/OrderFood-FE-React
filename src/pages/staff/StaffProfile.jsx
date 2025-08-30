@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/auth/useAuth";
 import {
@@ -23,23 +23,34 @@ import {
 } from "lucide-react";
 import staff_avatar from "../../assets/icons/staff_avatar.png";
 
+// Import Redux actions
+import {
+  setProfileData,
+  updateField,
+  clearError,
+  clearAllErrors,
+  clearSuccessMessage,
+} from "../../store/slices/profileSlice";
+
+// Import thunks
+import {
+  updateProfileThunk,
+  uploadAvatarThunk,
+  validateFieldThunk,
+} from "../../store/thunks/profileThunks";
+
 const StaffProfile = () => {
   const { user } = useAuth();
+  const dispatch = useDispatch();
+
+  // Redux selectors
   const { user: userFromRedux } = useSelector((state) => state.auth);
+  const { profileData, errors, loading, successMessages } = useSelector((state) => state.profile);
+
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [profileData, setProfileData] = useState({
-    fullName: "",
-    username: "",
-    email: "",
-    phoneNumber: "",
-    address: "",
-    avatarUrl: "",
-  });
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -50,30 +61,51 @@ const StaffProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [passwordStrength, setPasswordStrength] = useState(0);
 
+  // Get user data from either useAuth hook or Redux
+  const currentUser = user || userFromRedux;
+
   // Work info based on user data
   const [workInfo] = useState({
-    employeeId: userFromRedux?.id || "53",
+    employeeId: currentUser?.id || "53",
     department: "Bếp", // Default department
-    position: userFromRedux?.roleName || "Nhân viên",
-    roleCode: userFromRedux?.roleCode || "ROLE_STAFF",
-    lastLogin: userFromRedux?.lastLogin || null,
-    verified: userFromRedux?.verified || false,
-    active: userFromRedux?.active || false,
-    point: userFromRedux?.point || 0,
+    position: currentUser?.roleName || "Nhân viên",
+    roleCode: currentUser?.roleCode || "ROLE_STAFF",
+    lastLogin: currentUser?.lastLogin || null,
+    verified: currentUser?.verified || false,
+    active: currentUser?.active || false,
+    point: currentUser?.point || 0,
   });
 
+  // Initialize profile data
   useEffect(() => {
-    if (userFromRedux) {
-      setProfileData({
-        fullName: userFromRedux.fullName || "",
-        username: userFromRedux.username || "",
-        email: userFromRedux.email || "",
-        phoneNumber: userFromRedux.phoneNumber || "",
-        address: userFromRedux.address || "",
-        avatarUrl: userFromRedux.avatarUrl || "",
-      });
+    // Chỉ khởi tạo profile data nếu có user data và chưa có profile data
+    if (currentUser && (!profileData.username || !profileData.email)) {
+      dispatch(
+        setProfileData({
+          fullName: currentUser.fullName || "",
+          username: currentUser.username || "",
+          email: currentUser.email || "",
+          phoneNumber: currentUser.phoneNumber || "",
+          address: currentUser.address || "",
+          avatarUrl: currentUser.avatarUrl || "",
+        })
+      );
     }
-  }, [userFromRedux]);
+  }, [currentUser, dispatch, profileData.username, profileData.email]);
+
+  // Handle success messages
+  useEffect(() => {
+    if (successMessages.updateProfile) {
+      toast.success(successMessages.updateProfile);
+      dispatch(clearSuccessMessage("updateProfile"));
+      setIsEditing(false);
+    }
+
+    if (successMessages.uploadAvatar) {
+      toast.success(successMessages.uploadAvatar);
+      dispatch(clearSuccessMessage("uploadAvatar"));
+    }
+  }, [successMessages, dispatch]);
 
   // Password strength checker
   useEffect(() => {
@@ -89,22 +121,47 @@ const StaffProfile = () => {
     setPasswordStrength(calculateStrength(passwordData.newPassword));
   }, [passwordData.newPassword]);
 
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Cập nhật thông tin thành công!");
-      setIsEditing(false);
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      toast.error("Có lỗi xảy ra khi cập nhật thông tin");
-    } finally {
-      setLoading(false);
+  // Handle field changes
+  const handleFieldChange = (field, value) => {
+    dispatch(updateField({ field, value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      dispatch(clearError(field));
     }
   };
 
+  // Handle field blur (validation)
+  const handleFieldBlur = (fieldName, value) => {
+    dispatch(validateFieldThunk({ fieldName, value }));
+  };
+
+  // Handle profile form submit
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+
+    // Dispatch thunk to update profile
+    try {
+      await dispatch(updateProfileThunk(profileData)).unwrap();
+    } catch (error) {
+      // Error handling is done in thunk
+      console.error("Profile update error:", error);
+    }
+  };
+
+  // Handle avatar change
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        await dispatch(uploadAvatarThunk(file)).unwrap();
+      } catch (error) {
+        // Error handling is done in thunk
+        console.error("Avatar upload error:", error);
+      }
+    }
+  };
+
+  // Handle password submit
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
 
@@ -118,8 +175,7 @@ const StaffProfile = () => {
       return;
     }
 
-    setLoading(true);
-
+    // Simulate password change - replace with actual API call
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Đổi mật khẩu thành công!");
@@ -131,27 +187,25 @@ const StaffProfile = () => {
     } catch (err) {
       console.error("Error changing password:", err);
       toast.error("Có lỗi xảy ra khi đổi mật khẩu");
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("File quá lớn. Vui lòng chọn file nhỏ hơn 5MB");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileData((prev) => ({
-          ...prev,
-          avatarUrl: e.target.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+  // Handle cancel editing
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    dispatch(clearAllErrors());
+    // Reset form to original data
+    if (currentUser) {
+      dispatch(
+        setProfileData({
+          fullName: currentUser.fullName || "",
+          username: currentUser.username || "",
+          email: currentUser.email || "",
+          phoneNumber: currentUser.phoneNumber || "",
+          address: currentUser.address || "",
+          avatarUrl: currentUser.avatarUrl || "",
+        })
+      );
     }
   };
 
@@ -184,7 +238,7 @@ const StaffProfile = () => {
     <div className="bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
       <div className="flex items-center">
         <div className={`p-3 rounded-lg bg-${color}-100 mr-4`}>
-          <Icon className={`w-5 h-5 text-${color}-600`} />
+          <Icon className={`w-6 h-6 text-${color}-600`} />
         </div>
         <div>
           <p className="text-sm text-gray-500 mb-1">{title}</p>
@@ -193,6 +247,30 @@ const StaffProfile = () => {
       </div>
     </div>
   );
+
+  // Error component
+  const ErrorMessage = ({ error }) => {
+    if (!error) return null;
+
+    return (
+      <div className="flex items-center mt-2 text-red-600">
+        <AlertCircle className="w-4 h-4 mr-1" />
+        <span className="text-sm">{error}</span>
+      </div>
+    );
+  };
+
+  // Loading state while waiting for user data
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải thông tin người dùng...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -218,16 +296,27 @@ const StaffProfile = () => {
                     e.target.src = staff_avatar;
                   }}
                 />
-                {isEditing && (
-                  <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-2xl cursor-pointer group hover:bg-opacity-60 transition-all">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleAvatarChange}
-                    />
+                {/* Avatar Upload */}
+                <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-2xl cursor-pointer group hover:bg-opacity-60 transition-all">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                    disabled={loading.uploadAvatar}
+                  />
+                  {loading.uploadAvatar ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
                     <Camera className="w-6 h-6 text-white group-hover:w-8 group-hover:h-8 transition-all" />
-                  </label>
+                  )}
+                </label>
+
+                {/* Avatar Error */}
+                {errors.avatar && (
+                  <div className="absolute -bottom-8 left-0 right-0">
+                    <ErrorMessage error={errors.avatar} />
+                  </div>
                 )}
               </div>
 
@@ -270,7 +359,7 @@ const StaffProfile = () => {
                 ) : (
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => setIsEditing(false)}
+                      onClick={handleCancelEdit}
                       className="flex items-center px-4 py-2 bg-gray-300 text-md text-gray-800 rounded-xl hover:bg-gray-400 transition-colors">
                       <X className="w-6 h-6 mr-2" />
                       Hủy
@@ -278,10 +367,10 @@ const StaffProfile = () => {
                     <button
                       form="profile-form"
                       type="submit"
-                      disabled={loading}
+                      disabled={loading.updateProfile}
                       className="flex items-center px-4 py-2 bg-green-600 text-md text-white rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50">
                       <Save className="w-6 h-6 mr-2" />
-                      {loading ? "Đang lưu..." : "Lưu"}
+                      {loading.updateProfile ? "Đang lưu..." : "Lưu"}
                     </button>
                   </div>
                 )}
@@ -313,7 +402,7 @@ const StaffProfile = () => {
                     ? "bg-blue-50 text-blue-600 border-b-2 border-blue-500"
                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}>
-                <User className="w-5 h-5 mx-auto mb-1" />
+                <User className="w-6 h-6 mx-auto mb-1" />
                 Thông tin cá nhân
               </button>
               <button
@@ -323,7 +412,7 @@ const StaffProfile = () => {
                     ? "bg-blue-50 text-blue-600 border-b-2 border-blue-500"
                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}>
-                <Lock className="w-5 h-5 mx-auto mb-1" />
+                <Lock className="w-6 h-6 mx-auto mb-1" />
                 Đổi mật khẩu
               </button>
             </nav>
@@ -337,35 +426,39 @@ const StaffProfile = () => {
                   {/* Personal Information */}
                   <div className="space-y-6">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-6">
-                      <User className="w-5 h-5 mr-2" />
+                      <User className="w-6 h-6 mr-2" />
                       Thông tin cá nhân
                     </h3>
 
+                    {/* Full Name */}
                     <div>
                       <label className="block text-base font-medium text-gray-700 mb-3">
                         Họ và tên
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                         <input
                           type="text"
                           value={profileData.fullName}
-                          onChange={(e) =>
-                            setProfileData((prev) => ({ ...prev, fullName: e.target.value }))
-                          }
+                          onChange={(e) => handleFieldChange("fullName", e.target.value)}
+                          onBlur={(e) => handleFieldBlur("fullName", e.target.value)}
                           disabled={!isEditing}
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base disabled:bg-gray-50 disabled:text-gray-500"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base disabled:bg-gray-50 disabled:text-gray-500 ${
+                            errors.fullName ? "border-red-500" : "border-gray-300"
+                          }`}
                           placeholder="Nhập họ và tên"
                         />
                       </div>
+                      <ErrorMessage error={errors.fullName} />
                     </div>
 
+                    {/* Username */}
                     <div>
                       <label className="block text-base font-medium text-gray-700 mb-3">
                         Tên đăng nhập
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                         <input
                           type="text"
                           value={profileData.username}
@@ -380,58 +473,65 @@ const StaffProfile = () => {
                       </p>
                     </div>
 
+                    {/* Phone Number */}
                     <div>
                       <label className="block text-base font-medium text-gray-700 mb-3">
                         Số điện thoại
                       </label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                         <input
                           type="tel"
                           value={profileData.phoneNumber}
-                          onChange={(e) =>
-                            setProfileData((prev) => ({ ...prev, phoneNumber: e.target.value }))
-                          }
+                          onChange={(e) => handleFieldChange("phoneNumber", e.target.value)}
+                          onBlur={(e) => handleFieldBlur("phoneNumber", e.target.value)}
                           disabled={!isEditing}
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base disabled:bg-gray-50 disabled:text-gray-500"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base disabled:bg-gray-50 disabled:text-gray-500 ${
+                            errors.phoneNumber ? "border-red-500" : "border-gray-300"
+                          }`}
                           placeholder="Nhập số điện thoại"
                         />
                       </div>
+                      <ErrorMessage error={errors.phoneNumber} />
                     </div>
 
+                    {/* Address */}
                     <div>
                       <label className="block text-base font-medium text-gray-700 mb-3">
                         Địa chỉ
                       </label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <MapPin className="absolute left-3 top-3 w-6 h-6 text-gray-400" />
                         <textarea
                           value={profileData.address}
-                          onChange={(e) =>
-                            setProfileData((prev) => ({ ...prev, address: e.target.value }))
-                          }
+                          onChange={(e) => handleFieldChange("address", e.target.value)}
+                          onBlur={(e) => handleFieldBlur("address", e.target.value)}
                           disabled={!isEditing}
                           rows="4"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base disabled:bg-gray-50 disabled:text-gray-500 resize-none"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base leading-relaxed disabled:bg-gray-50 disabled:text-gray-500 resize-none ${
+                            errors.address ? "border-red-500" : "border-gray-300"
+                          }`}
                           placeholder="Nhập địa chỉ"
                         />
                       </div>
+                      <ErrorMessage error={errors.address} />
                     </div>
                   </div>
 
                   {/* Account Information */}
                   <div className="space-y-6">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-6">
-                      <Shield className="w-5 h-5 mr-2" />
+                      <Shield className="w-6 h-6 mr-2" />
                       Thông tin tài khoản
                     </h3>
 
+                    {/* Email */}
                     <div>
                       <label className="block text-base font-medium text-gray-700 mb-3">
                         Email
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                         <input
                           type="email"
                           value={profileData.email}
@@ -493,6 +593,13 @@ const StaffProfile = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* General Error Display */}
+                    {errors.general && (
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                        <ErrorMessage error={errors.general} />
+                      </div>
+                    )}
                   </div>
                 </div>
               </form>
@@ -513,7 +620,7 @@ const StaffProfile = () => {
                       Mật khẩu hiện tại
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                       <input
                         type={showCurrentPassword ? "text" : "password"}
                         value={passwordData.currentPassword}
@@ -521,7 +628,7 @@ const StaffProfile = () => {
                           setPasswordData((prev) => ({ ...prev, currentPassword: e.target.value }))
                         }
                         required
-                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                        className="w-full pl-10 pr-12 py-3 text-gray-400 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                         placeholder="Nhập mật khẩu hiện tại"
                       />
                       <button
@@ -529,9 +636,9 @@ const StaffProfile = () => {
                         onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         {showCurrentPassword ? (
-                          <EyeOff className="w-5 h-5" />
+                          <EyeOff className="w-6 h-6" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <Eye className="w-6 h-6" />
                         )}
                       </button>
                     </div>
@@ -542,7 +649,7 @@ const StaffProfile = () => {
                       Mật khẩu mới
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                       <input
                         type={showNewPassword ? "text" : "password"}
                         value={passwordData.newPassword}
@@ -551,7 +658,7 @@ const StaffProfile = () => {
                         }
                         required
                         minLength="6"
-                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                        className="w-full pl-10 pr-12 py-3 text-gray-400 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                         placeholder="Nhập mật khẩu mới"
                       />
                       <button
@@ -559,9 +666,9 @@ const StaffProfile = () => {
                         onClick={() => setShowNewPassword(!showNewPassword)}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         {showNewPassword ? (
-                          <EyeOff className="w-5 h-5" />
+                          <EyeOff className="w-6 h-6" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <Eye className="w-6 h-6" />
                         )}
                       </button>
                     </div>
@@ -598,7 +705,7 @@ const StaffProfile = () => {
                       Xác nhận mật khẩu mới
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                       <input
                         type={showConfirmPassword ? "text" : "password"}
                         value={passwordData.confirmPassword}
@@ -606,7 +713,7 @@ const StaffProfile = () => {
                           setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))
                         }
                         required
-                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                        className="w-full pl-10 pr-12 py-3 text-gray-400 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                         placeholder="Nhập lại mật khẩu mới"
                       />
                       <button
@@ -614,9 +721,9 @@ const StaffProfile = () => {
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         {showConfirmPassword ? (
-                          <EyeOff className="w-5 h-5" />
+                          <EyeOff className="w-6 h-6" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <Eye className="w-6 h-6" />
                         )}
                       </button>
                     </div>
@@ -641,9 +748,12 @@ const StaffProfile = () => {
 
                   <button
                     type="submit"
-                    disabled={loading || passwordData.newPassword !== passwordData.confirmPassword}
+                    disabled={
+                      loading.updateProfile ||
+                      passwordData.newPassword !== passwordData.confirmPassword
+                    }
                     className="w-full py-3 px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                    {loading ? "Đang cập nhật..." : "Đổi mật khẩu"}
+                    {loading.updateProfile ? "Đang cập nhật..." : "Đổi mật khẩu"}
                   </button>
                 </form>
               </div>

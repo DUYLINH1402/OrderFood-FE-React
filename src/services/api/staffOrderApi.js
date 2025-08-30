@@ -12,7 +12,7 @@ export const getAllStaffOrdersApi = async (page, size) => {
       response = await apiClient.get("/api/staff/orders/recent", {
         params: { page: page || 0, size: size || 7 },
       });
-      // console.log("Lấy tất cả đơn hàng:", response.data);
+      console.log("Lấy tất cả đơn hàng:", response.data);
     } catch (error) {
       console.error("Lỗi khi lấy tất cả đơn hàng:", error);
       return {

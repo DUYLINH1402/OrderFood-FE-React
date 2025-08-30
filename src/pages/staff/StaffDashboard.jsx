@@ -18,10 +18,8 @@ import AudioPermissionButton from "./util/AudioPermissionButton";
 import { useNotifications } from "./util/useNotifications";
 import { FiUser, FiTruck, FiHome, FiDollarSign, FiPackage } from "react-icons/fi";
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../../constants/orderConstants";
-import {
-  updateStaffOrderStatus,
-  searchStaffOrderByCode,
-} from "../../services/service/staffOrderService";
+import { searchStaffOrderByCode } from "../../services/service/staffOrderService";
+import SpinnerCube from "../../components/Skeleton/SpinnerCube";
 
 const StaffDashboard = () => {
   const { userRole } = useAuth();
@@ -867,7 +865,7 @@ const StaffDashboard = () => {
         <div className="bg-white rounded-lg shadow">
           {/* Tab Navigation - Hiển thị tất cả trạng thái staff xử lý */}
           <div className="border-b border-gray-200 overflow-x-auto">
-            <nav className="flex space-x-4 tablet:space-x-8 px-4 tablet:px-6 min-w-max">
+            <nav className="flex space-x-4 tablet:space-x-8 px-4 tablet:px-6 overflow-x-auto whitespace-nowrap">
               {[
                 { key: "processing", label: "Chờ xác nhận", color: "blue" },
                 { key: "confirmed", label: "Đang chế biến", color: "yellow" },
@@ -895,7 +893,7 @@ const StaffDashboard = () => {
               <div className="flex items-center justify-center py-8 tablet:py-12">
                 <div className="animate-spin rounded-full h-6 w-6 tablet:h-8 tablet:w-8 border-b-2 border-blue-600"></div>
                 <span className="ml-2 text-gray-600 text-sm tablet:text-md desktop:text-md">
-                  Đang tải...
+                  <SpinnerCube />
                 </span>
               </div>
             ) : currentOrders.length === 0 ? (
@@ -930,7 +928,7 @@ const StaffDashboard = () => {
                               </h4>
                               {order.items && order.items.length > 0 && (
                                 <div className="flex items-center space-x-2">
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs tablet:text-sm font-bold bg-orange-100 text-orange-800 border-2 border-orange-300">
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm tablet:text-sm font-bold bg-orange-100 text-orange-800 border-2 border-orange-300">
                                     <FiPackage size={14} className="mr-1" /> {order.items.length}{" "}
                                     món
                                   </span>

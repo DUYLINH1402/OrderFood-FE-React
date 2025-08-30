@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../store/slices/authSlice";
-import { LoadingButton } from "../../components/Skeleton/LoadingButton";
 import { toast } from "react-toastify";
 import { validatePhoneNumber } from "../../utils/validation";
 import { getProfile, updateProfile, uploadAvatar } from "../../services/service/userService";

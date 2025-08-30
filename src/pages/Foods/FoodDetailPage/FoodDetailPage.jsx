@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../store/slices/cartSlice";
 import { flyToCart } from "../../../utils/action";
-import LoadingPage from "../../../components/Skeleton/LoadingPage";
+import SpinnerCube from "../../../components/Skeleton/SpinnerCube";
 import { getToken } from "../../../services/auth/authApi";
 import { addToCartApi } from "../../../services/service/cartService";
 import { addToFavorites, removeFromFavorites } from "../../../services/service/favoriteService";
@@ -20,6 +20,7 @@ export default function FoodDetailPage() {
   const [mainImage, setMainImage] = useState("");
   const [selectedPrice, setSelectedPrice] = useState(0);
   const [selectedVariantId, setSelectedVariantId] = useState(null);
+  const [imageLoading, setImageLoading] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const imageRef = useRef();
@@ -66,8 +67,10 @@ export default function FoodDetailPage() {
     dispatch(addToCart(cartItem));
     try {
       await addToCartApi(cartItem, token);
+      toast.success("Đã thêm vào giỏ hàng!");
     } catch (err) {
       console.error("Lỗi thêm vào giỏ hàng:", err);
+      toast.error("Không thể thêm vào giỏ hàng");
     }
   };
 
@@ -77,14 +80,19 @@ export default function FoodDetailPage() {
 
   const toggleFavorite = async () => {
     try {
-      if (!token) return;
+      if (!token) {
+        toast.info("Vui lòng đăng nhập để sử dụng tính năng này");
+        return;
+      }
 
       if (isFavorite) {
         await removeFromFavorites(food.id, selectedVariantId, token);
         dispatch(removeFavorite({ foodId: food.id, variantId: selectedVariantId }));
+        toast.success("Đã bỏ khỏi danh sách yêu thích");
       } else {
         await addToFavorites(food.id, selectedVariantId, token);
         dispatch(addFavorite({ foodId: food.id, variantId: selectedVariantId }));
+        toast.success("Đã thêm vào danh sách yêu thích");
       }
     } catch (err) {
       toast.error("Không thể cập nhật yêu thích");
@@ -108,147 +116,258 @@ export default function FoodDetailPage() {
     navigate("/thanh-toan", { state: { checkoutItems: [cartItem] } });
   };
 
-  if (!food) return <LoadingPage />;
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
+
+  if (!food)
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <SpinnerCube />
+      </div>
+    );
 
   return (
-    <div className="wrap-page" style={{ position: "relative", overflow: "hidden" }}>
-      {/* Blob background elements */}
-      <div className="bg-blob bg-blob-1" />
-      <div className="bg-blob bg-blob-2" />
-      <div className="bg-blob bg-blob-3" />
-      <div className="bg-blob bg-blob-4" />
-      <div className="bg-blob bg-blob-5" />
-      <div className="bg-blob bg-blob-6" />
-      <div className="food-detail-wrap max-w-6xl mx-auto mt-[160px] pb-16 text-[14px] md:text-[16px] grid grid-cols-1 md:grid-cols-2 gap-10 cart-wrap glass-box">
-        <div className="flex relative flex-col items-center">
-          {/* <button
-            onClick={() => navigate(-1)}
-            className="  top-[-70px] left-[0] bg-green-100 text-center w-48 rounded-2xl h-14 relative text-black text-base group border border-[#199b7e]"
-            type="button">
-            <div className="bg-[#199b7e] rounded-xl h-11 w-1/4 flex items-center justify-center absolute left-1 top-[3px] group-hover:w-[113px] z-10 duration-500">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 1024 1024"
-                height="20px"
-                width="20px">
-                <path d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z" fill="#000000"></path>
-                <path
-                  d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
-                  fill="#000000"></path>
-              </svg>
-            </div>
-            <p className="translate-x-2">Quay lại</p>
-          </button> */}
-
-          <img
-            ref={imageRef}
-            src={mainImage}
-            alt={food.name}
-            className="w-full rounded-2xl shadow-lg object-cover"
-          />
-
-          {food.images?.length > 1 && (
-            <div className="flex gap-3 mt-4 flex-wrap justify-center">
-              {(food.images || []).map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt={`Phụ ${idx}`}
-                  onClick={() => setMainImage(img)}
-                  className={`w-20 h-20 object-cover rounded-lg shadow-sm cursor-pointer hover:scale-105 transition ${
-                    img === mainImage ? "ring-2 ring-green-500" : ""
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div className="flex justify-between items-start mb-4">
-            <h1 className="sm:text-3xl font-bold text-gray-800">{food.name}</h1>
-            <div className="flex space-x-3">
-              {token && !(food.variants?.length > 0 && selectedVariantId == null) && (
-                <button
-                  onClick={toggleFavorite}
-                  className="text-xl hover:scale-110 transition"
-                  title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}>
-                  <i
-                    className={
-                      isFavorite
-                        ? "fa-solid fa-heart text-red-500 p-3 bg-white rounded-full shadow border-2 border-red-500"
-                        : "fa-regular fa-heart text-red-500 p-3 bg-white rounded-full shadow border-2 border-red-500 "
-                    }></i>
-                </button>
-              )}
-              <button className="text-blue-600 text-xl hover:scale-110 transition" title="Chia sẻ">
-                <i className="fa-solid fa-share-nodes p-3 bg-white rounded-full shadow border-2 border-[#2663eb]"></i>
-              </button>
-            </div>
-          </div>
-
-          <p className="text-[#199b7e] sm:text-[25px] text-[20px] font-semibold mb-3">
-            {selectedPrice.toLocaleString()}₫
-          </p>
-          <p className="text-gray-700 mb-5 leading-relaxed">{food.description}</p>
-
-          {food.variants?.length > 0 && (
-            <div className="mb-5">
-              <h2 className="font-semibold  mb-2">Các biến thể khác:</h2>
-              <div className="flex flex-wrap gap-3 ">
-                {(food.variants || []).map((v, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setSelectedVariantId(v.id);
-                      setSelectedPrice(food.price + (v.extraPrice || 0));
-                    }}
-                    className={`px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm sm:text-base ${
-                      selectedVariantId === v.id
-                        ? "bg-green-100 border-green-500 ring-2 ring-green-400"
-                        : ""
-                    }`}>
-                    {v.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center space-x-4 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Breadcrumb */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-4 mt-20">
+          <nav className="flex items-center space-x-2 text-sm text-gray-600">
             <button
-              onClick={() => handleQuantityChange(-1)}
-              className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded">
-              -
+              onClick={() => navigate("/")}
+              className="hover:text-green-600 transition-colors duration-200">
+              Trang chủ
             </button>
-            <span className="sm:text-lg">{quantity}</span>
+            <i className="fas fa-chevron-right text-xs"></i>
             <button
-              onClick={() => handleQuantityChange(1)}
-              className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded">
-              +
+              onClick={() => navigate("/menu")}
+              className="hover:text-green-600 transition-colors duration-200">
+              Thực đơn
             </button>
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              className="bg-[#199b7e] hover:bg-green-500 text-white px-6 py-2 rounded-full font-semibold"
-              onClick={handleAddToCart}>
-              Thêm vào giỏ hàng
-            </button>
-            <button
-              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-semibold"
-              onClick={handleOrderNow}>
-              Đặt ngay
-            </button>
-          </div>
+            <i className="fas fa-chevron-right text-xs"></i>
+            <span className="text-gray-900 font-medium">{food.name}</span>
+          </nav>
         </div>
       </div>
 
-      <RelatedFoods
-        categoryId={food.categoryId}
-        excludeId={food.id}
-        categoryName={food.categoryName}
-      />
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+            {/* Image Section */}
+            <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+              <div className="sticky top-8">
+                <div className="relative overflow-hidden rounded-xl bg-white shadow-lg">
+                  {imageLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    </div>
+                  )}
+                  <img
+                    ref={imageRef}
+                    src={mainImage}
+                    alt={food.name}
+                    onLoad={handleImageLoad}
+                    className="w-full h-96 object-cover transition-transform duration-500 hover:scale-105"
+                    style={{ display: imageLoading ? "none" : "block" }}
+                  />
+
+                  {/* Image overlay with actions */}
+                  <div className="absolute top-4 right-4 flex space-x-2">
+                    {token && !(food.variants?.length > 0 && selectedVariantId == null) && (
+                      <button
+                        onClick={toggleFavorite}
+                        className="group bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 hover:scale-110"
+                        title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}>
+                        <i
+                          className={`${
+                            isFavorite
+                              ? "fas fa-heart text-base text-red-500"
+                              : "far fa-heart text-base text-gray-600 group-hover:text-red-500"
+                          } transition-colors duration-300`}></i>
+                      </button>
+                    )}
+                    <button
+                      className="group text-base bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 hover:scale-110"
+                      title="Chia sẻ">
+                      <i className="fas fa-share-nodes text-gray-600 group-hover:text-blue-500 transition-colors duration-300"></i>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Thumbnail Gallery */}
+                {food.images?.length > 1 && (
+                  <div className="mt-6">
+                    <div className="flex gap-3 overflow-x-auto pb-2">
+                      {food.images.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setMainImage(img);
+                            setImageLoading(true);
+                          }}
+                          className={`flex-shrink-0 relative overflow-hidden rounded-lg transition-all duration-300 ${
+                            img === mainImage
+                              ? "ring-3 ring-green-500 ring-offset-2 shadow-lg transform scale-105"
+                              : "hover:shadow-md hover:scale-102 opacity-70 hover:opacity-100"
+                          }`}>
+                          <img
+                            src={img}
+                            alt={`${food.name} ${idx + 1}`}
+                            className="w-16 h-16 object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Product Information */}
+            <div className="p-8 lg:p-12">
+              <div className="h-full flex flex-col">
+                {/* Header */}
+                <div className="mb-6">
+                  <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3 leading-tight">
+                    {food.name}
+                  </h1>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-baseline">
+                      <span className="text-3xl font-bold text-green-600">
+                        {selectedPrice.toLocaleString()}₫
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-1 text-yellow-400">
+                      {[...Array(5)].map((_, i) => (
+                        <i key={i} className="fas fa-star text-sm"></i>
+                      ))}
+                      {/* <span className="text-gray-600 text-sm ml-2">(4.9)</span> */}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="mb-8">
+                  <p className="text-gray-700 leading-relaxed text-base">{food.description}</p>
+                </div>
+
+                {/* Variants */}
+                {food.variants?.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-18 font-semibold text-gray-900 mb-4">Chọn phiên bản:</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {food.variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          onClick={() => {
+                            setSelectedVariantId(variant.id);
+                            setSelectedPrice(food.price + (variant.extraPrice || 0));
+                          }}
+                          className={`relative p-4 rounded-xl border-2 transition-all duration-300 text-sm text-left ${
+                            selectedVariantId === variant.id
+                              ? "border-green-500 bg-green-50 shadow-md transform scale-105"
+                              : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
+                          }`}>
+                          <div className="font-medium text-gray-900">{variant.name}</div>
+                          {variant.extraPrice > 0 && (
+                            <div className="text-sm text-green-600 mt-1">
+                              +{variant.extraPrice.toLocaleString()}₫
+                            </div>
+                          )}
+                          {selectedVariantId === variant.id && (
+                            <div className="absolute top-2 right-2">
+                              <i className="fas fa-check-circle text-green-500"></i>
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quantity Selector */}
+                <div className="mb-8">
+                  <h3 className="text-18 font-semibold text-gray-900 mb-4">Số lượng:</h3>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => handleQuantityChange(-1)}
+                        disabled={quantity <= 1}
+                        className="p-3 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+                        <i className="fas fa-minus text-gray-600"></i>
+                      </button>
+                      <span className="px-6 py-3 font-semibold text-lg min-w-[60px] text-center">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => handleQuantityChange(1)}
+                        className="p-3 hover:bg-gray-200 transition-colors duration-200">
+                        <i className="fas fa-plus text-gray-600"></i>
+                      </button>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Tổng:{" "}
+                      <span className="font-semibold text-green-600 text-lg">
+                        {(selectedPrice * quantity).toLocaleString()}₫
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-auto space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={food.variants?.length > 0 && selectedVariantId == null}
+                      className="group relative overflow-hidden bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                      <i className="fas fa-shopping-cart group-hover:scale-110 transition-transform duration-300"></i>
+                      <span>Thêm vào giỏ</span>
+                    </button>
+                    <button
+                      onClick={handleOrderNow}
+                      disabled={food.variants?.length > 0 && selectedVariantId == null}
+                      className="text-sm group relative overflow-hidden bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                      <i className="fas fa-bolt group-hover:scale-110 transition-transform duration-300"></i>
+                      <span>Đặt ngay</span>
+                    </button>
+                  </div>
+
+                  {food.variants?.length > 0 && selectedVariantId == null && (
+                    <p className="text-center text-amber-600 text-sm bg-amber-50 p-3 rounded-lg border border-amber-200">
+                      <i className="fas fa-info-circle mr-2"></i>
+                      Vui lòng chọn phiên bản trước khi đặt hàng
+                    </p>
+                  )}
+                </div>
+
+                {/* Additional Info */}
+                <div className="mt-8 pt-8 border-t border-gray-200">
+                  <div className="grid grid-cols-2 gap-6 text-sm text-gray-600">
+                    <div className="flex items-center space-x-3">
+                      <i className="fas fa-shipping-fast text-green-600"></i>
+                      <span>Giao hàng nhanh</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <i className="fas fa-shield-alt text-blue-600"></i>
+                      <span>Đảm bảo chất lượng</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Products */}
+        <div className="mt-16">
+          <RelatedFoods
+            categoryId={food.categoryId}
+            excludeId={food.id}
+            categoryName={food.categoryName}
+          />
+        </div>
+      </div>
     </div>
   );
 }
