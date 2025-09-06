@@ -44,8 +44,7 @@ class StaffOrderWebSocketService {
             const sockJS = new SockJS(wsUrl);
 
             sockJS.onopen = () =>
-              (sockJS.onclose = () =>
-                (sockJS.onerror = (e) => console.error("💥 SockJS error:", e)));
+              (sockJS.onclose = () => (sockJS.onerror = (e) => console.error("SockJS error:", e)));
 
             return sockJS;
           },
@@ -113,7 +112,7 @@ class StaffOrderWebSocketService {
           }
         }, 15000);
       } catch (error) {
-        console.error("💥 Lỗi khi khởi tạo WebSocket:", error);
+        console.error("Lỗi khi khởi tạo WebSocket:", error);
         this.connected = false;
         reject(error);
       }
@@ -138,7 +137,7 @@ class StaffOrderWebSocketService {
         },
       });
     } catch (error) {
-      console.error("💥 Lỗi khi đăng ký staff:", error);
+      console.error("Lỗi khi đăng ký staff:", error);
     }
   }
 
@@ -155,15 +154,12 @@ class StaffOrderWebSocketService {
     this.subscribe("/topic/new-orders", "newOrder", (message) => {
       try {
         if (!message.body || typeof message.body !== "string") {
-          console.warn("⚠️ Invalid message body for new order:", message.body);
           return;
         }
         const orderData = JSON.parse(message.body.trim());
-        console.log(" Đơn hàng mới:", orderData);
         this.notifyHandlers("newOrder", orderData);
       } catch (error) {
-        console.error("💥 Lỗi parse đơn hàng mới:", error);
-        console.error("💥 Message body:", message.body);
+        console.error(" Message body:", message.body);
       }
     });
 
@@ -171,14 +167,14 @@ class StaffOrderWebSocketService {
     this.subscribe("/topic/order-updates", "orderStatusUpdate", (message) => {
       try {
         if (!message.body || typeof message.body !== "string") {
-          console.warn("⚠️ Invalid message body for order update:", message.body);
+          console.warn("Invalid message body for order update:", message.body);
           return;
         }
         const updateData = JSON.parse(message.body.trim());
         this.notifyHandlers("orderStatusUpdate", updateData);
       } catch (error) {
-        console.error("💥 Lỗi parse cập nhật trạng thái:", error);
-        console.error("💥 Message body:", message.body);
+        console.error("Lỗi parse cập nhật trạng thái:", error);
+        console.error("Message body:", message.body);
       }
     });
 
@@ -193,8 +189,8 @@ class StaffOrderWebSocketService {
         // console.log("📊 Cập nhật thống kê:", statsData);
         this.notifyHandlers("statsUpdate", statsData);
       } catch (error) {
-        console.error("💥 Lỗi parse thống kê:", error);
-        console.error("💥 Message body:", message.body);
+        console.error("Lỗi parse thống kê:", error);
+        console.error("Message body:", message.body);
       }
     });
 
@@ -223,8 +219,8 @@ class StaffOrderWebSocketService {
             console.log("📋 Chi tiết đơn hàng (JSON):", detailsData);
             this.notifyHandlers("orderDetails", detailsData);
           } catch (parseError) {
-            console.error("💥 Lỗi parse JSON:", parseError);
-            console.error("💥 JSON body:", cleanBody);
+            console.error("Lỗi parse JSON:", parseError);
+            console.error("JSON body:", cleanBody);
           }
         } else {
           // Là plain text message - có thể là thông báo hoặc response message
@@ -238,8 +234,8 @@ class StaffOrderWebSocketService {
           });
         }
       } catch (error) {
-        console.error("💥 Lỗi tổng quát trong orderDetails handler:", error);
-        console.error("💥 Raw message:", message);
+        console.error("Lỗi tổng quát trong orderDetails handler:", error);
+        console.error("Raw message:", message);
       }
     });
 
@@ -293,7 +289,7 @@ class StaffOrderWebSocketService {
         try {
           handler(data);
         } catch (error) {
-          console.error(`💥 Lỗi trong handler ${messageType}:`, error);
+          console.error(`Lỗi trong handler ${messageType}:`, error);
         }
       });
     }
@@ -319,7 +315,7 @@ class StaffOrderWebSocketService {
       // console.log("✅ Đã xác nhận đơn hàng:", orderId);
       return true;
     } catch (error) {
-      console.error("💥 Lỗi khi xác nhận đơn hàng:", error);
+      console.error("Lỗi khi xác nhận đơn hàng:", error);
       return false;
     }
   }
@@ -344,7 +340,7 @@ class StaffOrderWebSocketService {
       // console.log("📋 Đã yêu cầu chi tiết đơn hàng:", orderId);
       return true;
     } catch (error) {
-      console.error("💥 Lỗi khi yêu cầu chi tiết đơn hàng:", error);
+      console.error("Lỗi khi yêu cầu chi tiết đơn hàng:", error);
       return false;
     }
   }
@@ -398,7 +394,7 @@ class StaffOrderWebSocketService {
       if (!this.connected && this.staffId && this.token) {
         // console.log(`🔄 Đang thử reconnect lần ${this.reconnectAttempts}`);
         this.connect(this.staffId, this.token).catch((error) => {
-          console.error("💥 Reconnect thất bại:", error);
+          console.error("Reconnect thất bại:", error);
         });
       }
     }, delay);
@@ -412,7 +408,7 @@ class StaffOrderWebSocketService {
       try {
         subscription.unsubscribe();
       } catch (error) {
-        console.error("💥 Lỗi khi unsubscribe:", error);
+        console.error("Lỗi khi unsubscribe:", error);
       }
     });
     this.subscriptions.clear();

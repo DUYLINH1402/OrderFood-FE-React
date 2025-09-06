@@ -23,6 +23,7 @@ export const registerApi = async (registerData) => {
     const response = await publicClient.post("/api/auth/register", registerData);
     return response.data;
   } catch (error) {
+    toast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
     const errorCode =
       error.response?.data?.errorCode || error.response?.data?.message || "Register failed";
     throw new Error(errorCode);

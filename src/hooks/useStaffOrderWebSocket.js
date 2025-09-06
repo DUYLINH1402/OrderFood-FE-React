@@ -80,7 +80,7 @@ export const useStaffOrderWebSocket = () => {
     // Clear tất cả handlers
     handlersRef.current.clear();
 
-    console.log("🔌 Đã ngắt kết nối WebSocket");
+    console.log(" Đã ngắt kết nối WebSocket");
   }, []);
 
   /**
@@ -177,6 +177,6 @@ export const useStaffOrderWebSocket = () => {
     updateOrderStatus,
 
     // Thông tin trạng thái
-    status: staffOrderWebSocketService.getStatus(),
+    // status: staffOrderWebSocketService.getStatus(),
   };
 };

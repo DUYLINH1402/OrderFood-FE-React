@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import DishCard from "./DishCard";
-import { getNewFoods } from "../services/service/foodService";
-import HorizontalScrollSection from "../utils/action";
-import SkeletonSection from "./Skeleton/SkeletonSection";
+import DishCard from "../../components/DishCard";
+import { getNewFoods } from "../../services/service/foodService";
+import HorizontalScrollSection from "../../utils/action";
+import SkeletonSection from "../../components/Skeleton/SkeletonSection";
 
 const NewDishesSection = () => {
   const [dishes, setDishes] = useState([]);

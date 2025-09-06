@@ -7,6 +7,7 @@ import { persistor, store } from "./store";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 import AuthLoader from "./routes/AuthLoader";
+import { ConfirmProvider } from "./components/ConfirmModal";
 
 function App() {
   return (
@@ -24,9 +25,11 @@ function App() {
           pauseOnHover // Tạm dừng khi hover
           theme="colored" // Chế độ giao diện ('light', 'dark', 'colored')
         />
-        <AuthLoader>
-          <AppRoutes />
-        </AuthLoader>
+        <ConfirmProvider>
+          <AuthLoader>
+            <AppRoutes />
+          </AuthLoader>
+        </ConfirmProvider>
       </PersistGate>
     </Provider>
   );

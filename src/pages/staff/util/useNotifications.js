@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { playNotificationSoundByType, isAudioEnabled } from "./notificationSound";
+// import { playNotificationSoundByType, isAudioEnabled } from "./notificationSound";
+import { playNotificationSoundByType, isAudioEnabled } from "../../../utils/notificationSound";
 
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState([]);

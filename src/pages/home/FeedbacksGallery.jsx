@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { getAllFeedbacks } from "../services/service/feedbackService";
-import useScrollReveal from "../hooks/useScrollReveal";
+import { getAllFeedbacks } from "../../services/service/feedbackService";
+import useScrollReveal from "../../hooks/useScrollReveal";
 import Masonry from "react-masonry-css";
 
 const FeedbacksGallery = ({ showViewMoreButton = true, onViewMore }) => {

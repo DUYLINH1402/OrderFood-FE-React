@@ -5,7 +5,7 @@ import {
   playNotificationSoundByType,
   isAudioSupported,
   requestAudioPermission,
-} from "./notificationSound";
+} from "../../../utils/notificationSound";
 import LoadingIcon from "../../../components/Skeleton/LoadingIcon";
 
 const AudioPermissionButton = ({ onPermissionGranted }) => {

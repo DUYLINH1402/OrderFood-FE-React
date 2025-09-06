@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useUserWebSocket } from "../services/websocket/useUserWebSocket";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Dropdown, Avatar, Typography } from "antd";
@@ -6,6 +7,7 @@ import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons
 import { FiMenu } from "react-icons/fi";
 import { useAuth } from "../hooks/auth/useAuth";
 import { logout } from "../store/slices/authSlice";
+import { persistor } from "../store";
 import { ROLE_NAVIGATION } from "../utils/roleConfig";
 import Sidebar from "./Sidebar/Sidebar";
 import MobileMenuToggle from "./Sidebar/MobileMenuToggle";
@@ -16,6 +18,8 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, userRole: role } = useAuth();
+  // Tự động kết nối WebSocket khi user đăng nhập
+  useUserWebSocket();
 
   // State cho sidebar responsive
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -86,6 +90,7 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
 
   const handleLogout = () => {
     dispatch(logout());
+    persistor.purge(); // Xóa persisted state sau khi logout
     navigate("/");
   };
 
@@ -178,7 +183,7 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
                   <Avatar
                     src={user?.avatarUrl || staff_avatar}
                     icon={<UserOutlined />}
-                    size={isMobile ? 28 : 32}
+                    size={isMobile ? 32 : 50}
                     className="border-2 border-white border-opacity-40 shadow-sm"
                   />
                   <div className="text-left hidden tablet:block">

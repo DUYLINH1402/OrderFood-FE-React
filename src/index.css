@@ -204,3 +204,425 @@ html {
 .animate-float-delayed {
   animation: float-delayed 4s ease-in-out infinite 1s;
 }
+
+/* ----------------------- */
+/* CSS cho hệ thống thông báo User - thêm vào file SCSS/CSS global */
+
+/* Header notifications styles */
+.header__notifications {
+  display: flex;
+  align-items: center;
+  margin: 0 8px;
+}
+
+/* Custom notification badge styles */
+.notification-badge .ant-badge-count {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  border: 2px solid white;
+  font-weight: 600;
+  font-size: 11px;
+  min-width: 18px;
+  height: 18px;
+  line-height: 14px;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* Badge animation */
+@keyframes badge-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Notification bell animations */
+.notification-bell-shake {
+  animation: bell-shake 1s ease-in-out;
+}
+
+@keyframes bell-shake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  10%,
+  30%,
+  50%,
+  70% {
+    transform: rotate(-10deg);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: rotate(10deg);
+  }
+}
+
+/* Pulse ring effect */
+.notification-pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #3b82f6;
+  animation: pulse-ring 1.5s ease-out infinite;
+  opacity: 0.75;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* Notification dropdown animations */
+.notification-dropdown-enter {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+}
+
+.notification-dropdown-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: all 300ms ease-out;
+}
+
+.notification-dropdown-exit {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.notification-dropdown-exit-active {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  transition: all 200ms ease-in;
+}
+
+/* Notification item animations */
+.notification-item {
+  transition: all 200ms ease-out;
+}
+
+.notification-item:hover {
+  background-color: rgba(249, 250, 251, 1);
+  transform: translateX(2px);
+}
+
+.notification-item.unread {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.05) 100%);
+  border-left: 4px solid #3b82f6;
+}
+
+.notification-item.unread.high-priority {
+  border-left-color: #ef4444;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.05) 0%, rgba(252, 165, 165, 0.05) 100%);
+}
+
+/* Custom scrollbar for notifications list */
+.notification-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.notification-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.notification-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.notification-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Priority indicators */
+.priority-high {
+  position: relative;
+}
+
+.priority-high::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: priority-pulse 2s infinite;
+}
+
+@keyframes priority-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .header__notifications {
+    margin: 0 4px;
+  }
+
+  .notification-badge .ant-badge-count {
+    font-size: 10px;
+    min-width: 16px;
+    height: 16px;
+    line-height: 12px;
+  }
+
+  /* Make dropdown full width on mobile */
+  .ant-dropdown {
+    width: 95vw !important;
+    max-width: 95vw !important;
+  }
+}
+
+/* Dark mode support (nếu có) */
+@media (prefers-color-scheme: dark) {
+  .notification-item {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .notification-item:hover {
+    background-color: #374151;
+  }
+
+  .notification-item.unread {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%);
+  }
+
+  .notification-item.unread.high-priority {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(252, 165, 165, 0.1) 100%);
+  }
+}
+
+/* Loading states */
+.notification-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.notification-loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Success animations */
+.notification-success-enter {
+  animation: success-bounce 0.6s ease-out;
+}
+
+@keyframes success-bounce {
+  0% {
+    transform: scale(0.3) rotate(-10deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05) rotate(2deg);
+  }
+  70% {
+    transform: scale(0.9) rotate(-1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Error states */
+.notification-error {
+  border-left-color: #ef4444 !important;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(252, 165, 165, 0.05) 100%);
+}
+
+/* Floating action buttons in notifications */
+.notification-actions {
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 200ms ease-out;
+}
+
+.notification-item:hover .notification-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Notification categories */
+.notification-category-order {
+  border-left-color: #3b82f6;
+}
+
+.notification-category-system {
+  border-left-color: #6b7280;
+}
+
+.notification-category-promotion {
+  border-left-color: #f59e0b;
+}
+
+/* Settings panel animations */
+.notification-settings-panel {
+  transform: translateY(-10px);
+  opacity: 0;
+  animation: settings-slide-in 300ms ease-out forwards;
+}
+
+@keyframes settings-slide-in {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Audio indicator animation */
+.audio-enabled {
+  animation: audio-pulse 2s ease-in-out infinite;
+}
+
+@keyframes audio-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Connection status indicator */
+.connection-status {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.connection-status.connected .status-dot {
+  background-color: #10b981;
+  animation: status-pulse 2s infinite;
+}
+
+.connection-status.disconnected .status-dot {
+  background-color: #ef4444;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Accessibility improvements */
+.notification-item:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.notification-actions button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .notification-bell-shake,
+  .notification-pulse-ring,
+  .badge-pulse,
+  .priority-pulse,
+  .audio-pulse,
+  .status-pulse {
+    animation: none;
+  }
+
+  .notification-item {
+    transition: none;
+  }
+
+  .notification-dropdown-enter-active,
+  .notification-dropdown-exit-active {
+    transition: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .header__notifications,
+  .notification-badge,
+  .ant-dropdown {
+    display: none !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .notification-item {
+    border: 2px solid currentColor;
+  }
+
+  .notification-item.unread {
+    border-left-width: 6px;
+  }
+
+  .notification-badge .ant-badge-count {
+    border: 3px solid white;
+    font-weight: 800;
+  }
+  .notification-badge .ant-btn {
+    will-change: transform, box-shadow;
+  }
+
+  .header__search > div {
+    will-change: width;
+  }
+}

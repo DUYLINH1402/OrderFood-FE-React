@@ -67,6 +67,7 @@ Luôn phản hồi cho người dùng bằng Tiếng Việt trong mọi tình hu
 
 ## Hướng dẫn cho Copilot
 
+- Không dùng các emoji mà phải dùng icon dựa trên thư viện có sẵn để đồng bộ
 - Khi sinh code, luôn tuân thủ các quy tắc trên.
 - Giải thích bằng Tiếng Việt, ưu tiên ví dụ thực tế từ dự án.
 - Nếu có logic phức tạp, hãy comment rõ ràng.

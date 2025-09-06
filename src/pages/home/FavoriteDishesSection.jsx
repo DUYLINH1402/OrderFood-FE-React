@@ -1,28 +1,29 @@
 import React, { useEffect, useState } from "react";
-import DishCard from "./DishCard";
-import { getFeaturedFoods } from "../services/service/foodService";
-import HorizontalScrollSection from "../utils/action";
-import SkeletonSection from "./Skeleton/SkeletonSection";
+import DishCard from "../../components/DishCard";
+import { getBestSellerFoods } from "../../services/service/foodService";
+import HorizontalScrollSection from "../../utils/action";
+import SkeletonSection from "../../components/Skeleton/SkeletonSection";
 
-const FeaturedDishesSection = () => {
-  const [featuredDishes, setFeaturedDishes] = useState([]);
+const FavoriteDishesSection = () => {
+  const [bestSellerDishes, setBestSellerDishes] = useState([]);
   const [page, setPage] = useState(0); // bắt đầu từ 0 (Spring Boot)
   const [loading, setLoading] = useState(true);
   const pageSize = 12;
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getFeaturedFoods(page, pageSize);
-      setFeaturedDishes(data.content);
+      const data = await getBestSellerFoods(page, pageSize);
+      setBestSellerDishes(data.content);
       setLoading(false);
     };
     fetchData();
   }, []);
 
   if (loading) return <SkeletonSection />;
+
   return (
     <HorizontalScrollSection
-      items={featuredDishes}
+      items={bestSellerDishes}
       renderItem={(dish) => (
         <DishCard
           key={dish.id}
@@ -32,11 +33,10 @@ const FeaturedDishesSection = () => {
           price={dish.price}
           imageUrl={dish.imageUrl}
           variants={dish.variants}
-          isFeatured={dish.isFeatured}
+          isBestSeller={dish.isBestSeller}
         />
       )}
     />
   );
 };
-
-export default FeaturedDishesSection;
+export default FavoriteDishesSection;

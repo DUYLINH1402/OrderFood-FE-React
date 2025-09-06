@@ -6,9 +6,13 @@ import user_avatar from "../../assets/icons/user_avatar.png";
 import "../../assets/styles/components/Header.scss";
 import LazyImage from "../LazyImage";
 import SearchBar from "../SearchBar";
+import NotificationBell from "../NotificationBell";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../store/slices/authSlice";
 import { clearCart } from "../../store/slices/cartSlice";
+import { useUserWebSocketContext } from "../../services/websocket/UserWebSocketProvider";
+import { useUserNotifications } from "../../hooks/useUserNotifications";
+
 const Header = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const authUser = useSelector((state) => state.auth.user);
@@ -17,8 +21,63 @@ const Header = () => {
   const [dropdownMounted, setDropdownMounted] = useState(false);
   const dropdownRef = useRef(null);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const [hideLoginCart, setHideLoginCart] = useState(false);
+
+  // Lấy trạng thái WebSocket từ context (đồng bộ với Layout)
+  const { connected: wsConnected, addMessageHandler } = useUserWebSocketContext();
+  const {
+    notifications,
+    unreadCount,
+    highPriorityUnreadCount,
+    isShaking,
+    audioEnabled,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+    clearAll,
+    requestNotificationPermission,
+    toggleAudio,
+    addOrderConfirmedNotification,
+    addOrderInDeliveryNotification,
+    addOrderCompletedNotification,
+    addOrderCancelledNotification,
+    addSystemNotification,
+  } = useUserNotifications();
+
+  // Đăng ký nhận thông báo từ BE khi WebSocket kết nối
+  useEffect(() => {
+    if (!wsConnected || !authUser) return;
+    // Đăng ký nhận thông báo từ BE
+    const unsubOrderUpdate = addMessageHandler("orderUpdate", (data) => {
+      if (data.type === "ORDER_CONFIRMED") addOrderConfirmedNotification(data.orderData);
+      else if (data.type === "ORDER_IN_DELIVERY") addOrderInDeliveryNotification(data.orderData);
+      else if (data.type === "ORDER_COMPLETED") addOrderCompletedNotification(data.orderData);
+      else if (data.type === "ORDER_CANCELLED") addOrderCancelledNotification(data.orderData);
+      else addSystemNotification(data);
+    });
+    return () => unsubOrderUpdate();
+  }, [
+    wsConnected,
+    authUser,
+    addMessageHandler,
+    addOrderConfirmedNotification,
+    addOrderInDeliveryNotification,
+    addOrderCompletedNotification,
+    addOrderCancelledNotification,
+    addSystemNotification,
+  ]);
+
+  // Request notification permission khi user đăng nhập lần đầu
+  useEffect(() => {
+    if (authUser && "Notification" in window && Notification.permission === "default") {
+      // Delay để không làm gián đoạn trải nghiệm đăng nhập
+      const timer = setTimeout(() => {
+        requestNotificationPermission();
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [authUser, requestNotificationPermission]);
 
   useEffect(() => {
     if (isSearchExpanded && window.innerWidth < 768) {
@@ -57,7 +116,7 @@ const Header = () => {
     }
     return () => clearTimeout(timer);
   }, [dropdownOpen]);
-  // console.log("User:", authUser);
+
   return (
     <header className="header ">
       <div className="header__left">
@@ -70,13 +129,42 @@ const Header = () => {
         <div className="header__search p-3 cursor-pointer relative">
           <SearchBar setIsSearchExpanded={setIsSearchExpanded} />
         </div>
+
+        {/* User Notifications - chỉ hiển thị khi đã đăng nhập */}
+        {authUser && !isSearchExpanded && (
+          <div
+            className={`header__notifications transition-opacity duration-300 ${
+              isSearchExpanded && window.innerWidth < 768
+                ? "opacity-0 pointer-events-none"
+                : "opacity-100"
+            } ${hideLoginCart ? "hidden" : ""}`}>
+            <NotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              highPriorityUnreadCount={highPriorityUnreadCount}
+              isShaking={isShaking}
+              audioEnabled={audioEnabled}
+              onMarkAsRead={markAsRead}
+              onMarkAllAsRead={markAllAsRead}
+              onRemoveNotification={removeNotification}
+              onClearAll={clearAll}
+              onToggleAudio={toggleAudio}
+              onRequestPermission={requestNotificationPermission}
+            />
+          </div>
+        )}
+
         {isSearchExpanded && window.innerWidth < 768 ? null : (
           <div
             className={`
-  header__account relative transition-opacity duration-1000
-  ${isSearchExpanded && window.innerWidth < 768 ? "opacity-0 pointer-events-none" : "opacity-100"}
-  ${hideLoginCart ? "hidden" : ""}
-`}
+              header__account relative transition-opacity duration-1000
+              ${
+                isSearchExpanded && window.innerWidth < 768
+                  ? "opacity-0 pointer-events-none"
+                  : "opacity-100"
+              }
+              ${hideLoginCart ? "hidden" : ""}
+            `}
             ref={dropdownRef}>
             {authUser ? (
               <div className="flex items-center gap-2 sm:gap-3">
@@ -105,7 +193,20 @@ const Header = () => {
                         <span className="font-semibold text-gray-800 sm:text-base text-sm line-clamp-1 break-all">
                           {authUser.fullName || authUser.username}
                         </span>
-                        <span className="text-gray-500 text-sm">@{authUser.username}</span>
+                        {/* Trạng thái kết nối WebSocket */}
+                        <div className="flex items-center space-x-2 mt-1">
+                          {wsConnected ? (
+                            <>
+                              <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                              <span className="text-sx text-green-600 ">Đã kết nối</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="inline-block w-2 h-2 rounded-full bg-gray-400" />
+                              <span className="text-sx text-gray-400">Chưa kết nối</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -113,27 +214,32 @@ const Header = () => {
                     <div className="flex flex-col">
                       <Link
                         to="/ho-so"
-                        onClick={() => setDropdownOpen(false)} // Đóng dropdown
+                        onClick={() => setDropdownOpen(false)}
                         className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
                         Trang cá nhân
                       </Link>
                       <Link
                         to="/yeu-thich"
-                        onClick={() => setDropdownOpen(false)} // Đóng dropdown
+                        onClick={() => setDropdownOpen(false)}
                         className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
                         Món Yêu thích
                       </Link>
                       <Link
                         to="ho-so?tab=orders"
-                        onClick={() => setDropdownOpen(false)} // Đóng dropdown
+                        onClick={() => setDropdownOpen(false)}
                         className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
                         Đơn hàng của tôi
+                        {unreadCount > 0 && (
+                          <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                            {unreadCount}
+                          </span>
+                        )}
                       </Link>
                       <div className="border-t border-gray-100 my-1" />
                       <button
                         onClick={() => {
-                          setDropdownOpen(false); // Đóng dropdown
-                          handleLogout(); // Rồi mới logout
+                          setDropdownOpen(false);
+                          handleLogout();
                         }}
                         className="text-left px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition  sm:text-base text-sm">
                         Đăng xuất
@@ -153,9 +259,13 @@ const Header = () => {
         <Link
           to="/gio-hang"
           className={`header__cart relative transition-opacity duration-1000
-  ${isSearchExpanded && window.innerWidth < 768 ? "opacity-0 pointer-events-none" : "opacity-100"}
-  ${hideLoginCart ? "hidden" : ""}
-`}>
+            ${
+              isSearchExpanded && window.innerWidth < 768
+                ? "opacity-0 pointer-events-none"
+                : "opacity-100"
+            }
+            ${hideLoginCart ? "hidden" : ""}
+          `}>
           <LazyImage src={shopping_cart} alt="Giỏ hàng" className="shopping-cart" />
           <span className="badge">{cartItems?.length || 0}</span>
         </Link>

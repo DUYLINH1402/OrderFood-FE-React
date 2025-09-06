@@ -1,16 +1,15 @@
 import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useScrollReveal from "../hooks/useScrollReveal";
-import NewDishesSection from "../components/NewDishesSection";
-import FeaturedDishesSection from "../components/FeaturedDishesSection";
-import FavoriteDishesSection from "../components/FavoriteDishesSection";
+import NewDishesSection from "./home/NewDishesSection";
+import FeaturedDishesSection from "./home/FeaturedDishesSection";
+import FavoriteDishesSection from "./home/FavoriteDishesSection";
 import NewsSection from "../components/NewsSection";
-import TailwindGallery from "../components/FeedbacksGallery";
+import { MyComponent } from "../components/MyComponent";
 import LazyImage from "../components/LazyImage";
 import "../assets/styles/pages/Home.scss";
 import ServiceHighlights from "../components/ServiceHighlights";
-import Ribbons from "../components/Ribbons/Ribbons";
-import FeedbacksGallery from "../components/FeedbacksGallery";
+import FeedbacksGallery from "./home/FeedbacksGallery";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -30,22 +29,6 @@ const Home = () => {
 
   return (
     <div className=" home pt-36" style={{ position: "relative", overflow: "hidden" }}>
-      {/* <div style={{ height: "500px", position: "relative", overflow: "hidden" }}>
-        <Ribbons
-          colors={["#199b7e"]}
-          baseSpring={0.03}
-          baseFriction={0.9}
-          baseThickness={4}
-          offsetFactor={0.05}
-          maxAge={500}
-          pointCount={50}
-          speedMultiplier={0.45}
-          enableFade={true}
-          enableShaderEffect={true}
-          effectAmplitude={3}
-          backgroundColor={[0, 0, 0, 0]}
-        />
-      </div> */}
       {/* Blob background elements */}
       <div className="bg-blob bg-blob-1" />
       <div className="bg-blob bg-blob-2" />
@@ -74,6 +57,8 @@ const Home = () => {
           <ServiceHighlights />
         </div>
       </section>
+
+      <MyComponent />
       <section
         className="scroll-reveal home__section"
         ref={(el) => setSectionRef(el, 2)}
