@@ -93,7 +93,7 @@ const Chatbot = ({ onClose }) => {
     try {
       // Thêm tin nhắn của user ngay lập tức
       dispatch(addUserMessage({ text: messageText }));
-      
+
       // Thêm loading message để hiển thị bot đang xử lý
       dispatch(addLoadingMessage());
 

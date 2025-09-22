@@ -43,9 +43,7 @@ const MessageItem = ({ message }) => {
         </div>
 
         {/* Thời gian tin nhắn - không hiển thị cho loading message */}
-        {!isLoading && (
-          <div className="message-timestamp">{formatTime(timestamp)}</div>
-        )}
+        {!isLoading && <div className="message-timestamp">{formatTime(timestamp)}</div>}
       </div>
     </div>
   );
