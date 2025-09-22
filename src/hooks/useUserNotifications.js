@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useSelector } from "react-redux";
 import {
   createNotificationSound,
   playNotificationSoundByType,
@@ -6,6 +7,21 @@ import {
   isAudioSupported,
   isAudioEnabled,
 } from "../utils/notificationSound";
+import {
+  getUserNotifications,
+  getUnreadCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+  deleteAllNotifications,
+  transformNotificationFromWebSocket,
+  mergeNotifications,
+} from "../services/service/notificationService";
+import {
+  isDuplicateNotification,
+  removeDuplicateNotifications,
+  analyzeNotificationDuplicates,
+} from "../utils/notificationUtils";
 
 const NOTIFICATION_STORAGE_KEY = "user_notifications";
 const MAX_NOTIFICATIONS = 50;
@@ -13,11 +29,95 @@ const SHAKE_DURATION = 1200;
 
 export const useUserNotifications = () => {
   const [notifications, setNotifications] = useState([]);
+  const [wsNotifications, setWsNotifications] = useState([]); // Thông báo từ WebSocket (tạm thời)
   const [isShaking, setIsShaking] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Load notifications từ localStorage khi component mount
+  // Ref để track auto-sync timeout
+  const autoSyncTimeoutRef = useRef(null);
+
+  // Lấy thông tin user từ Redux store
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  // Load notifications từ API khi user đăng nhập
   useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      // User đã login → chỉ load từ API, clear localStorage WebSocket
+      clearWebSocketFromLocalStorage();
+      loadNotificationsFromAPI();
+    } else {
+      // Nếu chưa đăng nhập, chỉ load từ localStorage (WebSocket notifications)
+      loadNotificationsFromLocalStorage();
+    }
+
+    // Check audio permission
+    checkAudioPermission();
+  }, [isAuthenticated, user?.id]);
+
+  // Clear WebSocket notifications from localStorage when user logs in
+  const clearWebSocketFromLocalStorage = () => {
+    const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsedNotifications = JSON.parse(stored);
+        // Filter out WebSocket notifications (có id bắt đầu bằng ws_)
+        const nonWebSocketNotifications = parsedNotifications.filter(
+          (n) => n.id && !n.id.toString().startsWith("ws_")
+        );
+        localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(nonWebSocketNotifications));
+      } catch (error) {
+        console.error("Error clearing WebSocket notifications:", error);
+      }
+    }
+  };
+
+  // Load notifications từ API backend
+  const loadNotificationsFromAPI = async () => {
+    setLoading(true);
+    try {
+      const result = await getUserNotifications();
+
+      if (result.success) {
+        if (isAuthenticated) {
+          // Với authenticated users: Replace WebSocket notifications bằng API notifications
+          setNotifications((currentNotifications) => {
+            // Remove tất cả WebSocket notifications khỏi current state
+            const nonWebSocketNotifications = currentNotifications.filter(
+              (n) => !n.id.toString().startsWith("ws_")
+            );
+
+            // Replace bằng API notifications
+            const mergedNotifications = mergeNotifications(result.data, nonWebSocketNotifications);
+            const cleanedNotifications = removeDuplicateNotifications(mergedNotifications);
+            saveNotifications(cleanedNotifications);
+            return cleanedNotifications;
+          });
+        } else {
+          // Với non-authenticated users: Merge như bình thường
+          setNotifications((currentNotifications) => {
+            const mergedNotifications = mergeNotifications(result.data, currentNotifications);
+            const cleanedNotifications = removeDuplicateNotifications(mergedNotifications);
+            saveNotifications(cleanedNotifications);
+            return cleanedNotifications;
+          });
+        }
+      } else {
+        console.error("Failed to load notifications:", result.message);
+        // Fallback to localStorage nếu API fail
+        loadNotificationsFromLocalStorage();
+      }
+    } catch (error) {
+      console.error("Error loading notifications from API:", error);
+      // Fallback to localStorage nếu API fail
+      loadNotificationsFromLocalStorage();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load notifications từ localStorage (backup)
+  const loadNotificationsFromLocalStorage = () => {
     const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
     if (stored) {
       try {
@@ -26,17 +126,17 @@ export const useUserNotifications = () => {
         const validNotifications = parsedNotifications.filter(
           (n) => n && typeof n === "object" && n.id && n.timestamp
         );
-        setNotifications(validNotifications);
+
+        // Loại bỏ duplicate notifications
+        const cleanedNotifications = removeDuplicateNotifications(validNotifications);
+        setNotifications(cleanedNotifications);
       } catch (error) {
         console.error("Error loading notifications from localStorage:", error);
         // Clear corrupted data
         localStorage.removeItem(NOTIFICATION_STORAGE_KEY);
       }
     }
-
-    // Check audio permission
-    checkAudioPermission();
-  }, []);
+  };
 
   // Check if audio is allowed
   const checkAudioPermission = () => {
@@ -65,37 +165,53 @@ export const useUserNotifications = () => {
   }, []);
 
   // Save notifications to localStorage
-  const saveNotifications = useCallback((newNotifications) => {
-    try {
-      localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(newNotifications));
-    } catch (error) {
-      console.error("Error saving notifications to localStorage:", error);
-    }
-  }, []);
+  const saveNotifications = useCallback(
+    (newNotifications) => {
+      try {
+        if (isAuthenticated) {
+          // Với authenticated users: Không lưu WebSocket notifications vào localStorage
+          const nonWebSocketNotifications = newNotifications.filter(
+            (n) => !n.id.toString().startsWith("ws_")
+          );
+          localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(nonWebSocketNotifications));
+        } else {
+          // Với non-authenticated users: Lưu tất cả như bình thường
+          localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(newNotifications));
+        }
+      } catch (error) {
+        console.error("Error saving notifications to localStorage:", error);
+      }
+    },
+    [isAuthenticated]
+  );
 
   // Play notification sound using Web Audio API
   const playNotificationSound = useCallback(
     async (notificationType = "ORDER_STATUS_UPDATE") => {
-      if (!audioEnabled || !isAudioSupported()) return;
+      if (!audioEnabled || !isAudioSupported()) return false;
 
       try {
         // Sử dụng âm thanh từ notificationSound.js
+        let soundPlayed = false;
         if (notificationType === "NEW_ORDER") {
-          await playNotificationSoundByType("NEW_ORDER");
+          soundPlayed = await playNotificationSoundByType("NEW_ORDER");
         } else if (
           notificationType === "ORDER_CONFIRMED" ||
           notificationType === "ORDER_IN_DELIVERY" ||
           notificationType === "ORDER_COMPLETED"
         ) {
-          await playNotificationSoundByType("ORDER_STATUS_UPDATE");
+          soundPlayed = await playNotificationSoundByType("ORDER_STATUS_UPDATE");
         } else if (notificationType === "SYSTEM_NOTIFICATION") {
-          await playNotificationSoundByType("STATS_UPDATE");
+          soundPlayed = await playNotificationSoundByType("STATS_UPDATE");
         } else {
           // Default notification sound
-          await createNotificationSound();
+          soundPlayed = await createNotificationSound();
         }
+
+        return soundPlayed;
       } catch (error) {
         console.error("Cannot play notification sound:", error);
+        return false;
       }
     },
     [audioEnabled]
@@ -140,7 +256,90 @@ export const useUserNotifications = () => {
     return false;
   }, []);
 
-  // Thêm thông báo mới
+  // Thêm thông báo mới từ WebSocket
+  const addWebSocketNotification = useCallback(
+    (wsNotificationData) => {
+      const transformedNotification = transformNotificationFromWebSocket(wsNotificationData);
+
+      if (isAuthenticated && user?.id) {
+        // ===== USER ĐÃ LOGIN: STRATEGY MỚI =====
+        // 1. KHÔNG thêm vào main notifications
+        // 2. CHỈ lưu vào wsNotifications để track
+        // 3. CHỈ show UI effects
+        // 4. Đợi API sync để update main notifications
+
+        // Cập nhật WebSocket notifications list (cho tracking)
+        setWsNotifications((prev) => {
+          const updated = [transformedNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
+          return updated;
+        });
+
+        // Show UI effects ngay lập tức
+        setNotifications((prev) => {
+          // Kiểm tra duplicate trước
+          if (isDuplicateNotification(transformedNotification, prev)) {
+            console.log("Duplicate WebSocket notification detected, skipping UI update");
+            return prev;
+          }
+
+          // Thêm vào đầu list để show UI, KHÔNG save localStorage
+          const updated = [transformedNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
+          return updated;
+        });
+
+        // Schedule API sync để replace WebSocket với API notification
+        // Clear timeout cũ nếu có
+        if (autoSyncTimeoutRef.current) {
+          clearTimeout(autoSyncTimeoutRef.current);
+        }
+
+        autoSyncTimeoutRef.current = setTimeout(() => {
+          loadNotificationsFromAPI();
+          autoSyncTimeoutRef.current = null;
+        }, 3000); // 3 giây cho backend xử lý
+      } else {
+        // ===== USER CHƯA LOGIN: STRATEGY CŨ =====
+        setNotifications((prev) => {
+          if (isDuplicateNotification(transformedNotification, prev)) {
+            console.log("Duplicate WebSocket notification detected, skipping");
+            return prev;
+          }
+
+          const updated = [transformedNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
+          const cleanedUpdated = removeDuplicateNotifications(updated);
+
+          // Save vào localStorage vì chưa có API
+          saveNotifications(cleanedUpdated);
+          return cleanedUpdated;
+        });
+
+        setWsNotifications((prev) => {
+          const updated = [transformedNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
+          return updated;
+        });
+      }
+
+      // Trigger visual effects cho cả 2 cases
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), SHAKE_DURATION);
+
+      // Play sound với type cụ thể
+      playNotificationSound(transformedNotification.type);
+
+      // Show browser notification
+      showBrowserNotification(transformedNotification.title, transformedNotification.message, {
+        data: { orderCode: transformedNotification.orderData?.orderCode },
+        actions: transformedNotification.orderData
+          ? [{ action: "view", title: "Xem đơn hàng" }]
+          : undefined,
+      });
+
+      return transformedNotification;
+    },
+    [saveNotifications, playNotificationSound, showBrowserNotification, isAuthenticated, user?.id]
+  );
+
+  // Thêm thông báo mới (legacy function for backward compatibility)
   const addNotification = useCallback(
     (notification) => {
       const newNotification = {
@@ -152,23 +351,22 @@ export const useUserNotifications = () => {
       };
 
       setNotifications((prev) => {
-        // Kiểm tra duplicate dựa trên orderCode hoặc type + timestamp gần nhau
-        const isDuplicate = prev.some(
-          (n) =>
-            n.orderData?.orderCode &&
-            newNotification.orderData?.orderCode === n.orderData.orderCode &&
-            n.type === newNotification.type &&
-            Math.abs(
-              new Date(n.timestamp).getTime() - new Date(newNotification.timestamp).getTime()
-            ) < 5000
-        );
-
-        if (isDuplicate) {
+        // Kiểm tra duplicate với utility function
+        if (isDuplicateNotification(newNotification, prev)) {
+          console.log(
+            "Duplicate notification detected, skipping:",
+            newNotification.orderData?.orderCode || newNotification.id
+          );
           return prev;
         }
+
         const updated = [newNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
-        saveNotifications(updated);
-        return updated;
+
+        // Clean duplicates từ toàn bộ array
+        const cleanedUpdated = removeDuplicateNotifications(updated);
+
+        saveNotifications(cleanedUpdated);
+        return cleanedUpdated;
       });
 
       // Trigger visual effects
@@ -194,10 +392,12 @@ export const useUserNotifications = () => {
     (orderData) => {
       return addNotification({
         type: "ORDER_CONFIRMED",
-        title: "Đơn hàng đã được xác nhận",
-        message: `Đơn hàng #${
-          orderData.orderCode || orderData.id
-        } đã được xác nhận và đang được chuẩn bị.`,
+        title: orderData.title || "Đơn hàng đã được xác nhận",
+        message:
+          orderData.message ||
+          `Đơn hàng #${
+            orderData.orderCode || orderData.id
+          } đã được xác nhận và đang được chuẩn bị.`,
         orderData,
         priority: "high",
         category: "order_update",
@@ -210,8 +410,12 @@ export const useUserNotifications = () => {
     (orderData) => {
       return addNotification({
         type: "ORDER_IN_DELIVERY",
-        title: "Đơn hàng đang được giao",
-        message: `Đơn hàng #${orderData.orderCode || orderData.id} đang trên đường giao đến bạn.`,
+        title: orderData.title || "Đơn hàng đã chuẩn bị xong",
+        message:
+          orderData.message ||
+          `Đơn hàng #${
+            orderData.orderCode || orderData.id
+          } đã chuẩn bị xong! Vui lòng chờ nhận hàng.`,
         orderData,
         priority: "high",
         category: "order_update",
@@ -224,10 +428,10 @@ export const useUserNotifications = () => {
     (orderData) => {
       return addNotification({
         type: "ORDER_COMPLETED",
-        title: "Đơn hàng đã hoàn thành",
-        message: `Đơn hàng #${
-          orderData.orderCode || orderData.id
-        } đã được giao thành công. Cảm ơn bạn!`,
+        title: orderData.title || "Đơn hàng đã hoàn thành",
+        message:
+          orderData.message ||
+          `Đơn hàng #${orderData.orderCode || orderData.id} đã được giao thành công. Cảm ơn bạn!`,
         orderData,
         priority: "medium",
         category: "order_update",
@@ -240,10 +444,10 @@ export const useUserNotifications = () => {
     (orderData) => {
       return addNotification({
         type: "ORDER_CANCELLED",
-        title: "Đơn hàng đã bị hủy",
-        message: `Đơn hàng #${
-          orderData.orderCode || orderData.id
-        } đã bị hủy. Xin lỗi vì sự bất tiện này.`,
+        title: orderData.title || "Đơn hàng đã bị hủy",
+        message:
+          orderData.message ||
+          `Đơn hàng #${orderData.orderCode || orderData.id} đã bị hủy. Xin lỗi vì sự bất tiện này.`,
         orderData,
         priority: "high",
         category: "order_update",
@@ -258,7 +462,7 @@ export const useUserNotifications = () => {
       return addNotification({
         type: "SYSTEM_NOTIFICATION",
         title: notificationData.title || "Thông báo hệ thống",
-        message: notificationData.message,
+        message: notificationData.message || "Có thông báo mới từ hệ thống",
         priority: notificationData.priority || "low",
         category: "system",
       });
@@ -268,42 +472,100 @@ export const useUserNotifications = () => {
 
   // Đánh dấu một thông báo đã đọc
   const markAsRead = useCallback(
-    (notificationId) => {
+    async (notificationId) => {
+      // Cập nhật UI ngay lập tức
       setNotifications((prev) => {
-        const updated = prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n));
+        const updated = prev.map((n) =>
+          n.id === notificationId ? { ...n, read: true, readAt: new Date().toISOString() } : n
+        );
         saveNotifications(updated);
         return updated;
       });
+
+      // Gọi API để sync với backend (nếu user đã đăng nhập)
+      if (isAuthenticated && user?.id) {
+        try {
+          const result = await markNotificationAsRead(notificationId);
+          if (!result.success) {
+            console.error("Failed to mark notification as read on server:", result.message);
+          }
+        } catch (error) {
+          console.error("Error marking notification as read:", error);
+        }
+      }
     },
-    [saveNotifications]
+    [isAuthenticated, user?.id, saveNotifications]
   );
 
   // Đánh dấu tất cả đã đọc
-  const markAllAsRead = useCallback(() => {
+  const markAllAsRead = useCallback(async () => {
+    // Cập nhật UI ngay lập tức
     setNotifications((prev) => {
-      const updated = prev.map((n) => ({ ...n, read: true }));
+      const updated = prev.map((n) => ({
+        ...n,
+        read: true,
+        readAt: n.readAt || new Date().toISOString(),
+      }));
       saveNotifications(updated);
       return updated;
     });
-  }, [saveNotifications]);
+
+    // Gọi API để sync với backend (nếu user đã đăng nhập)
+    if (isAuthenticated && user?.id) {
+      try {
+        const result = await markAllNotificationsAsRead();
+        if (!result.success) {
+          console.error("Failed to mark all notifications as read on server:", result.message);
+        }
+      } catch (error) {
+        console.error("Error marking all notifications as read:", error);
+      }
+    }
+  }, [isAuthenticated, user?.id, saveNotifications]);
 
   // Xóa một thông báo
   const removeNotification = useCallback(
-    (notificationId) => {
+    async (notificationId) => {
+      // Cập nhật UI ngay lập tức
       setNotifications((prev) => {
         const updated = prev.filter((n) => n.id !== notificationId);
         saveNotifications(updated);
         return updated;
       });
+
+      // Gọi API để xóa trên server (nếu user đã đăng nhập)
+      if (isAuthenticated && user?.id) {
+        try {
+          const result = await deleteNotification(notificationId);
+          if (!result.success) {
+            console.error("Failed to delete notification on server:", result.message);
+          }
+        } catch (error) {
+          console.error("Error deleting notification:", error);
+        }
+      }
     },
-    [saveNotifications]
+    [isAuthenticated, user?.id, saveNotifications]
   );
 
   // Xóa tất cả thông báo
-  const clearAll = useCallback(() => {
+  const clearAll = useCallback(async () => {
+    // Cập nhật UI ngay lập tức
     setNotifications([]);
     localStorage.removeItem(NOTIFICATION_STORAGE_KEY);
-  }, []);
+
+    // Gọi API để xóa trên server (nếu user đã đăng nhập)
+    if (isAuthenticated && user?.id) {
+      try {
+        const result = await deleteAllNotifications();
+        if (!result.success) {
+          console.error("Failed to delete all notifications on server:", result.message);
+        }
+      } catch (error) {
+        console.error("Error deleting all notifications:", error);
+      }
+    }
+  }, [isAuthenticated, user?.id]);
 
   // Xóa thông báo đã đọc cũ (hơn 7 ngày)
   const cleanupOldNotifications = useCallback(() => {
@@ -367,8 +629,11 @@ export const useUserNotifications = () => {
     highPriorityUnreadCount,
     isShaking,
     audioEnabled,
+    loading,
 
     // Actions
+    addNotification, // Legacy function
+    addWebSocketNotification, // New function for WebSocket
     addOrderConfirmedNotification,
     addOrderInDeliveryNotification,
     addOrderCompletedNotification,
@@ -379,6 +644,7 @@ export const useUserNotifications = () => {
     removeNotification,
     clearAll,
     cleanupOldNotifications,
+    loadNotificationsFromAPI, // Manual reload from API
 
     // Utility functions
     getNotificationsByCategory,
@@ -396,5 +662,34 @@ export const useUserNotifications = () => {
     // Audio status
     isAudioSupported: isAudioSupported(),
     isAudioActive: isAudioEnabled(),
+
+    // Debug functions
+    analyzeNotificationDuplicates: () => analyzeNotificationDuplicates(notifications),
+    debugNotifications: () => {
+      console.log("Current notifications:", notifications);
+      console.log("WebSocket notifications:", wsNotifications);
+      const analysis = analyzeNotificationDuplicates(notifications);
+      console.log("Duplicate analysis:", analysis);
+      return analysis;
+    },
+
+    // Force sync notifications after WebSocket event (when authenticated)
+    syncNotificationsAfterWebSocket: async () => {
+      if (isAuthenticated && user?.id) {
+        console.log("🔄 Force syncing notifications after WebSocket event...");
+        setTimeout(() => {
+          loadNotificationsFromAPI();
+        }, 2000); // Wait 2 seconds for backend to process
+      }
+    },
   };
+
+  // Cleanup timeout khi component unmount
+  useEffect(() => {
+    return () => {
+      if (autoSyncTimeoutRef.current) {
+        clearTimeout(autoSyncTimeoutRef.current);
+      }
+    };
+  }, []);
 };

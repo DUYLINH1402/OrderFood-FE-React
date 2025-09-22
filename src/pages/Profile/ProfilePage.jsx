@@ -9,6 +9,7 @@ import {
   faTrophy,
   faLock,
   faPhone,
+  faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import { ProfileTab } from "./ProfileTab";
 import OrdersTab from "./OrdersTab";
@@ -17,10 +18,12 @@ import ResetPasswordPage from "../ResetPasswordPage";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import PointsTab from "./PointsTab";
 import CouponsTab from "./CouponsTab";
+import NotificationsTab from "./NotificationsTab";
 
 const tabs = [
   { id: "profile", label: "Hồ sơ cá nhân", icon: faUser },
   { id: "orders", label: "Đơn hàng của tôi", icon: faBoxOpen },
+  { id: "notifications", label: "Thông báo", icon: faBell },
   { id: "payment", label: "Thanh toán", icon: faWallet },
   { id: "coupons", label: "Ưu đãi của tôi", icon: faGift },
   { id: "points", label: "Điểm thưởng", icon: faTrophy },
@@ -137,6 +140,12 @@ export default function ProfilePage() {
           <>
             <h3 className="text-xl font-bold text-gray-900 mb-4">Đơn hàng của tôi</h3>
             <OrdersTab />
+          </>
+        )}
+        {activeTab === "notifications" && (
+          <>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Thông báo</h3>
+            <NotificationsTab />
           </>
         )}
         {activeTab === "payment" && (

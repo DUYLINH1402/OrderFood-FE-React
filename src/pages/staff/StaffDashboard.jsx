@@ -5,6 +5,7 @@ import { Pagination } from "antd";
 import { useAuth, usePermissions } from "../../hooks/auth/useAuth";
 import { useOptimizedOrders } from "../../hooks/useOptimizedOrders";
 import { useStaffOrderWebSocket } from "../../hooks/useStaffOrderWebSocket";
+import { useStaffNotifications } from "../../hooks/useStaffNotifications";
 import StaffOrderDetailModal from "./modal/StaffOrderDetailModal";
 import OrderActionButtons from "./util/OrderActionButtons";
 import CancelOrderModal from "./modal/CancelOrderModal";
@@ -12,14 +13,16 @@ import PhoneConfirmModal from "./modal/PhoneConfirmModal";
 import DeliveryConfirmModal from "./modal/DeliveryConfirmModal";
 import CompleteDeliveryModal from "./modal/CompleteDeliveryModal";
 import WebSocketStatusIndicator from "../../components/WebSocketStatusIndicator";
-import NotificationBell from "./util/NotificationBellAntd";
+import StaffNotificationBellContainer from "../../components/Notification/StaffNotificationBellContainer";
 import OrderNotificationModal from "./modal/OrderNotificationModal";
 import AudioPermissionButton from "./util/AudioPermissionButton";
-import { useNotifications } from "./util/useNotifications";
-import { FiUser, FiTruck, FiHome, FiDollarSign, FiPackage } from "react-icons/fi";
+import { FiUser, FiTruck, FiHome, FiDollarSign, FiPackage, FiRefreshCw } from "react-icons/fi";
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../../constants/orderConstants";
 import { searchStaffOrderByCode } from "../../services/service/staffOrderService";
 import SpinnerCube from "../../components/Skeleton/SpinnerCube";
+import CustomerChatPanel from "./chat/CustomerChatPanel";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import "../../assets/styles/components/CustomerChatPanel.scss";
 
 const StaffDashboard = () => {
   const { userRole } = useAuth();
@@ -48,21 +51,13 @@ const StaffDashboard = () => {
     connecting: wsConnecting,
     error: wsError,
     addMessageHandler,
-    acknowledgeOrder,
     updateOrderStatus: wsUpdateOrderStatus,
     status: wsStatus,
   } = useStaffOrderWebSocket();
 
-  // Sử dụng notification hook (phải khai báo trước khi sử dụng trong handlers)
-  const {
-    notifications: bellNotifications,
-    unreadCount,
-    isShaking,
-    addNewOrderNotification,
-    addOrderStatusNotification,
-    markAsRead,
-    stopShaking,
-  } = useNotifications();
+  // Sử dụng staff notifications hook mới với localStorage và API sync
+  const { addWebSocketNotification, addNewOrderNotification, addOrderStatusNotification } =
+    useStaffNotifications();
 
   // Xử lý đơn hàng mới từ WebSocket
   const handleNewOrder = useCallback(
@@ -74,18 +69,25 @@ const StaffDashboard = () => {
         messageCount: prev.messageCount + 1,
       }));
 
-      // Thêm thông báo chuông
-      addNewOrderNotification(orderData);
+      // Thêm thông báo qua hook mới với localStorage và API sync
+      addWebSocketNotification({
+        type: "NEW_ORDER",
+        title: "Đơn hàng mới!",
+        message: `Đơn hàng #${orderData.orderCode || orderData.id} từ ${
+          orderData.receiverName || orderData.customerName
+        }`,
+        orderData: {
+          ...orderData,
+          orderCode: orderData.orderCode || orderData.id,
+        },
+        priority: "high",
+        timestamp: new Date().toISOString(),
+      });
 
       // Làm mới dữ liệu để lấy đơn hàng mới
       refreshData();
-
-      // Tự động xác nhận đã nhận được đơn hàng
-      if (orderData.orderId) {
-        acknowledgeOrder(orderData.orderId);
-      }
     },
-    [addNewOrderNotification, acknowledgeOrder, refreshData]
+    [addWebSocketNotification, refreshData]
   );
 
   // Xử lý cập nhật trạng thái đơn hàng từ WebSocket
@@ -98,25 +100,32 @@ const StaffDashboard = () => {
         messageCount: prev.messageCount + 1,
       }));
 
-      // Thêm thông báo cập nhật trạng thái
+      // Thêm thông báo cập nhật trạng thái qua hook mới
       if (updateData.orderData && updateData.oldStatus && updateData.newStatus) {
-        addOrderStatusNotification(
-          updateData.orderData,
-          updateData.oldStatus,
-          updateData.newStatus
-        );
+        addWebSocketNotification({
+          type: "ORDER_STATUS_UPDATE",
+          title: "Cập nhật đơn hàng",
+          message: `Đơn hàng #${updateData.orderData.orderCode || updateData.orderData.id} từ ${
+            updateData.oldStatus
+          } → ${updateData.newStatus}`,
+          orderData: {
+            ...updateData.orderData,
+            orderCode: updateData.orderData.orderCode || updateData.orderData.id,
+            orderStatus: updateData.newStatus,
+          },
+          priority: "medium",
+          timestamp: new Date().toISOString(),
+        });
       }
 
       // Làm mới dữ liệu để cập nhật UI
       refreshData();
     },
-    [addOrderStatusNotification, refreshData]
+    [addWebSocketNotification, refreshData]
   );
 
   // Xử lý pong response
-  const handlePong = useCallback((pongData) => {
-    console.log("Nhận pong từ server:", pongData);
-  }, []);
+  const handlePong = useCallback((pongData) => {}, []);
 
   // Setup WebSocket handlers
   useEffect(() => {
@@ -151,6 +160,13 @@ const StaffDashboard = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(null);
+
+  // State cho Customer Chat Panel
+  const [customerChatPanel, setCustomerChatPanel] = useState({
+    isOpen: false,
+    isMinimized: false,
+    unreadCount: 0,
+  });
 
   // State cho phone confirmation modal
   const [phoneConfirmModal, setPhoneConfirmModal] = useState({
@@ -201,34 +217,14 @@ const StaffDashboard = () => {
   // Helper function để lấy ID từ order
   const getOrderId = (order) => order.orderId || order.id;
 
-  // Xử lý click vào chuông thông báo
-  const handleBellClick = useCallback(() => {
-    // Dừng shake animation khi user tương tác
-    stopShaking();
-  }, [stopShaking]);
-
   // Xử lý click vào notification trong dropdown
-  const handleNotificationClick = useCallback(
-    (notification) => {
-      // Đánh dấu notification đã đọc
-      markAsRead(notification.id);
-
-      // Nếu là thông báo đơn hàng, hiển thị modal
-      if (notification.orderData) {
-        setSelectedNotificationOrder(notification.orderData);
-        setShowNotificationModal(true);
-      }
-    },
-    [markAsRead]
-  );
-
-  // Xử lý đánh dấu notification đã đọc
-  const handleMarkAsRead = useCallback(
-    (notificationId) => {
-      markAsRead(notificationId);
-    },
-    [markAsRead]
-  );
+  const handleNotificationClick = useCallback((notification) => {
+    // Nếu là thông báo đơn hàng, hiển thị modal
+    if (notification.orderData) {
+      setSelectedNotificationOrder(notification.orderData);
+      setShowNotificationModal(true);
+    }
+  }, []);
 
   // Xử lý đơn hàng từ notification modal
   const handleProcessOrderFromNotification = useCallback(
@@ -597,12 +593,11 @@ const StaffDashboard = () => {
               <AudioPermissionButton />
 
               {/* Notification Bell */}
-              <NotificationBell
-                notifications={bellNotifications}
-                isShaking={isShaking}
-                onBellClick={handleBellClick}
+              <StaffNotificationBellContainer
                 onNotificationClick={handleNotificationClick}
-                onMarkAsRead={handleMarkAsRead}
+                onRefreshNotifications={() => {
+                  console.log("Staff notifications refreshed from API");
+                }}
               />
 
               {/* WebSocket Status Indicators */}
@@ -616,14 +611,7 @@ const StaffDashboard = () => {
                 onClick={() => refreshData()}
                 disabled={loading}
                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
+                <FiRefreshCw className={`w-6 h-6 ${loading ? "animate-spin" : ""}`} />
                 <span>{loading ? "Đang tải..." : "Làm mới"}</span>
               </button>
             </div>
@@ -1132,6 +1120,47 @@ const StaffDashboard = () => {
         }}
         onProcessOrder={handleProcessOrderFromNotification}
       />
+
+      {/* Customer Chat Panel */}
+      <CustomerChatPanel
+        isOpen={customerChatPanel.isOpen}
+        isMinimized={customerChatPanel.isMinimized}
+        onClose={() =>
+          setCustomerChatPanel((prev) => ({ ...prev, isOpen: false, isMinimized: false }))
+        }
+        onMinimize={() =>
+          setCustomerChatPanel((prev) => ({ ...prev, isMinimized: !prev.isMinimized }))
+        }
+        staffWebSocketClient={{
+          isConnected: () => wsConnected,
+          addMessageHandler: addMessageHandler,
+          sendMessageToCustomer: (customerId, message) => {
+            // Gửi tin nhắn tới customer qua WebSocket
+            // Bạn cần implement method này trong Staff WebSocket client
+            console.log(`Sending message to customer ${customerId}:`, message);
+            return true; // placeholder
+          },
+        }}
+      />
+
+      {/* Floating Chat Button */}
+      {!customerChatPanel.isOpen && (
+        <div className={`floating-chat-button ${customerChatPanel.isOpen ? "button-exit" : ""}`}>
+          <button
+            onClick={() =>
+              setCustomerChatPanel((prev) => ({ ...prev, isOpen: true, isMinimized: false }))
+            }
+            className="chat-button"
+            title="Mở chat khách hàng">
+            <ChatBubbleLeftRightIcon className="w-6 h-6" />
+            {customerChatPanel.unreadCount > 0 && (
+              <span className="unread-badge">
+                {customerChatPanel.unreadCount > 99 ? "99+" : customerChatPanel.unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

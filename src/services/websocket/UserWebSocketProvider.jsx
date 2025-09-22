@@ -22,11 +22,9 @@ export const UserWebSocketProvider = ({ children }) => {
     } else {
       ws.disconnect();
     }
-    // eslint-disable-next-line
-  }, [isLoggedIn, userId, accessToken]);
+  }, [isLoggedIn, userId, accessToken, ws.initialize, ws.disconnect]);
 
-  // Memo value để tránh re-render không cần thiết
-  const value = useMemo(() => ws, [ws]);
+  const value = useMemo(() => ({ ...ws }), [ws]);
 
   return <UserWebSocketContext.Provider value={value}>{children}</UserWebSocketContext.Provider>;
 };

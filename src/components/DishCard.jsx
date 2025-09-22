@@ -119,7 +119,7 @@ const DishCard = ({
 
         <div className="action-wrapper">
           <button
-            className="dish-card-action-btn"
+            className="dish-card-action-btn sm:text-sm"
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/mon-an/chi-tiet/${slug}`);

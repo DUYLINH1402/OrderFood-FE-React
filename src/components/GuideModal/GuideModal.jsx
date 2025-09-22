@@ -4,8 +4,6 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import styles from "./GuideModal.module.scss";
-
-import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
@@ -42,7 +40,6 @@ const GuideModal = ({ autoOpen = false }) => {
   // Hàm sao chép nội dung vào clipboard
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
-    toast.success("Đã sao chép!"); // Thông báo người dùng
   };
   return (
     <>
@@ -71,7 +68,7 @@ const GuideModal = ({ autoOpen = false }) => {
             id="guide-modal-title"
             className="text-center  font-bold text-[#199b7e] relative py-4 border-b border-gray-200">
             <div className="flex items-center justify-center gap-2">
-              <span className="text-lg">Hướng dẫn đặt món ăn</span>
+              <span className="text-lg">Thông tin thẻ thanh toán</span>
             </div>
             {/* Nút đóng Modal */}
             <IconButton
@@ -83,26 +80,9 @@ const GuideModal = ({ autoOpen = false }) => {
           </DialogTitle>
           {/* Nội dung Modal */}
           <DialogContent>
-            <p className="text-justify mb-4 leading-7 font-semibold text-md md:text-base">
-              Chào mừng bạn đến với hệ thống đặt món ăn online! Dưới đây là hướng dẫn chi tiết để
-              bạn có thể đặt món thành công.
-            </p>
-
-            <div className="relative mb-6 leading-7 text-gray-700 text-md">
-              <strong className="text-justify mb-3 leading-7 font-semibold text-md md:text-base block">
-                1. Cách đặt món ăn:
-              </strong>
-              <ul className="ml-5 leading-7 text-md space-y-2">
-                <li>Chọn món ăn yêu thích từ thực đơn</li>
-                <li>Thêm vào giỏ hàng và điều chỉnh số lượng</li>
-                <li>Tiến hành thanh toán và điền thông tin giao hàng</li>
-                <li>Chọn phương thức thanh toán phù hợp</li>
-              </ul>
-            </div>
-
             <div className="relative mb-6 leading-7 text-gray-700 text-md">
               <p className="text-justify mb-3 leading-7 font-semibold text-md md:text-base">
-                2. Thông tin thẻ thanh toán thử nghiệm (Visa/Master/JCB):
+                1. Thông tin thẻ (Visa/Master/JCB):
               </p>
               <div className="text-md space-y-3">
                 <div>
@@ -135,6 +115,7 @@ const GuideModal = ({ autoOpen = false }) => {
                   </strong>{" "}
                   01/26
                 </div>
+
                 <div>
                   <strong className="italic text-[#199b7e] text-md md:text-base">CVV:</strong> 123
                 </div>
@@ -151,8 +132,8 @@ const GuideModal = ({ autoOpen = false }) => {
             </div>
 
             <div className="relative mb-6 leading-7 text-gray-700 text-md">
-              <strong className="text-justify mb-3 leading-7 font-semibold text-md md:text-base block">
-                3. Thông tin thanh toán ZaloPay:
+              <strong className="text-justify mb-3 leading-7 font-semibold text-md md:text-base">
+                2. App Demo:
               </strong>
               <div className="mt-3">
                 <a
@@ -167,7 +148,7 @@ const GuideModal = ({ autoOpen = false }) => {
 
             <div className="relative mb-6 leading-7 text-gray-700 text-md">
               <strong className="text-justify mb-3 leading-7 font-semibold text-md md:text-base block">
-                4. Hỗ trợ khách hàng:
+                3. Hỗ trợ:
               </strong>
               <div className="mt-3 text-justify leading-7">
                 Nếu bạn gặp vấn đề trong quá trình đặt món, vui lòng liên hệ với chúng tôi qua
@@ -188,15 +169,15 @@ const GuideModal = ({ autoOpen = false }) => {
         <Zoom in>
           <Fab
             onClick={handleReopen}
-            className="!fixed !bottom-6 !left-3 !z-[1000] !w-12 !h-12 md:!w-14 md:!h-14 !bg-[#199b7e] hover:!bg-[#07bc0c] !text-white"
+            className="!fixed !bottom-6 !left-3 !z-[1000] !w-14 !h-12 md:!w-14 md:!h-14 !bg-[#199b7e] hover:!bg-[#69d1ba] !text-white"
             sx={{
               backgroundColor: "#199b7e",
-              color: "white",
+              color: "black",
               "&:hover": {
                 backgroundColor: "#07bc0c",
               },
             }}>
-            <HelpOutlineIcon className="help-icon !text-2xl md:!text-3xl" />
+            <HelpOutlineIcon className="help-icon !text-4xl " />
           </Fab>
         </Zoom>
       )}

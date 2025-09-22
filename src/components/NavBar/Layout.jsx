@@ -7,7 +7,6 @@ import Footer from "./Footer";
 import Header from "./Header";
 import { FontAwesomeIcon, faBars } from "../../utils/icons";
 import Sidebar from "./Sidebar";
-import ScrollToTop from "../../utils/ScrollToTop";
 import GuideModal from "../GuideModal/GuideModal";
 
 const Layout = () => {
@@ -20,7 +19,6 @@ const Layout = () => {
   return (
     <UserWebSocketProvider>
       <div className="layout min-h-screen flex flex-col">
-        <ScrollToTop />
         <header className="layout__header">
           <Header />
         </header>

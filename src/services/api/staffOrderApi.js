@@ -12,7 +12,6 @@ export const getAllStaffOrdersApi = async (page, size) => {
       response = await apiClient.get("/api/staff/orders/recent", {
         params: { page: page || 0, size: size || 7 },
       });
-      console.log("Lấy tất cả đơn hàng:", response.data);
     } catch (error) {
       console.error("Lỗi khi lấy tất cả đơn hàng:", error);
       return {
@@ -96,7 +95,6 @@ export const getProcessingOrdersApi = async (page = 0, size = 20) => {
 
 // Cập nhật trạng thái đơn hàng (dành cho staff)
 export const updateOrderStatusByStaffApi = async (orderId, statusRequest) => {
-  console.log("Thông tin Cập nhật trạng thái đơn hàng:", orderId, statusRequest);
   try {
     const response = await apiClient.put(`/api/staff/orders/${orderId}/status`, statusRequest);
     return {

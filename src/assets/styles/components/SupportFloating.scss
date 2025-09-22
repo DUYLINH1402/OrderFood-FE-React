@@ -1,0 +1,298 @@
+@import "../base/variables";
+
+.chatbot-wrapper {
+  position: fixed;
+  bottom: 90px;
+  right: 50px;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.9);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.staff-chat-wrapper {
+  position: fixed;
+  bottom: 95px;
+  left: 10px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.9);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.support__icon {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  z-index: 1000;
+
+  .support-wrapper {
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+
+    .chatbot {
+      position: absolute;
+      bottom: -35px;
+      right: -50px;
+      width: 140px;
+      height: 110px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+    .staff__support {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      bottom: 40px;
+      left: 7.5px;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: $primary-color;
+      align-items: center;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      svg {
+        text-align: center;
+        width: 22px;
+        height: 22px;
+        color: white;
+      }
+    }
+
+    .support-options {
+      position: absolute;
+      bottom: 85px;
+      left: 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px) scale(0.8);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: supportMenuAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+
+      .support-option {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        opacity: 0;
+        transform: translateY(30px) scale(0.5);
+        backdrop-filter: blur(10px);
+
+        &:hover {
+          transform: scale(1.2) translateY(-3px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        &:active {
+          transform: scale(0.95) translateY(-2px);
+        }
+
+        // Staggered animation với hiệu ứng mượt mà hơn
+        &:nth-child(1) {
+          animation: slideInOption 0.5s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        &:nth-child(2) {
+          animation: slideInOption 0.5s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        &:nth-child(3) {
+          animation: slideInOption 0.5s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        &.staff {
+          background: linear-gradient(135deg, #007bff, #0056b3);
+
+          &:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            border-color: rgba(255, 255, 255, 0.4);
+          }
+        }
+
+        &.phone {
+          background: linear-gradient(135deg, #00d4ff, #0084ff);
+
+          &:hover {
+            background: linear-gradient(135deg, #0084ff, #0066cc);
+            border-color: rgba(255, 255, 255, 0.4);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes supportMenuAppear {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    visibility: visible;
+    transform: translateY(-5px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideInOption {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.5) rotate(-10deg);
+  }
+  60% {
+    opacity: 0.9;
+    transform: translateY(-8px) scale(1.1) rotate(2deg);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(2px) scale(0.98) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes slideUpBounce {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.5);
+  }
+  70% {
+    transform: translateX(-5px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .support__icon {
+    bottom: 15px;
+    right: 15px;
+
+    .support-wrapper {
+      .support-main-btn {
+        width: 55px;
+        height: 55px;
+      }
+
+      .support-options {
+        .support-option {
+          width: 45px;
+          height: 45px;
+
+          &.zalo .zalo-text {
+            font-size: 16px;
+          }
+        }
+      }
+    }
+  }
+
+  .chatbot-wrapper {
+    bottom: 80px;
+    right: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .support__icon {
+    bottom: 10px;
+    right: 10px;
+
+    .support-wrapper {
+      .support-main-btn {
+        width: 50px;
+        height: 50px;
+      }
+
+      .support-options {
+        gap: 10px;
+
+        .support-option {
+          width: 42px;
+          height: 42px;
+
+          svg {
+            width: 18px;
+            height: 18px;
+          }
+
+          &.zalo .zalo-text {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+
+  .chatbot-wrapper {
+    bottom: 70px;
+    right: 10px;
+  }
+}

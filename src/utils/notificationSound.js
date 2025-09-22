@@ -1,9 +1,27 @@
 // Utility functions cho âm thanh thông báo
 
 let globalAudioContext = null;
+let userInteractionDetected = false;
 
-// Khởi tạo AudioContext global
+// Đánh dấu khi có user interaction
+const markUserInteraction = () => {
+  userInteractionDetected = true;
+};
+
+// Listen for user interactions để enable audio
+if (typeof window !== "undefined") {
+  ["click", "keydown", "touchstart"].forEach((event) => {
+    document.addEventListener(event, markUserInteraction, { once: true, passive: true });
+  });
+}
+
+// Khởi tạo AudioContext global - chỉ khi có user interaction
 const getAudioContext = () => {
+  // Kiểm tra xem có user interaction chưa
+  if (!userInteractionDetected) {
+    return null;
+  }
+
   if (!globalAudioContext) {
     try {
       globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -26,10 +44,16 @@ const getAudioContext = () => {
 // Tạo âm thanh chuông bằng Web Audio API
 export const createNotificationSound = async () => {
   try {
+    // Đảm bảo có user interaction
+    if (!userInteractionDetected) {
+      console.warn("Cannot play sound: User interaction required first");
+      return false;
+    }
+
     const audioContext = getAudioContext();
     if (!audioContext) {
       console.warn("AudioContext not available");
-      return;
+      return false;
     }
 
     // Đảm bảo AudioContext đã resume
@@ -64,20 +88,27 @@ export const createNotificationSound = async () => {
     playTone(659.25, now + 0.2, 0.2, 0.1); // E5
     playTone(783.99, now + 0.4, 0.2, 0.1); // G5
     playTone(1046.5, now + 0.6, 0.4, 0.12); // C6 - kéo dài hơn
+
+    return true;
   } catch (error) {
     console.error("Cannot play notification sound:", error);
     // Fallback: sử dụng âm thanh hệ thống
-    fallbackNotificationSound();
+    return await fallbackNotificationSound();
   }
 };
 
 // Âm thanh thay thế đơn giản
 export const fallbackNotificationSound = async () => {
   try {
+    if (!userInteractionDetected) {
+      console.warn("Cannot play fallback sound: User interaction required first");
+      return false;
+    }
+
     const audioContext = getAudioContext();
     if (!audioContext) {
       console.warn("AudioContext not available for fallback");
-      return;
+      return false;
     }
 
     if (audioContext.state === "suspended") {
@@ -99,18 +130,25 @@ export const fallbackNotificationSound = async () => {
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.3);
+    return true;
   } catch (error) {
     console.error("Cannot play fallback sound:", error);
+    return false;
   }
 };
 
 // Âm thanh cho các loại thông báo khác nhau
 export const playNotificationSoundByType = async (type) => {
   try {
+    if (!userInteractionDetected) {
+      console.warn("Cannot play sound by type: User interaction required first");
+      return false;
+    }
+
     const audioContext = getAudioContext();
     if (!audioContext) {
       console.warn("AudioContext not available");
-      return;
+      return false;
     }
 
     if (audioContext.state === "suspended") {
@@ -120,24 +158,22 @@ export const playNotificationSoundByType = async (type) => {
     switch (type) {
       case "NEW_ORDER":
         // Âm thanh vui tươi cho đơn hàng mới
-        await createNotificationSound();
-        break;
+        return await createNotificationSound();
 
       case "ORDER_STATUS_UPDATE":
         // Âm thanh nhẹ nhàng cho cập nhật
-        await playSimpleBeep(audioContext, 600, 0.15);
-        break;
+        return await playSimpleBeep(audioContext, 600, 0.15);
 
       case "STATS_UPDATE":
         // Âm thanh rất nhẹ cho thống kê
-        await playSimpleBeep(audioContext, 400, 0.1);
-        break;
+        return await playSimpleBeep(audioContext, 400, 0.1);
 
       default:
-        await createNotificationSound();
+        return await createNotificationSound();
     }
   } catch (error) {
     console.error("Cannot play sound by type:", error);
+    return false;
   }
 };
 
@@ -161,8 +197,10 @@ const playSimpleBeep = async (audioContext, frequency, duration) => {
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + duration);
+    return true;
   } catch (error) {
     console.error("Cannot play simple beep:", error);
+    return false;
   }
 };
 
@@ -174,6 +212,9 @@ export const isAudioSupported = () => {
 // Xin quyền phát âm thanh (cần thiết cho một số trình duyệt)
 export const requestAudioPermission = async () => {
   try {
+    // Đánh dấu user interaction khi gọi function này
+    markUserInteraction();
+
     const audioContext = getAudioContext();
     if (!audioContext) {
       return false;
@@ -208,7 +249,7 @@ export const requestAudioPermission = async () => {
 // Hàm để check audio có đang hoạt động không
 export const isAudioEnabled = () => {
   const audioContext = getAudioContext();
-  return audioContext && audioContext.state === "running";
+  return audioContext && audioContext.state === "running" && userInteractionDetected;
 };
 
 // Hàm để cleanup AudioContext khi cần
@@ -217,4 +258,11 @@ export const cleanupAudio = () => {
     globalAudioContext.close();
     globalAudioContext = null;
   }
+  userInteractionDetected = false;
+};
+
+// Export thêm function để manually trigger user interaction
+export const enableAudioAfterUserInteraction = () => {
+  markUserInteraction();
+  return requestAudioPermission();
 };

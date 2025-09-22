@@ -30,6 +30,17 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Log for debugging
+    if (config.url && config.url.includes("/notifications/staff/")) {
+      console.log("🔑 Staff notification API request:", {
+        method: config.method?.toUpperCase(),
+        url: config.url,
+        hasToken: !!token,
+        headers: config.headers,
+      });
+    }
+
     return config;
   },
   (error) => {

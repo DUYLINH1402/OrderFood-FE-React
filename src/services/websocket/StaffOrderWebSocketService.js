@@ -107,7 +107,7 @@ class StaffOrderWebSocketService {
         // Đặt timeout cho kết nối
         setTimeout(() => {
           if (!this.connected) {
-            console.error("⏰ Timeout khi kết nối WebSocket");
+            console.error(" Timeout khi kết nối WebSocket");
             reject(new Error("Connection timeout after 15 seconds"));
           }
         }, 15000);
@@ -162,88 +162,6 @@ class StaffOrderWebSocketService {
         console.error(" Message body:", message.body);
       }
     });
-
-    // Subscribe nhận cập nhật trạng thái đơn hàng
-    this.subscribe("/topic/order-updates", "orderStatusUpdate", (message) => {
-      try {
-        if (!message.body || typeof message.body !== "string") {
-          console.warn("Invalid message body for order update:", message.body);
-          return;
-        }
-        const updateData = JSON.parse(message.body.trim());
-        this.notifyHandlers("orderStatusUpdate", updateData);
-      } catch (error) {
-        console.error("Lỗi parse cập nhật trạng thái:", error);
-        console.error("Message body:", message.body);
-      }
-    });
-
-    // Subscribe nhận thống kê real-time
-    this.subscribe("/topic/stats", "statsUpdate", (message) => {
-      try {
-        if (!message.body || typeof message.body !== "string") {
-          console.warn("⚠️ Invalid message body for stats:", message.body);
-          return;
-        }
-        const statsData = JSON.parse(message.body.trim());
-        // console.log("📊 Cập nhật thống kê:", statsData);
-        this.notifyHandlers("statsUpdate", statsData);
-      } catch (error) {
-        console.error("Lỗi parse thống kê:", error);
-        console.error("Message body:", message.body);
-      }
-    });
-
-    // Subscribe nhận response chi tiết đơn hàng
-    this.subscribe("/topic/order-details", "orderDetails", (message) => {
-      try {
-        console.log("📦 Raw message body:", message.body);
-
-        if (!message.body) {
-          console.warn("⚠️ Message body is empty");
-          return;
-        }
-
-        if (typeof message.body !== "string") {
-          console.warn("⚠️ Message body is not a string:", message.body);
-          return;
-        }
-
-        const cleanBody = message.body.trim();
-
-        // Kiểm tra xem có phải JSON không bằng cách xem ký tự đầu
-        if (cleanBody.startsWith("{") || cleanBody.startsWith("[")) {
-          // Là JSON object/array
-          try {
-            const detailsData = JSON.parse(cleanBody);
-            console.log("📋 Chi tiết đơn hàng (JSON):", detailsData);
-            this.notifyHandlers("orderDetails", detailsData);
-          } catch (parseError) {
-            console.error("Lỗi parse JSON:", parseError);
-            console.error("JSON body:", cleanBody);
-          }
-        } else {
-          // Là plain text message - có thể là thông báo hoặc response message
-          console.log("� Text message từ server:", cleanBody);
-
-          // Có thể server đang gửi thông báo thay vì data
-          // Tạm thời bỏ qua hoặc handle như một notification
-          this.notifyHandlers("orderDetailsMessage", {
-            message: cleanBody,
-            type: "text",
-          });
-        }
-      } catch (error) {
-        console.error("Lỗi tổng quát trong orderDetails handler:", error);
-        console.error("Raw message:", message);
-      }
-    });
-
-    // Subscribe pong response
-    this.subscribe("/topic/pong", "pong", (message) => {
-      // console.log("🏓 Pong nhận được:", message.body);
-      this.notifyHandlers("pong", message.body);
-    });
   }
 
   /**
@@ -296,36 +214,11 @@ class StaffOrderWebSocketService {
   }
 
   /**
-   * Xác nhận đã nhận được đơn hàng
-   */
-  acknowledgeOrder(orderId) {
-    if (!this.connected) {
-      console.warn("⚠️ Chưa kết nối WebSocket");
-      return false;
-    }
-
-    try {
-      this.stompClient.publish({
-        destination: "/app/staff/acknowledge-order",
-        body: orderId.toString(),
-        headers: {
-          "Content-Type": "text/plain",
-        },
-      });
-      // console.log("✅ Đã xác nhận đơn hàng:", orderId);
-      return true;
-    } catch (error) {
-      console.error("Lỗi khi xác nhận đơn hàng:", error);
-      return false;
-    }
-  }
-
-  /**
    * Yêu cầu chi tiết đơn hàng
    */
   requestOrderDetails(orderId) {
     if (!this.connected) {
-      console.warn("⚠️ Chưa kết nối WebSocket");
+      console.warn(" Chưa kết nối WebSocket");
       return false;
     }
 
@@ -337,7 +230,7 @@ class StaffOrderWebSocketService {
           "Content-Type": "text/plain",
         },
       });
-      // console.log("📋 Đã yêu cầu chi tiết đơn hàng:", orderId);
+      // console.log("Đã yêu cầu chi tiết đơn hàng:", orderId);
       return true;
     } catch (error) {
       console.error("Lỗi khi yêu cầu chi tiết đơn hàng:", error);
@@ -350,7 +243,7 @@ class StaffOrderWebSocketService {
    */
   updateOrderStatus(orderId, orderCode, newStatus, previousStatus = null) {
     if (!this.connected) {
-      console.warn("⚠️ Chưa kết nối WebSocket");
+      console.warn("Chưa kết nối WebSocket");
       return false;
     }
 

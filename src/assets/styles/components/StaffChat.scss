@@ -1,0 +1,494 @@
+// Staff Chat Component Styles - Food Order Project
+// Màu sắc chủ đạo: Blue-Green gradient để phân biệt với Chatbot (xanh lá)
+
+.staff-chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  width: 350px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(30, 58, 138, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  overflow: hidden;
+  position: relative;
+
+  @media (max-width: 768px) {
+    width: 320px;
+    height: 450px;
+  }
+
+  @media (max-width: 480px) {
+    width: 300px;
+    height: 400px;
+  }
+}
+
+// Header
+.staff-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10px;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  .staff-chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .staff-chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+
+    svg {
+      color: white;
+    }
+  }
+
+  .staff-chat-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .staff-chat-title {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .staff-chat-status {
+      font-size: 12px;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      &::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ef4444;
+      }
+
+      &.online::before {
+        background: #10b981;
+        box-shadow: 0 0 4px #10b981;
+      }
+
+      &.connecting::before {
+        background: #f59e0b;
+        animation: pulse 1.5s infinite;
+      }
+    }
+  }
+
+  .staff-chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .staff-chat-header-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: scale(1.05);
+      }
+
+      &.close-btn:hover {
+        background: rgba(239, 68, 68, 0.3);
+        border-color: rgba(239, 68, 68, 0.4);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+// Messages
+.staff-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.3) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.5);
+    }
+  }
+
+  .staff-chat-messages-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 100%;
+  }
+
+  .staff-chat-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    height: 100%;
+    color: #64748b;
+
+    .welcome-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+
+      svg {
+        color: white;
+      }
+    }
+
+    h4 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1e40af;
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 280px;
+    }
+  }
+}
+
+// Message Items
+.staff-message-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+
+  &.system {
+    align-items: center;
+    margin: 16px 0;
+
+    .system-message {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+      padding: 8px 16px;
+      font-size: 12px;
+      color: #1e40af;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .system-time {
+        opacity: 0.7;
+        font-size: 11px;
+      }
+    }
+  }
+
+  &.staff {
+    align-items: flex-start;
+
+    .message-wrapper {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      max-width: 85%;
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+
+        svg {
+          color: white;
+        }
+      }
+
+      .message-content {
+        flex: 1;
+
+        .message-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 4px;
+
+          .sender-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e40af;
+          }
+
+          .message-time {
+            font-size: 11px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+          }
+        }
+
+        .message-bubble {
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+          border: 1px solid rgba(59, 130, 246, 0.15);
+          border-radius: 12px 12px 12px 4px;
+          padding: 10px 14px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+          .message-text {
+            color: #1e293b;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+          }
+        }
+      }
+    }
+  }
+
+  &.user {
+    align-items: flex-end;
+
+    .message-wrapper {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      max-width: 85%;
+      flex-direction: row-reverse;
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #10b981, #059669);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+        .user-initial {
+          color: white;
+          font-size: 14px;
+          font-weight: 600;
+        }
+      }
+
+      .message-content {
+        flex: 1;
+
+        .message-bubble {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          border-radius: 12px 12px 4px 12px;
+          padding: 10px 14px;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+
+          .message-text {
+            color: white;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+          }
+
+          .message-footer {
+            margin-top: 4px;
+            display: flex;
+            justify-content: flex-end;
+
+            .message-time {
+              font-size: 11px;
+              color: rgba(255, 255, 255, 0.8);
+              display: flex;
+              align-items: center;
+              gap: 2px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Input Area
+.staff-chat-input {
+  padding: 8px 10px;
+  border-top: 1px solid rgba(59, 130, 246, 0.1);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+
+  .staff-chat-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 2px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 5px;
+    transition: all 0.2s ease;
+
+    &:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .staff-chat-input-field {
+      flex: 1;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 14px;
+      line-height: 1.4;
+      padding: 4px 8px;
+      background: transparent;
+      color: #1e293b;
+      min-height: 20px;
+      max-height: 80px;
+
+      &::placeholder {
+        color: #94a3b8;
+      }
+
+      &:disabled {
+        color: #94a3b8;
+        cursor: not-allowed;
+      }
+    }
+
+    .staff-chat-send-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: scale(1.05);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      &:disabled {
+        background: #e2e8f0;
+        color: #94a3b8;
+        cursor: not-allowed;
+        transform: none;
+      }
+    }
+  }
+
+  .staff-chat-connection-warning {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    padding: 6px 12px;
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Responsive
+@media (max-width: 480px) {
+  .staff-chat-container {
+    .staff-chat-header {
+      padding: 12px 16px;
+
+      .staff-chat-avatar {
+        width: 36px;
+        height: 36px;
+      }
+
+      .staff-chat-header-info .staff-chat-title {
+        font-size: 14px;
+      }
+
+      .staff-chat-header-actions .staff-chat-header-btn {
+        width: 32px;
+        height: 32px;
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+
+    .staff-chat-messages .staff-chat-messages-content {
+      padding: 12px;
+    }
+  }
+}

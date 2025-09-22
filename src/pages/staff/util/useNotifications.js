@@ -5,6 +5,58 @@ import { playNotificationSoundByType, isAudioEnabled } from "../../../utils/noti
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [isShaking, setIsShaking] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+
+  // Khởi tạo audio settings
+  useEffect(() => {
+    const checkAudioPermission = () => {
+      const enabled = localStorage.getItem("staff_notification_audio_enabled") === "true";
+      const audioSupported = isAudioEnabled();
+      setAudioEnabled(enabled && audioSupported);
+    };
+
+    checkAudioPermission();
+  }, []);
+
+  // Toggle audio function
+  const toggleAudio = useCallback(async (enabled) => {
+    try {
+      if (enabled && isAudioEnabled()) {
+        localStorage.setItem("staff_notification_audio_enabled", "true");
+        setAudioEnabled(true);
+      } else {
+        localStorage.setItem("staff_notification_audio_enabled", "false");
+        setAudioEnabled(false);
+      }
+    } catch (error) {
+      console.error("Error toggling audio:", error);
+      setAudioEnabled(false);
+    }
+  }, []);
+
+  // Request notification permission
+  const requestNotificationPermission = useCallback(async () => {
+    try {
+      if ("Notification" in window) {
+        const permission = await Notification.requestPermission();
+        return permission === "granted";
+      }
+      return false;
+    } catch (error) {
+      console.error("Error requesting notification permission:", error);
+      return false;
+    }
+  }, []);
+
+  // Play sound when notification is added
+  const playNotificationSound = useCallback(
+    (type) => {
+      if (audioEnabled) {
+        playNotificationSoundByType(type);
+      }
+    },
+    [audioEnabled]
+  );
 
   // Tự động dừng shake sau 3 giây
   useEffect(() => {
@@ -16,54 +68,48 @@ export const useNotifications = () => {
     }
   }, [isShaking]);
 
-  const addNewOrderNotification = useCallback((orderData) => {
-    const notification = {
-      id: `new_order_${Date.now()}`,
-      type: "NEW_ORDER",
-      title: "Đơn hàng mới!",
-      message: `Đơn hàng #${orderData.orderCode} từ ${orderData.receiverName}`,
-      orderData: orderData,
-      timestamp: new Date(),
-      read: false,
-    };
+  const addNewOrderNotification = useCallback(
+    (orderData) => {
+      const notification = {
+        id: `new_order_${Date.now()}`,
+        type: "NEW_ORDER",
+        title: "Đơn hàng mới!",
+        message: `Đơn hàng #${orderData.orderCode} từ ${orderData.receiverName}`,
+        orderData: orderData,
+        timestamp: new Date(),
+        read: false,
+        priority: "high", // Đơn hàng mới có độ ưu tiên cao
+      };
 
-    setNotifications((prev) => [notification, ...prev]);
-    setIsShaking(true);
+      setNotifications((prev) => [notification, ...prev]);
+      setIsShaking(true);
 
-    // Phát âm thanh nếu được bật
-    const audioPermissionGranted = localStorage.getItem("audioPermissionGranted") === "true";
-    if (audioPermissionGranted && isAudioEnabled()) {
-      console.log("Playing new order notification sound...");
-      playNotificationSoundByType("NEW_ORDER").catch((err) => {
-        console.error("Failed to play notification sound:", err);
-      });
-    } else {
-      console.log("Audio not enabled or permission not granted");
-    }
-  }, []);
+      // Play notification sound
+      playNotificationSound("NEW_ORDER");
+    },
+    [playNotificationSound]
+  );
 
-  const addOrderStatusNotification = useCallback((orderData, oldStatus, newStatus) => {
-    const notification = {
-      id: `status_update_${Date.now()}`,
-      type: "ORDER_STATUS_UPDATE",
-      title: "Cập nhật đơn hàng",
-      message: `Đơn hàng #${orderData.orderCode} từ ${oldStatus} → ${newStatus}`,
-      orderData: orderData,
-      timestamp: new Date(),
-      read: false,
-    };
+  const addOrderStatusNotification = useCallback(
+    (orderData, oldStatus, newStatus) => {
+      const notification = {
+        id: `status_update_${Date.now()}`,
+        type: "ORDER_STATUS_UPDATE",
+        title: "Cập nhật đơn hàng",
+        message: `Đơn hàng #${orderData.orderCode} từ ${oldStatus} → ${newStatus}`,
+        orderData: orderData,
+        timestamp: new Date(),
+        read: false,
+        priority: "medium",
+      };
 
-    setNotifications((prev) => [notification, ...prev]);
+      setNotifications((prev) => [notification, ...prev]);
 
-    // Phát âm thanh nhẹ cho status update
-    const audioPermissionGranted = localStorage.getItem("audioPermissionGranted") === "true";
-    if (audioPermissionGranted && isAudioEnabled()) {
-      console.log("Playing status update notification sound...");
-      playNotificationSoundByType("ORDER_STATUS_UPDATE").catch((err) => {
-        console.error("Failed to play status update sound:", err);
-      });
-    }
-  }, []);
+      // Play notification sound
+      playNotificationSound("ORDER_STATUS_UPDATE");
+    },
+    [playNotificationSound]
+  );
 
   const markAsRead = useCallback((notificationId) => {
     setNotifications((prev) =>
@@ -88,16 +134,23 @@ export const useNotifications = () => {
 
   // Tính số lượng thông báo chưa đọc
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const highPriorityUnreadCount = notifications.filter(
+    (n) => !n.read && n.priority === "high"
+  ).length;
 
   return {
     notifications,
     unreadCount,
+    highPriorityUnreadCount,
     isShaking,
+    audioEnabled,
     addNewOrderNotification,
     addOrderStatusNotification,
     markAsRead,
     stopShaking,
     clearAllNotifications,
     removeNotification,
+    toggleAudio,
+    requestNotificationPermission,
   };
 };

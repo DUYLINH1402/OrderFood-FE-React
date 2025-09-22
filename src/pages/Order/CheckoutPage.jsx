@@ -342,10 +342,12 @@ export default function CheckoutPage() {
         selectedWardId,
         deliveryType,
         paymentMethod,
-        totalPrice: finalTotalPrice,
         checkoutItems,
-        discountAmount: usePoints ? pointsDiscount : 0,
-        couponCode: couponCode || undefined, // Gửi mã coupon cho BE xử lý
+        effectiveDeliveryFee, // Gửi phí giao hàng đã tính khuyến mãi nếu có
+        totalFoodPrice, // Gửi tổng tiền món ăn chưa giảm giá
+        discountAmount: usePoints ? pointsDiscount : 0, // Số tiền giảm từ điểm thưởng
+        couponCode: couponCode || undefined, // Mã coupon
+        totalPrice: finalTotalPrice, // Tổng tiền cuối cùng sau tất cả giảm giá
       };
 
       const result = await handleOrderSubmission(orderData, navigate);
@@ -656,7 +658,7 @@ export default function CheckoutPage() {
                 {/* Danh sách coupon của user */}
                 {userCoupons.length > 0 && (
                   <div className="mb-2">
-                    <p className="text-xs text-gray-500 mb-2">Chọn mã giảm giá có sẵn:</p>
+                    <p className="text-sm text-gray-500 mb-2">Chọn mã có sẵn:</p>
                     <div className="flex flex-wrap gap-2">
                       {userCoupons.map((coupon) => (
                         <button
@@ -746,6 +748,20 @@ export default function CheckoutPage() {
                     ? "Miễn phí"
                     : `${effectiveDeliveryFee.toLocaleString()}₫`}
                 </span>
+              </div>
+
+              {/* Hiệu ứng mượt mà cho dòng giảm coupon */}
+              <div
+                className={`transition-all duration-500 overflow-hidden ${
+                  couponDiscount > 0 ? "max-h-[50px] opacity-100 mb-2" : "max-h-0 opacity-0 mb-0"
+                }`}
+                style={{ willChange: "max-height, opacity, margin-bottom" }}>
+                <div className="flex justify-between items-center text-sm md:text-base transform transition-transform duration-300">
+                  <span className="font-bold text-blue-600">Giảm coupon:</span>
+                  <span className="text-blue-600 font-semibold">
+                    -{couponDiscount.toLocaleString()}₫
+                  </span>
+                </div>
               </div>
 
               {/* Hiệu ứng mượt mà cho dòng giảm điểm thưởng */}

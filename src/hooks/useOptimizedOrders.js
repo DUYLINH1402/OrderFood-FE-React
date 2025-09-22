@@ -199,13 +199,80 @@ export const useOptimizedOrders = (initialTab = "processing") => {
   const setupCacheListeners = useCallback(() => {
     const unsubscribeAll = orderCacheService.addListener("all", updateOrdersData);
     const unsubscribeOrderUpdated = orderCacheService.addListener("orderUpdated", (data) => {
-      console.log("Cache: Order updated", data);
-      // Refresh để cập nhật UI
-      refreshData();
+      // Cập nhật UI ngay lập tức thay vì gọi refreshData()
+      if (data && data.order) {
+        const { order, oldStatus, newStatus } = data;
+
+        setOrders((prevOrders) => {
+          const newOrders = { ...prevOrders };
+
+          // Nếu status thay đổi, di chuyển order giữa các tab
+          if (oldStatus && oldStatus !== newStatus) {
+            // Xóa khỏi tab cũ
+            const oldStatusKey = oldStatus.toLowerCase();
+            if (newOrders[oldStatusKey]) {
+              const oldLength = newOrders[oldStatusKey].length;
+              newOrders[oldStatusKey] = newOrders[oldStatusKey].filter(
+                (o) => (o.orderId || o.id) !== (order.orderId || order.id)
+              );
+            }
+
+            // Thêm vào tab mới
+            const newStatusKey = newStatus.toLowerCase();
+            if (newOrders[newStatusKey]) {
+              // Kiểm tra xem order đã tồn tại chưa
+              const existingIndex = newOrders[newStatusKey].findIndex(
+                (o) => (o.orderId || o.id) === (order.orderId || order.id)
+              );
+
+              if (existingIndex !== -1) {
+                // Cập nhật order hiện có
+                newOrders[newStatusKey][existingIndex] = order;
+              } else {
+                // Thêm order mới vào đầu danh sách
+                const oldLength = newOrders[newStatusKey].length;
+                newOrders[newStatusKey] = [order, ...newOrders[newStatusKey]];
+              }
+            }
+          } else {
+            // Chỉ cập nhật thông tin order trong cùng tab
+            Object.keys(newOrders).forEach((statusKey) => {
+              const orderIndex = newOrders[statusKey].findIndex(
+                (o) => (o.orderId || o.id) === (order.orderId || order.id)
+              );
+              if (orderIndex !== -1) {
+                newOrders[statusKey][orderIndex] = order;
+              }
+            });
+          }
+          return newOrders;
+        });
+
+        // Cập nhật stats ngay sau khi cập nhật orders
+        setTimeout(() => {
+          setStats((prevStats) => {
+            // Lấy orders mới nhất
+            setOrders((currentOrders) => {
+              const newStats = {
+                processingOrders: currentOrders.processing?.length || 0,
+                confirmedOrders: currentOrders.confirmed?.length || 0,
+                deliveringOrders: currentOrders.delivering?.length || 0,
+                completedOrders: currentOrders.completed?.length || 0,
+                cancelledOrders: currentOrders.cancelled?.length || 0,
+              };
+              setStats(newStats);
+              return currentOrders;
+            });
+            return prevStats;
+          });
+        }, 0);
+
+        setLastUpdated(new Date());
+      }
     });
 
     cacheUnsubscribers.current = [unsubscribeAll, unsubscribeOrderUpdated];
-  }, [updateOrdersData, refreshData]);
+  }, [updateOrdersData]);
 
   // Initialize
   useEffect(() => {
@@ -235,15 +302,27 @@ export const useOptimizedOrders = (initialTab = "processing") => {
     refreshData(true);
   }, [refreshData]);
 
-  // Update order status optimistically
+  // Update order status optimistically với cập nhật UI ngay lập tức
   const updateOrderStatus = useCallback(
-    async (orderId, newStatus, note = "") => {
+    async (orderIdentifier, newStatus, note = "") => {
       try {
-        // Optimistic update
-        const currentTabOrders = getCurrentOrders();
-        const orderToUpdate = currentTabOrders.find(
-          (order) => (order.orderId || order.id) === orderId
-        );
+        // Tìm order cần cập nhật từ tất cả các tab
+        // orderIdentifier có thể là orderId hoặc orderCode
+        let orderToUpdate = null;
+        let currentStatus = null;
+
+        Object.keys(orders).forEach((statusKey) => {
+          const foundOrder = orders[statusKey].find((order) => {
+            const matchOrderId = (order.orderId || order.id) === orderIdentifier;
+            const matchOrderCode = order.orderCode === orderIdentifier;
+            const matchId = order.id === orderIdentifier;
+            return matchOrderId || matchOrderCode || matchId;
+          });
+          if (foundOrder) {
+            orderToUpdate = foundOrder;
+            currentStatus = statusKey.toUpperCase();
+          }
+        });
 
         if (orderToUpdate) {
           const updatedOrder = {
@@ -253,16 +332,68 @@ export const useOptimizedOrders = (initialTab = "processing") => {
             updatedAt: new Date(),
           };
 
+          // Cập nhật cache trước
           orderCacheService.updateOrderInCache(updatedOrder);
+          // Cập nhật UI ngay lập tức (optimistic update)
+          setOrders((prevOrders) => {
+            const newOrders = { ...prevOrders };
+            // Xóa từ status cũ
+            if (currentStatus) {
+              const oldStatusKey = currentStatus.toLowerCase();
+              const oldLength = newOrders[oldStatusKey]?.length || 0;
+              newOrders[oldStatusKey] = newOrders[oldStatusKey].filter(
+                (o) => (o.orderId || o.id) !== (orderToUpdate.orderId || orderToUpdate.id)
+              );
+            }
+
+            // Thêm vào status mới
+            const newStatusKey = newStatus.toLowerCase();
+            if (newOrders[newStatusKey]) {
+              const oldLength = newOrders[newStatusKey]?.length || 0;
+              newOrders[newStatusKey] = [updatedOrder, ...newOrders[newStatusKey]];
+            }
+            return newOrders;
+          });
+
+          // Cập nhật stats ngay lập tức
+          setStats((prevStats) => {
+            const newStats = { ...prevStats };
+
+            // Giảm count của status cũ
+            if (currentStatus) {
+              const oldStatusCount = `${currentStatus.toLowerCase()}Orders`;
+              if (newStats[oldStatusCount]) {
+                const oldCount = newStats[oldStatusCount];
+                newStats[oldStatusCount] = Math.max(0, newStats[oldStatusCount] - 1);
+              }
+            }
+
+            // Tăng count của status mới
+            const newStatusCount = `${newStatus.toLowerCase()}Orders`;
+            if (newStats[newStatusCount] !== undefined) {
+              const oldCount = newStats[newStatusCount];
+              newStats[newStatusCount] = newStats[newStatusCount] + 1;
+            }
+            return newStats;
+          });
+
+          setLastUpdated(new Date());
+        } else {
+          console.log("Order not found in any tab", { orderIdentifier, availableOrders: orders });
         }
 
         // Send to server
         if (USE_WEBSOCKET) {
-          orderWebSocketClient.updateOrderStatus(orderId, newStatus, note);
+          orderWebSocketClient.updateOrderStatus(orderIdentifier, newStatus, note);
         } else {
           // Use regular API call
           const { updateStaffOrderStatus } = await import("../services/service/staffOrderService");
-          const result = await updateStaffOrderStatus(orderId, newStatus, note);
+
+          // API cần orderCode, không phải orderId
+          const apiOrderCode = orderToUpdate
+            ? orderToUpdate.orderCode || orderIdentifier
+            : orderIdentifier;
+          const result = await updateStaffOrderStatus(apiOrderCode, newStatus, note);
 
           if (!result.success) {
             // Revert optimistic update on failure
@@ -278,7 +409,7 @@ export const useOptimizedOrders = (initialTab = "processing") => {
         return { success: false, message: error.message };
       }
     },
-    [getCurrentOrders]
+    [orders, refreshData]
   );
 
   return {

@@ -5,7 +5,6 @@ import NewDishesSection from "./home/NewDishesSection";
 import FeaturedDishesSection from "./home/FeaturedDishesSection";
 import FavoriteDishesSection from "./home/FavoriteDishesSection";
 import NewsSection from "../components/NewsSection";
-import { MyComponent } from "../components/MyComponent";
 import LazyImage from "../components/LazyImage";
 import "../assets/styles/pages/Home.scss";
 import ServiceHighlights from "../components/ServiceHighlights";
@@ -58,7 +57,7 @@ const Home = () => {
         </div>
       </section>
 
-      <MyComponent />
+      {/* <NotificationDemo /> */}
       <section
         className="scroll-reveal home__section"
         ref={(el) => setSectionRef(el, 2)}

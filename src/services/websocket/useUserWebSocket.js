@@ -33,17 +33,28 @@ export const useUserWebSocket = () => {
    */
   const initialize = useCallback(
     async (userIdParam, tokenParam) => {
-      if (isInitialized.current) {
+      // Kiểm tra xem có đang cố kết nối với cùng thông tin không
+      if (
+        isInitialized.current &&
+        userId.current === userIdParam &&
+        token.current === tokenParam &&
+        userWebSocketClient.isConnected()
+      ) {
         return;
       }
+
+      // Ngắt kết nối cũ nếu có
+      if (isInitialized.current) {
+        userWebSocketClient.disconnect();
+        isInitialized.current = false;
+      }
+
       userId.current = userIdParam;
       token.current = tokenParam;
+
       try {
-        console.log(" Đang khởi tạo User WebSocket cho userId:", userIdParam);
         setConnectionStatus((prev) => ({ ...prev, isConnecting: true }));
-
         await userWebSocketClient.connect(userIdParam, tokenParam);
-
         isInitialized.current = true;
         updateConnectionStatus();
       } catch (error) {

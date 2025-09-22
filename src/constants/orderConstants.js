@@ -1,4 +1,3 @@
-// Order Status Constants - Matching Backend
 export const ORDER_STATUS = {
   PENDING: "PENDING", // Đơn mới tạo, chưa thanh toán (PaymentStatus = PENDING)
   PROCESSING: "PROCESSING", // Đã thanh toán, chờ nhà hàng xác nhận (PaymentStatus = PAID)

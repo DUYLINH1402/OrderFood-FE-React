@@ -1,4 +1,3 @@
-// src/hooks/useStaffOrderWebSocket.js
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -112,9 +111,9 @@ export const useStaffOrderWebSocket = () => {
   /**
    * Xác nhận đã nhận được đơn hàng
    */
-  const acknowledgeOrder = useCallback((orderId) => {
-    return staffOrderWebSocketService.acknowledgeOrder(orderId);
-  }, []);
+  // const acknowledgeOrder = useCallback((orderId) => {
+  //   return staffOrderWebSocketService.acknowledgeOrder(orderId);
+  // }, []);
 
   /**
    * Yêu cầu chi tiết đơn hàng
@@ -170,13 +169,8 @@ export const useStaffOrderWebSocket = () => {
     disconnect,
     addMessageHandler,
     removeHandlers,
-
     // Các hàm gửi message
-    acknowledgeOrder,
     requestOrderDetails,
     updateOrderStatus,
-
-    // Thông tin trạng thái
-    // status: staffOrderWebSocketService.getStatus(),
   };
 };

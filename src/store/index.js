@@ -4,6 +4,7 @@ import authReducer from "./slices/authSlice";
 import favoriteReducer from "./slices/favoriteSlice";
 import pointsReducer from "./slices/pointsSlice";
 import profileReducer from "./slices/profileSlice";
+import chatbotReducer from "./slices/chatbotSlice";
 
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // mặc định: localStorage
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   profile: profileReducer,
   favorite: favoriteReducer,
   points: pointsReducer,
+  chatbot: chatbotReducer,
 });
 
 // Cấu hình persist (chỉ persist cart, auth hoặc toàn bộ tuỳ chọn)

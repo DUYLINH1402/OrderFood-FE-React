@@ -53,6 +53,7 @@ export default function PaymentMethodModal({
               ? "border-green-600 bg-green-50 text-green-700"
               : "border-gray-300"
           }`}
+          disabled
           onClick={() => setSelectedPayment("MOMO")}>
           <LazyImage src={momoIcon} alt="MoMo" className="w-8 h-8 object-contain mr-3" />
           <span className="text-sm md:text-base">Ví MoMo</span>

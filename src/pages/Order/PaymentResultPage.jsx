@@ -88,7 +88,6 @@ function PaymentResultPage() {
 
       // Kiểm tra status từ ZaloPay
       if (query.status && parseInt(query.status) < 0) {
-        // Thanh toán thất bại - cần update backend
         console.log("Payment failed with status:", query.status);
         const errorMessage = getErrorMessage(query.status);
         await updatePaymentStatusFromFrontend(
@@ -193,7 +192,8 @@ function PaymentResultPage() {
     return {
       type: "success",
       title: "Thanh toán thành công!",
-      description: `Đơn hàng của bạn đã được thanh toán thành công qua ${getPaymentMethodName()}. Cảm ơn bạn đã đặt hàng!`,
+      description: `Đơn hàng đã thanh toán thành công qua ${getPaymentMethodName()}. 
+      Vui lòng chờ nhân viên xác nhận!`,
       icon: (
         <svg className="w-16 h-16 text-green-500 mb-4" fill="none" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
@@ -231,31 +231,6 @@ function PaymentResultPage() {
         {paymentProcessed && backendUpdateStatus === null && paymentResult.type === "failed" && (
           <div className="bg-blue-50 rounded-lg p-3 mb-4 text-sm">
             <p className="text-blue-600">Đang cập nhật trạng thái đơn hàng...</p>
-          </div>
-        )}
-
-        {/* Hiển thị thông tin giao dịch */}
-        {(query.appTransId || query.apptransid || orderId) && (
-          <div className="rounded-lg p-4 mb-6 text-sm">
-            <h3 className="font-semibold mb-2">Thông tin giao dịch:</h3>
-            <p className="text-gray-600 mb-1">Phương thức: {getPaymentMethodName()}</p>
-            {(query.appTransId || query.apptransid) && (
-              <p className="text-gray-600 mb-1">
-                Mã giao dịch: {query.appTransId || query.apptransid}
-              </p>
-            )}
-            {orderId && <p className="text-gray-600 mb-1">Mã đơn hàng: #{orderId}</p>}
-            {query.amount && (
-              <p className="text-gray-600 mb-1">
-                Số tiền: {parseInt(query.amount).toLocaleString("vi-VN")} VND
-              </p>
-            )}
-            <p className="text-gray-600 mb-1">
-              Thời gian:{" "}
-              {query.paymentTime
-                ? new Date(query.paymentTime).toLocaleString("vi-VN")
-                : new Date().toLocaleString("vi-VN")}
-            </p>
           </div>
         )}
 

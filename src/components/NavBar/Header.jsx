@@ -6,12 +6,12 @@ import user_avatar from "../../assets/icons/user_avatar.png";
 import "../../assets/styles/components/Header.scss";
 import LazyImage from "../LazyImage";
 import SearchBar from "../SearchBar";
-import NotificationBell from "../NotificationBell";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../store/slices/authSlice";
 import { clearCart } from "../../store/slices/cartSlice";
 import { useUserWebSocketContext } from "../../services/websocket/UserWebSocketProvider";
 import { useUserNotifications } from "../../hooks/useUserNotifications";
+import NotificationBellContainer from "../Notification/NotificationBellContainer";
 
 const Header = () => {
   const cartItems = useSelector((state) => state.cart.items);
@@ -26,17 +26,9 @@ const Header = () => {
   // Lấy trạng thái WebSocket từ context (đồng bộ với Layout)
   const { connected: wsConnected, addMessageHandler } = useUserWebSocketContext();
   const {
-    notifications,
     unreadCount,
-    highPriorityUnreadCount,
-    isShaking,
-    audioEnabled,
-    markAsRead,
-    markAllAsRead,
-    removeNotification,
-    clearAll,
+
     requestNotificationPermission,
-    toggleAudio,
     addOrderConfirmedNotification,
     addOrderInDeliveryNotification,
     addOrderCompletedNotification,
@@ -47,14 +39,39 @@ const Header = () => {
   // Đăng ký nhận thông báo từ BE khi WebSocket kết nối
   useEffect(() => {
     if (!wsConnected || !authUser) return;
-    // Đăng ký nhận thông báo từ BE
+
+    // Đăng ký nhận thông báo từ BE với enum OrderStatus mới
     const unsubOrderUpdate = addMessageHandler("orderUpdate", (data) => {
-      if (data.type === "ORDER_CONFIRMED") addOrderConfirmedNotification(data.orderData);
-      else if (data.type === "ORDER_IN_DELIVERY") addOrderInDeliveryNotification(data.orderData);
-      else if (data.type === "ORDER_COMPLETED") addOrderCompletedNotification(data.orderData);
-      else if (data.type === "ORDER_CANCELLED") addOrderCancelledNotification(data.orderData);
-      else addSystemNotification(data);
+      // Xử lý theo messageType từ BE
+      if (data.messageType === "CUSTOMER_ORDER_UPDATE") {
+        // Sử dụng orderStatus từ enum để tạo notification
+        switch (data.orderStatus?.toUpperCase()) {
+          case "CONFIRMED":
+            addOrderConfirmedNotification(data);
+            break;
+          case "DELIVERING":
+            addOrderInDeliveryNotification(data);
+            break;
+          case "COMPLETED":
+            addOrderCompletedNotification(data);
+            break;
+          case "CANCELLED":
+            addOrderCancelledNotification(data);
+            break;
+          default:
+            addSystemNotification(data);
+            break;
+        }
+      } else {
+        // Fallback cho các loại message khác
+        if (data.type === "ORDER_CONFIRMED") addOrderConfirmedNotification(data.orderData);
+        else if (data.type === "ORDER_IN_DELIVERY") addOrderInDeliveryNotification(data.orderData);
+        else if (data.type === "ORDER_COMPLETED") addOrderCompletedNotification(data.orderData);
+        else if (data.type === "ORDER_CANCELLED") addOrderCancelledNotification(data.orderData);
+        else addSystemNotification(data);
+      }
     });
+
     return () => unsubOrderUpdate();
   }, [
     wsConnected,
@@ -138,19 +155,7 @@ const Header = () => {
                 ? "opacity-0 pointer-events-none"
                 : "opacity-100"
             } ${hideLoginCart ? "hidden" : ""}`}>
-            <NotificationBell
-              notifications={notifications}
-              unreadCount={unreadCount}
-              highPriorityUnreadCount={highPriorityUnreadCount}
-              isShaking={isShaking}
-              audioEnabled={audioEnabled}
-              onMarkAsRead={markAsRead}
-              onMarkAllAsRead={markAllAsRead}
-              onRemoveNotification={removeNotification}
-              onClearAll={clearAll}
-              onToggleAudio={toggleAudio}
-              onRequestPermission={requestNotificationPermission}
-            />
+            <NotificationBellContainer />
           </div>
         )}
 

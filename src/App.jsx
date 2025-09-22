@@ -5,9 +5,14 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./store";
 import "react-toastify/dist/ReactToastify.css";
-import "./index.css";
+import "./assets/styles/components/ScrollToTop.scss";
+import "./assets/styles/components/SupportFloating.scss";
 import AuthLoader from "./routes/AuthLoader";
 import { ConfirmProvider } from "./components/ConfirmModal";
+import { UserWebSocketProvider } from "./services/websocket/UserWebSocketProvider";
+import AudioEnabler from "./components/AudioEnabler";
+import SupportFloating from "./components/Support/SupportFloating";
+import ScrollToTop from "./components/Support/ScrollToTop";
 
 function App() {
   return (
@@ -26,9 +31,15 @@ function App() {
           theme="colored" // Chế độ giao diện ('light', 'dark', 'colored')
         />
         <ConfirmProvider>
-          <AuthLoader>
-            <AppRoutes />
-          </AuthLoader>
+          <UserWebSocketProvider>
+            <AudioEnabler>
+              <AuthLoader>
+                <AppRoutes />
+                <SupportFloating />
+                <ScrollToTop />
+              </AuthLoader>
+            </AudioEnabler>
+          </UserWebSocketProvider>
         </ConfirmProvider>
       </PersistGate>
     </Provider>

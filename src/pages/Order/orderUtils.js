@@ -201,7 +201,9 @@ export const prepareOrderPayload = (orderData) => {
     selectedWardId,
     deliveryType,
     paymentMethod,
+    totalFoodPrice,
     totalPrice,
+    effectiveDeliveryFee,
     checkoutItems,
     couponCode,
     discountAmount = 0,
@@ -213,13 +215,21 @@ export const prepareOrderPayload = (orderData) => {
     receiverPhone: receiverPhone.trim(),
     receiverEmail: receiverEmail.trim(),
     deliveryAddress: deliveryType === "DELIVERY" ? deliveryAddress.trim() : "",
-    districtId: deliveryType === "DELIVERY" ? parseInt(selectedDistrictId) : null,
-    wardId: deliveryType === "DELIVERY" ? parseInt(selectedWardId) : null,
-    deliveryType,
+    shippingZoneId: deliveryType === "DELIVERY" ? parseInt(selectedWardId) : null,
     paymentMethod,
-    totalPrice: Math.round(totalPrice),
-    discountAmount: Math.round(discountAmount) || 0,
-    couponCode: couponCode || null,
+    wardId: deliveryType === "DELIVERY" ? parseInt(selectedWardId) : null,
+    districtId: deliveryType === "DELIVERY" ? parseInt(selectedDistrictId) : null,
+    deliveryType,
+    // Tiền tệ mới - Rõ ràng
+    subtotalAmount: Math.round(totalFoodPrice), // Tổng tiền món ăn (không bao gồm phí ship, chưa trừ giảm giá)
+    shippingFee: Math.round(effectiveDeliveryFee), // Phí giao hàng (nếu có)
+    totalBeforeDiscount: Math.round(totalFoodPrice + effectiveDeliveryFee), // Tổng tiền sau khi cộng phí ship, trước khi áp dụng giảm giá
+    finalAmount: Math.round(totalPrice), // Số tiền cuối cùng khách phải trả (sau tất cả giảm giá)
+    // Giảm giá
+    pointsUsed: Math.round(discountAmount / 1) || 0, // Số điểm muốn sử dụng
+    pointsDiscountAmount: Math.round(discountAmount) || 0, // Số tiền giảm từ điểm thưởng (auto calculated)
+    couponCode: couponCode || null, // Mã coupon user muốn áp dụng
+    couponDiscountAmount: null, // Để BE tự tính khi validate coupon
     items: checkoutItems.map((item) => ({
       foodId: parseInt(item.foodId),
       variantId: item.variantId ? parseInt(item.variantId) : null,

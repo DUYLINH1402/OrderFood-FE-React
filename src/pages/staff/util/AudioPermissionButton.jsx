@@ -5,6 +5,8 @@ import {
   playNotificationSoundByType,
   isAudioSupported,
   requestAudioPermission,
+  enableAudioAfterUserInteraction,
+  isAudioEnabled,
 } from "../../../utils/notificationSound";
 import LoadingIcon from "../../../components/Skeleton/LoadingIcon";
 

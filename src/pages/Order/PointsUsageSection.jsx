@@ -70,7 +70,7 @@ const PointsUsageSection = ({
 
           <div className="text-sm text-gray-600 space-y-1">
             <p className="transition-all duration-200">• Tối đa sử dụng 50% tổng tiền đơn hàng</p>
-            <p className="transition-all duration-200">• 1 điểm = 1.000đ</p>
+            <p className="transition-all duration-200">• 1000 điểm = 1.000đ</p>
             {pointsDiscount > 0 && (
               <p className="text-green-600 font-medium transition-all duration-300 transform translate-x-0">
                 → Giảm: {pointsDiscount.toLocaleString()}₫

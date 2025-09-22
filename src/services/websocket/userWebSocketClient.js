@@ -13,6 +13,7 @@ class UserWebSocketClient {
     this.messageHandlers = new Map();
     this.userId = null;
     this.token = null;
+    this.debug = true; // Bật debug mode để giám sát WebSocket
   }
 
   /**
@@ -21,9 +22,13 @@ class UserWebSocketClient {
    * @param {string} token - JWT token để xác thực
    */
   async connect(userId, token) {
-    if (this.connected) {
-      console.log("🔗 User WebSocket đã được kết nối rồi");
+    if (this.connected && this.userId === userId) {
       return Promise.resolve();
+    }
+
+    // Ngắt kết nối cũ nếu đang kết nối với user khác
+    if (this.connected && this.userId !== userId) {
+      this.disconnect();
     }
 
     this.userId = userId;
@@ -36,9 +41,6 @@ class UserWebSocketClient {
         this.stompClient = new Client({
           webSocketFactory: () => {
             const sockJS = new SockJS(wsUrl);
-
-            sockJS.onopen = () => console.log("🔌 SockJS connected");
-            sockJS.onclose = () => console.log("🔌 SockJS disconnected");
             sockJS.onerror = (e) => console.error("SockJS error:", e);
 
             return sockJS;
@@ -60,19 +62,19 @@ class UserWebSocketClient {
         this.stompClient.onConnect = (frame) => {
           this.connected = true;
           this.reconnectAttempts = 0;
-
           // Đăng ký user ngay sau khi kết nối
           this.registerUser();
 
           // Subscribe vào các topics
-          this.subscribeToUserTopics();
+          setTimeout(() => {
+            this.subscribeToUserTopics();
+          }, 500);
 
           resolve();
         };
 
         // Xử lý lỗi STOMP
         this.stompClient.onStompError = (frame) => {
-          console.error("STOMP Error:", frame);
           this.connected = false;
           const errorMsg = frame.headers?.message || "Unknown STOMP error";
           reject(new Error(`STOMP Error: ${errorMsg}`));
@@ -144,30 +146,115 @@ class UserWebSocketClient {
    */
   subscribeToUserTopics() {
     if (!this.connected || !this.userId) {
-      console.warn("Không thể subscribe: chưa kết nối hoặc thiếu userId");
       return;
     }
 
-    // Chỉ subscribe nhận thông báo cập nhật trạng thái đơn hàng dành riêng cho user này
-    this.subscribe(`/user/${this.userId}/queue/order-updates`, "orderUpdate", (message) => {
+    // Subscribe vào queue riêng của user
+    // Backend gửi tới: /user/{userId}/queue/order-updates
+    const orderUpdatesDestination = `/user/${this.userId}/queue/order-updates`;
+
+    this.subscribe(orderUpdatesDestination, "orderUpdate", (message) => {
       try {
-        console.log("Raw order update message:", message.body);
+        console.log("Nhận được thông báo order update:", {
+          destination: orderUpdatesDestination,
+          body: message.body,
+          headers: message.headers,
+        });
+
         if (!message.body) {
           console.warn("Empty order update message body");
           return;
         }
 
-        const data = JSON.parse(message.body);
-        console.log(" Order update data:", data);
+        // Xử lý dữ liệu
+        let data;
+
+        // Kiểm tra xem body có phải là JSON không
+        if (message.body.trim().startsWith("{")) {
+          // Đây là JSON
+          data = JSON.parse(message.body);
+        } else {
+          // Đây có thể là định dạng key=value
+          data = this.parseKeyValueFormat(message.body);
+        }
+
         this.notifyHandlers("orderUpdate", data);
       } catch (error) {
-        console.error("Lỗi parse order update:", error);
+        console.error(" Lỗi parse order update:", error);
         // Fallback: gửi raw message nếu không parse được JSON
         this.notifyHandlers("orderUpdate", { message: message.body, type: "raw" });
       }
     });
+    console.log(" Đã subscribe vào tất cả topics cho user:", this.userId);
+  }
 
-    console.log("✅ Đã subscribe vào topic order update cho user:", this.userId);
+  /**
+   * Parse dữ liệu định dạng key=value từ BE
+   * Ví dụ: messageType=ORDER_STATUS_CHANGED, orderId=150, orderCode=DGX882337122...
+   */
+  parseKeyValueFormat(messageBody) {
+    try {
+      if (!messageBody || typeof messageBody !== "string") {
+        return { error: "Invalid message body" };
+      }
+
+      // Tách các cặp key=value bởi dấu phẩy
+      // Xử lý trường hợp có dấu phẩy trong giá trị chuỗi bằng cách tìm mẫu key=value
+      const keyValueRegex = /([^,=]+)=([^,]*?)(?:,|$)/g;
+      const result = {};
+
+      let match;
+      while ((match = keyValueRegex.exec(messageBody)) !== null) {
+        const key = match[1].trim();
+        const value = match[2].trim();
+
+        // Chuyển đổi giá trị số nếu có thể
+        if (value === "null" || value === "") {
+          // Giá trị null hoặc rỗng
+          result[key] = null;
+        } else if (!isNaN(value) && value !== "") {
+          // Số nguyên hoặc số thực
+          result[key] = Number(value);
+        } else if (value.toLowerCase() === "true") {
+          // Boolean true
+          result[key] = true;
+        } else if (value.toLowerCase() === "false") {
+          // Boolean false
+          result[key] = false;
+        } else {
+          // Giá trị chuỗi
+          result[key] = value;
+        }
+      }
+
+      // Backup method if regex doesn't work well
+      if (Object.keys(result).length === 0) {
+        const pairs = messageBody.split(",");
+
+        pairs.forEach((pair) => {
+          const trimmedPair = pair.trim();
+          const equalPos = trimmedPair.indexOf("=");
+
+          if (equalPos !== -1) {
+            const key = trimmedPair.substring(0, equalPos).trim();
+            const value = trimmedPair.substring(equalPos + 1).trim();
+
+            if (value === "null") {
+              result[key] = null;
+            } else if (!isNaN(value) && value !== "") {
+              result[key] = Number(value);
+            } else {
+              result[key] = value;
+            }
+          }
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Message body:", messageBody);
+      return { error: "Parse error", rawMessage: messageBody };
+    }
   }
 
   /**
@@ -175,16 +262,35 @@ class UserWebSocketClient {
    */
   subscribe(destination, key, callback) {
     if (this.subscriptions.has(key)) {
-      console.log(`ℹ️ Đã subscribe vào ${key} rồi`);
-      return;
+      return this.subscriptions.get(key);
+    }
+
+    if (!this.connected || !this.stompClient) {
+      console.error(`Không thể subscribe vào ${destination} vì chưa kết nối`);
+      return null;
     }
 
     try {
-      const subscription = this.stompClient.subscribe(destination, callback);
+      const subscription = this.stompClient.subscribe(destination, (message) => {
+        console.log(`Nhận message từ ${destination}:`, {
+          body: message.body,
+          headers: message.headers,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Gọi callback được truyền vào
+        if (typeof callback === "function") {
+          callback(message);
+        } else {
+          console.warn(`Callback không phải function cho ${destination}`);
+        }
+      });
       this.subscriptions.set(key, subscription);
-      console.log(`📡 Đã subscribe vào: ${destination} với key: ${key}`);
+      console.warn(`THÀNH CÔNG subscribe vào: ${destination}`);
+      return subscription;
     } catch (error) {
       console.error(`Lỗi khi subscribe vào ${destination}:`, error);
+      return null;
     }
   }
 
@@ -199,11 +305,19 @@ class UserWebSocketClient {
    * Đăng ký handler cho các loại message
    */
   addMessageHandler(messageType, handler) {
+    // Kiểm tra xem đã có handler này chưa để tránh duplicate
+    if (this.messageHandlers.has(messageType)) {
+      const existingHandlers = this.messageHandlers.get(messageType);
+      if (existingHandlers.has(handler)) {
+        console.log(`Handler cho ${messageType} đã tồn tại, bỏ qua...`);
+        return () => {}; // Return empty cleanup function
+      }
+    }
+
     if (!this.messageHandlers.has(messageType)) {
       this.messageHandlers.set(messageType, new Set());
     }
     this.messageHandlers.get(messageType).add(handler);
-    console.log(`📝 Đã đăng ký handler cho: ${messageType}`);
 
     // Trả về hàm để unsubscribe
     return () => {
@@ -213,7 +327,6 @@ class UserWebSocketClient {
         if (handlers.size === 0) {
           this.messageHandlers.delete(messageType);
         }
-        console.log(`🗑️ Đã hủy handler cho: ${messageType}`);
       }
     };
   }
@@ -224,7 +337,6 @@ class UserWebSocketClient {
   notifyHandlers(messageType, data) {
     const handlers = this.messageHandlers.get(messageType);
     if (handlers) {
-      console.log(`📢 Thông báo tới ${handlers.size} handlers cho: ${messageType}`);
       handlers.forEach((handler) => {
         try {
           handler(data);
@@ -233,7 +345,7 @@ class UserWebSocketClient {
         }
       });
     } else {
-      console.log(`⚠️ Không có handler nào cho: ${messageType}`);
+      console.log(`Không có handler nào cho: ${messageType}`);
     }
   }
 
@@ -242,7 +354,7 @@ class UserWebSocketClient {
    */
   chatToStaff(message) {
     if (!this.connected) {
-      console.warn("⚠️ Chưa kết nối WebSocket");
+      console.warn("Chưa kết nối WebSocket");
       return false;
     }
 
@@ -260,54 +372,6 @@ class UserWebSocketClient {
       return false;
     }
   }
-
-  /**
-   * Gửi ping tới BE
-   */
-  ping() {
-    if (!this.connected) {
-      console.warn("⚠️ Chưa kết nối WebSocket");
-      return false;
-    }
-
-    try {
-      this.stompClient.publish({
-        destination: "/app/user/ping",
-        body: JSON.stringify({
-          timestamp: Date.now(),
-          userId: this.userId,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("🏓 Đã gửi ping");
-      return true;
-    } catch (error) {
-      console.error("Lỗi khi gửi ping:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Gửi message tùy ý
-   */
-  publish(destination, body, headers = { "Content-Type": "application/json" }) {
-    if (!this.connected) {
-      console.warn("⚠️ Chưa kết nối WebSocket");
-      return false;
-    }
-
-    try {
-      this.stompClient.publish({ destination, body, headers });
-      console.log(`📤 Đã gửi message tới ${destination}`);
-      return true;
-    } catch (error) {
-      console.error(`Lỗi khi gửi message tới ${destination}:`, error);
-      return false;
-    }
-  }
-
   /**
    * Lên lịch reconnect
    */
@@ -319,12 +383,9 @@ class UserWebSocketClient {
 
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
-
-    console.log(`🔄 Sẽ thử reconnect lần ${this.reconnectAttempts} sau ${delay}ms`);
-
     setTimeout(() => {
       if (!this.connected && this.userId && this.token) {
-        console.log(`🔄 Đang thử reconnect lần ${this.reconnectAttempts}`);
+        console.log(`Đang thử reconnect lần ${this.reconnectAttempts}`);
         this.connect(this.userId, this.token).catch((error) => {
           console.error("Reconnect thất bại:", error);
         });
@@ -339,7 +400,7 @@ class UserWebSocketClient {
     this.subscriptions.forEach((subscription, key) => {
       try {
         subscription.unsubscribe();
-        console.log(`🗑️ Đã unsubscribe: ${key}`);
+        console.log(`Đã unsubscribe: ${key}`);
       } catch (error) {
         console.error(`Lỗi khi unsubscribe ${key}:`, error);
       }
@@ -352,7 +413,6 @@ class UserWebSocketClient {
    */
   disconnect() {
     if (this.stompClient) {
-      console.log("🔌 Đang ngắt kết nối User WebSocket...");
       this.clearSubscriptions();
       this.stompClient.deactivate();
       this.connected = false;
@@ -360,7 +420,7 @@ class UserWebSocketClient {
       this.token = null;
       this.reconnectAttempts = 0;
       this.messageHandlers.clear();
-      console.log("✅ Đã ngắt kết nối User WebSocket");
+      console.log("Đã ngắt kết nối User WebSocket");
     }
   }
 

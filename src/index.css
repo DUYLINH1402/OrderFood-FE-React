@@ -395,28 +395,8 @@ html {
 
   /* Make dropdown full width on mobile */
   .ant-dropdown {
-    width: 95vw !important;
-    max-width: 95vw !important;
-  }
-}
-
-/* Dark mode support (nếu có) */
-@media (prefers-color-scheme: dark) {
-  .notification-item {
-    background-color: #1f2937;
-    color: #f9fafb;
-  }
-
-  .notification-item:hover {
-    background-color: #374151;
-  }
-
-  .notification-item.unread {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%);
-  }
-
-  .notification-item.unread.high-priority {
-    background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(252, 165, 165, 0.1) 100%);
+    right: 10px !important;
+    max-width: 80vw !important;
   }
 }
 

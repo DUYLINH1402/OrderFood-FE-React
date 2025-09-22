@@ -9,6 +9,7 @@ export * from "./service/userService";
 export * from "./service/favoriteService";
 export * from "./service/feedbackService";
 export * from "./service/zoneService";
+export * from "./service/chatbotService";
 
 // Export auth services
 export * from "./auth/authApi";
