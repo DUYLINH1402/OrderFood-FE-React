@@ -93,7 +93,7 @@ const chatbotSlice = createSlice({
       state.messages = [
         {
           id: "welcome",
-          text: "Xin chào! Tôi là FooBot trợ lý ảo của Đồng Xanh. Bạn cần hỗ trợ gì nhỉ?",
+          text: "Tôi là FoodBot trợ lý ảo của Đồng Xanh. Bạn cần hỗ trợ gì nhỉ?",
           sender: "bot",
           timestamp: new Date().toISOString(),
           isWelcome: true,

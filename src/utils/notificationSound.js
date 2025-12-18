@@ -26,7 +26,6 @@ const getAudioContext = () => {
     try {
       globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
     } catch (error) {
-      console.error("Cannot create AudioContext:", error);
       return null;
     }
   }
@@ -60,8 +59,6 @@ export const createNotificationSound = async () => {
     if (audioContext.state === "suspended") {
       await audioContext.resume();
     }
-
-    console.log("Playing notification sound...");
 
     // Tạo âm thanh chuông có melody đẹp
     const playTone = (frequency, startTime, duration, volume = 0.15) => {
@@ -238,7 +235,6 @@ export const requestAudioPermission = async () => {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
 
-    console.log("Audio permission test completed successfully");
     return true;
   } catch (error) {
     console.error("Cannot get audio permission:", error);

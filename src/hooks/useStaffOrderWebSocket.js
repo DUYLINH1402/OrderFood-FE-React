@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import staffOrderWebSocketService from "../services/websocket/StaffOrderWebSocketService";
+import { useAuth } from "./auth/useAuth";
 
 /**
  * Hook để quản lý WebSocket connection cho Staff Orders
@@ -16,6 +17,7 @@ export const useStaffOrderWebSocket = () => {
 
   // Lấy thông tin user từ Redux store
   const { user, accessToken: token } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useAuth();
 
   // Ref để lưu các handlers và tránh memory leaks
   const handlersRef = useRef(new Map());
@@ -25,8 +27,12 @@ export const useStaffOrderWebSocket = () => {
    * Kết nối WebSocket
    */
   const connect = useCallback(async () => {
-    if (!user?.id || !token) {
-      console.warn("Thiếu user ID hoặc token:", { userId: user?.id, hasToken: !!token });
+    if (!isAuthenticated || !user?.id || !token) {
+      console.warn("Thiếu authentication, user ID hoặc token:", {
+        isAuthenticated,
+        userId: user?.id,
+        hasToken: !!token,
+      });
       return;
     }
 
@@ -134,9 +140,42 @@ export const useStaffOrderWebSocket = () => {
     );
   }, []);
 
-  // Tự động kết nối khi component mount
+  // Theo dõi authentication state
   useEffect(() => {
-    if (user?.id && token) {
+    if (!isAuthenticated) {
+      // Cleanup khi user logout
+
+      // Clear tất cả handlers
+      handlersRef.current.forEach((unsubscribers) => {
+        unsubscribers.forEach((unsubscribe) => unsubscribe?.());
+      });
+      handlersRef.current.clear();
+
+      // Ngắt kết nối
+      disconnect();
+
+      // Reset connection status
+      setConnectionStatus({
+        connected: false,
+        connecting: false,
+        error: null,
+      });
+    }
+  }, [isAuthenticated, disconnect]);
+
+  // Lắng nghe auth-logout event
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      disconnect();
+    };
+
+    window.addEventListener("auth-logout", handleAuthLogout);
+    return () => window.removeEventListener("auth-logout", handleAuthLogout);
+  }, [disconnect]);
+
+  // Tự động kết nối khi component mount và user authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.id && token) {
       connect();
     }
 
@@ -144,21 +183,27 @@ export const useStaffOrderWebSocket = () => {
     return () => {
       // Clear tất cả handlers
       handlersRef.current.forEach((unsubscribers) => {
-        unsubscribers.forEach((unsubscribe) => unsubscribe());
+        unsubscribers.forEach((unsubscribe) => unsubscribe?.());
       });
       handlersRef.current.clear();
 
       // Ngắt kết nối
       disconnect();
     };
-  }, [user?.id, token, connect, disconnect]);
+  }, [isAuthenticated, user?.id, token, connect, disconnect]);
 
-  // Tự động reconnect khi user hoặc token thay đổi
+  // Tự động reconnect khi user hoặc token thay đổi (chỉ khi đã authenticated)
   useEffect(() => {
-    if (user?.id && token && !staffOrderWebSocketService.isConnected() && !connectingRef.current) {
+    if (
+      isAuthenticated &&
+      user?.id &&
+      token &&
+      !staffOrderWebSocketService.isConnected() &&
+      !connectingRef.current
+    ) {
       connect();
     }
-  }, [user?.id, token, connect]);
+  }, [isAuthenticated, user?.id, token, connect]);
 
   return {
     // Trạng thái kết nối

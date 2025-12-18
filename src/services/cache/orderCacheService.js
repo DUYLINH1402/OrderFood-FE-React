@@ -27,7 +27,6 @@ class OrderCacheService {
       // Import service để tránh circular dependency
       const { getAllStaffOrders } = await import("../service/staffOrderService");
 
-      console.log(`Fetching fresh data for ${cacheKey}`);
       const result = await getAllStaffOrders(0, 100);
 
       if (result.success) {
@@ -69,7 +68,6 @@ class OrderCacheService {
 
       // Kiểm tra cache
       if (!forceRefresh && this.cache.has(cacheKey) && now - lastUpdate < this.cacheTimeout) {
-        console.log("Cache hit for all orders");
         return {
           success: true,
           data: this.cache.get(cacheKey),
@@ -77,7 +75,6 @@ class OrderCacheService {
         };
       }
 
-      console.log("Fetching fresh data for all orders");
       const result = await getAllStaffOrders(0, 100);
 
       if (result.success) {

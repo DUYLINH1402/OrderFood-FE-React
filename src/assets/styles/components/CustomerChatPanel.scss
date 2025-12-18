@@ -1,11 +1,122 @@
 // Customer Chat Panel Styles for Staff - Food Order Project
 // Thiết kế professional phù hợp với Staff Dashboard
 
+// Loading states
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+// Loading spinner nhỏ hơn cho load more
+.loading-spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Loading thêm tin nhắn cũ
+.loading-more-messages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 13px;
+  background: linear-gradient(to bottom, rgba(248, 250, 252, 0.9), transparent);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+// Container cho nút load thêm
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom, rgba(248, 250, 252, 0.95), transparent);
+}
+
+// Nút load thêm tin nhắn cũ
+.load-more-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #3b82f6;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.loading-state,
+.loading-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #6b7280;
+  gap: 12px;
+
+  span {
+    font-size: 14px;
+  }
+}
+
+.no-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #9ca3af;
+  gap: 12px;
+
+  svg {
+    color: #d1d5db;
+  }
+
+  span {
+    font-size: 14px;
+  }
+}
+
 .customer-chat-panel {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 600px;
+  width: 750px;
   height: 500px;
   background: white;
   border-radius: 12px;
@@ -15,7 +126,7 @@
   flex-direction: column;
   z-index: 1000;
   overflow: hidden;
-  
+
   // Animation cho hiển thị/ẩn panel
   transform: translateY(0) scale(1);
   opacity: 1;
@@ -37,66 +148,6 @@
     height: 70vh;
     bottom: 10px;
     right: 10px;
-  }
-}
-
-.customer-chat-minimized {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-  
-  // Animation cho minimize button
-  transform: scale(1);
-  opacity: 1;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.chat-button-enter {
-    transform: scale(0);
-    opacity: 0;
-  }
-
-  &.chat-button-exit {
-    transform: scale(0);
-    opacity: 0;
-  }
-
-  .minimize-btn {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border: none;
-    border-radius: 50%;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    transition: all 0.3s ease;
-    position: relative;
-
-    &:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
-    }
-
-    .unread-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: #ef4444;
-      color: white;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      border: 2px solid white;
-    }
   }
 }
 
@@ -179,7 +230,7 @@
 
 // Customer List
 .customer-list {
-  width: 200px;
+  width: 250px;
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -188,12 +239,44 @@
   .customer-list-header {
     padding: 12px 16px;
     border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
     h4 {
       font-size: 14px;
       font-weight: 600;
       color: #374151;
       margin: 0;
+    }
+
+    .refresh-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 6px;
+      background: #f3f4f6;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: #e5e7eb;
+        color: #374151;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
     }
   }
 
@@ -221,6 +304,7 @@
     }
 
     .customer-item {
+      position: relative;
       display: flex;
       align-items: center;
       padding: 12px 16px;
@@ -258,7 +342,7 @@
         min-width: 0;
 
         .customer-name {
-          font-size: 14px;
+          font-size: 12px;
           font-weight: 600;
           color: #374151;
           display: flex;
@@ -267,11 +351,14 @@
           margin-bottom: 2px;
 
           .unread-count {
+            position: absolute;
+            top: 2px;
+            right: 3px;
             background: #ef4444;
             color: white;
             border-radius: 10px;
             padding: 2px 6px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             min-width: 18px;
             text-align: center;
@@ -369,6 +456,61 @@
     padding: 16px;
     border-top: 1px solid #e2e8f0;
     background: white;
+
+    // Reply Preview
+    .reply-preview {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 8px;
+
+      .reply-preview-content {
+        flex: 1;
+
+        .reply-info {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 4px;
+
+          .reply-label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+          }
+        }
+
+        .reply-message {
+          font-size: 13px;
+          color: #475569;
+          line-height: 1.4;
+        }
+      }
+
+      .reply-cancel-btn {
+        width: 20px;
+        height: 20px;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        cursor: pointer;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+
+        &:hover {
+          background: #e2e8f0;
+          color: #374151;
+        }
+      }
+    }
 
     .input-container {
       display: flex;
@@ -478,13 +620,19 @@
         .message-header {
           display: flex;
           align-items: center;
-          gap: 8px;
+          justify-content: space-between;
           margin-bottom: 4px;
 
-          .sender-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: #374151;
+          .sender-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            .sender-name {
+              font-size: 12px;
+              font-weight: 600;
+              color: #374151;
+            }
           }
 
           .message-time {
@@ -500,14 +648,101 @@
           background: white;
           border: 1px solid #e2e8f0;
           border-radius: 12px 12px 12px 4px;
-          padding: 8px 12px;
+          padding: 10px 14px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          position: relative;
+
+          // Reply Reference (hiển thị tin nhắn được reply)
+          .reply-reference {
+            background: #f8fafc;
+            border-left: 3px solid #3b82f6;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+
+            .reply-reference-header {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              margin-bottom: 4px;
+
+              .reply-icon {
+                color: #3b82f6;
+                font-weight: bold;
+              }
+
+              .reply-to-label {
+                color: #64748b;
+                font-weight: 500;
+              }
+
+              .reply-to-sender {
+                color: #3b82f6;
+                font-weight: 600;
+              }
+            }
+
+            .reply-reference-text {
+              color: #64748b;
+              line-height: 1.4;
+              font-style: italic;
+            }
+          }
 
           .message-text {
             color: #374151;
             font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.5;
             word-wrap: break-word;
+            white-space: pre-wrap; // Giữ line breaks
+
+            // Xử lý text selection
+            &::selection {
+              background: rgba(59, 130, 246, 0.2);
+            }
+          }
+
+          // Message Actions (Reply button)
+          .message-actions {
+            position: absolute;
+            bottom: 20%;
+            right: -30px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            border-radius: 50%;
+
+            .reply-btn-icon {
+              width: 24px;
+              height: 24px;
+              border: none;
+              background: transparent;
+              color: #9ca3af;
+              cursor: pointer;
+              border-radius: 4px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.2s ease;
+              opacity: 0.7;
+
+              &:hover {
+                background: #f3f4f6;
+                color: #3b82f6;
+                opacity: 1;
+                transform: scale(1.1);
+              }
+
+              &:active {
+                transform: scale(0.95);
+              }
+
+              svg {
+                width: 16px;
+                height: 16px;
+              }
+            }
           }
         }
       }
@@ -547,14 +782,58 @@
         .message-bubble {
           background: #3b82f6;
           border-radius: 12px 12px 4px 12px;
-          padding: 8px 12px;
+          padding: 10px 14px;
           box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+
+          // Reply Reference cho staff message
+          .reply-reference {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid rgba(255, 255, 255, 0.6);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+
+            .reply-reference-header {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              margin-bottom: 4px;
+
+              .reply-icon {
+                color: rgba(255, 255, 255, 0.9);
+                font-weight: bold;
+              }
+
+              .reply-to-label {
+                color: rgba(255, 255, 255, 0.7);
+                font-weight: 500;
+              }
+
+              .reply-to-sender {
+                color: rgba(255, 255, 255, 0.9);
+                font-weight: 600;
+              }
+            }
+
+            .reply-reference-text {
+              color: rgba(255, 255, 255, 0.8);
+              line-height: 1.4;
+              font-style: italic;
+            }
+          }
 
           .message-text {
             color: white;
             font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.5;
             word-wrap: break-word;
+            white-space: pre-wrap; // Giữ line breaks
+
+            // Xử lý text selection
+            &::selection {
+              background: rgba(255, 255, 255, 0.3);
+            }
           }
 
           .message-footer {
@@ -607,10 +886,10 @@
 // Floating Chat Button cho StaffDashboard
 .floating-chat-button {
   position: fixed;
-  bottom: 24px;
-  left: 24px;
+  bottom: 7px;
+  right: 15px;
   z-index: 999;
-  
+
   // Animation cho floating button
   transform: scale(1);
   opacity: 1;
@@ -627,8 +906,8 @@
   }
 
   .chat-button {
-    width: 56px;
-    height: 56px;
+    width: 50px;
+    height: 50px;
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     border: none;
     border-radius: 50%;

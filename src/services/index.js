@@ -10,6 +10,10 @@ export * from "./service/favoriteService";
 export * from "./service/feedbackService";
 export * from "./service/zoneService";
 export * from "./service/chatbotService";
+export * from "./service/chatService";
+
+// Export API services
+export * from "./api/chatApi";
 
 // Export auth services
 export * from "./auth/authApi";

@@ -10,7 +10,7 @@ import { useAuth } from "../hooks/auth/useAuth";
 const USE_WEBSOCKET = false; // import.meta.env.VITE_USE_WEBSOCKET === "true";
 
 export const useOptimizedOrders = (initialTab = "processing") => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const [selectedTab, setSelectedTab] = useState(initialTab);
   const [orders, setOrders] = useState({
@@ -75,6 +75,12 @@ export const useOptimizedOrders = (initialTab = "processing") => {
 
   // Fetch initial data
   const fetchInitialData = useCallback(async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      setError("Vui lòng đăng nhập để tiếp tục");
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -90,11 +96,17 @@ export const useOptimizedOrders = (initialTab = "processing") => {
       console.error("Error fetching initial data:", error);
       handleError("Có lỗi xảy ra khi tải dữ liệu");
     }
-  }, [updateOrdersData, handleError]);
+  }, [updateOrdersData, handleError, isAuthenticated]);
 
   // Refresh data
   const refreshData = useCallback(
     async (force = false) => {
+      if (!isAuthenticated) {
+        setLoading(false);
+        setError("Vui lòng đăng nhập để tiếp tục");
+        return;
+      }
+
       try {
         setLoading(true); // Bắt đầu loading ngay lập tức
         setError(null); // Clear error trước đó
@@ -114,7 +126,7 @@ export const useOptimizedOrders = (initialTab = "processing") => {
         setLoading(false); // Kết thúc loading
       }
     },
-    [updateOrdersData, handleError]
+    [updateOrdersData, handleError, isAuthenticated]
   );
 
   // Setup WebSocket real-time updates
@@ -274,15 +286,78 @@ export const useOptimizedOrders = (initialTab = "processing") => {
     cacheUnsubscribers.current = [unsubscribeAll, unsubscribeOrderUpdated];
   }, [updateOrdersData]);
 
+  // Theo dõi authentication state
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Cleanup khi user logout
+      setOrders({
+        processing: [],
+        confirmed: [],
+        delivering: [],
+        completed: [],
+        cancelled: [],
+      });
+      setStats({
+        processingOrders: 0,
+        confirmedOrders: 0,
+        deliveringOrders: 0,
+        completedOrders: 0,
+        cancelledOrders: 0,
+      });
+      setLoading(false);
+      setError("Vui lòng đăng nhập để tiếp tục");
+      setWebSocketConnected(false);
+      
+      // Cleanup WebSocket và cache listeners
+      wsUnsubscribers.current.forEach((unsubscribe) => unsubscribe?.());
+      cacheUnsubscribers.current.forEach((unsubscribe) => unsubscribe?.());
+      
+      if (USE_WEBSOCKET) {
+        orderWebSocketClient.disconnect();
+      }
+      
+      wsUnsubscribers.current = [];
+      cacheUnsubscribers.current = [];
+    }
+  }, [isAuthenticated]);
+  
+  // Lắng nghe auth-logout event
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      // Cleanup ngay lập tức
+      setOrders({
+        processing: [],
+        confirmed: [],
+        delivering: [],
+        completed: [],
+        cancelled: [],
+      });
+      setStats({
+        processingOrders: 0,
+        confirmedOrders: 0,
+        deliveringOrders: 0,
+        completedOrders: 0,
+        cancelledOrders: 0,
+      });
+      setLoading(false);
+      setWebSocketConnected(false);
+    };
+    
+    window.addEventListener('auth-logout', handleAuthLogout);
+    return () => window.removeEventListener('auth-logout', handleAuthLogout);
+  }, []);
+
   // Initialize
   useEffect(() => {
-    fetchInitialData();
-    setupCacheListeners();
-    setupWebSocket();
+    if (isAuthenticated) {
+      fetchInitialData();
+      setupCacheListeners();
+      setupWebSocket();
+    }
 
     return () => {
       // Cleanup WebSocket
-      wsUnsubscribers.current.forEach((unsubscribe) => unsubscribe());
+      wsUnsubscribers.current.forEach((unsubscribe) => unsubscribe?.());
       if (USE_WEBSOCKET) {
         orderWebSocketClient.disconnect();
       }

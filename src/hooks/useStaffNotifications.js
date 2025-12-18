@@ -158,7 +158,6 @@ export const useStaffNotifications = () => {
 
       if (result.success) {
         const apiNotifications = result.data || [];
-        console.log("📡 API Notifications loaded:", apiNotifications.length);
 
         // MERGE với WebSocket notifications thay vì replace
         setNotifications((currentNotifications) => {
@@ -168,24 +167,11 @@ export const useStaffNotifications = () => {
               n.id && (n.id.toString().startsWith("staff_") || n.id.toString().startsWith("ws_"))
           );
 
-          console.log("� Merging API with current WebSocket notifications:", {
-            apiCount: apiNotifications.length,
-            wsCount: currentWebSocketNotifications.length,
-            totalCurrent: currentNotifications.length,
-          });
-
           // Merge: WebSocket notifications ở trên, API notifications ở dưới
           const mergedNotifications = [...currentWebSocketNotifications, ...apiNotifications].slice(
             0,
             MAX_NOTIFICATIONS
           );
-
-          console.log("✅ Merged notifications:", {
-            totalCount: mergedNotifications.length,
-            firstIsWebSocket:
-              mergedNotifications[0]?.id?.toString().startsWith("ws_") ||
-              mergedNotifications[0]?.id?.toString().startsWith("staff_"),
-          });
 
           return mergedNotifications;
         });
@@ -796,32 +782,13 @@ export const useStaffNotifications = () => {
   // Computed values - sử dụng useMemo để tối ưu performance
   const unreadCount = useMemo(() => {
     const count = notifications.filter((n) => !n.read).length;
-    console.log("🧮 Unread count computed:", {
-      count,
-      totalNotifications: notifications.length,
-      forceUpdate,
-    });
     return count;
   }, [notifications, forceUpdate]);
 
   const highPriorityUnreadCount = useMemo(() => {
     const count = notifications.filter((n) => !n.read && n.priority === "high").length;
-    console.log("🔥 High priority unread count computed:", { count, forceUpdate });
     return count;
   }, [notifications, forceUpdate]);
-
-  // Debug effect để track state changes
-  useEffect(() => {
-    console.log("🔔 StaffNotifications State Update:", {
-      notificationsCount: notifications.length,
-      unreadCount,
-      highPriorityUnreadCount,
-      isShaking,
-      firstNotification: notifications[0]?.title || "None",
-      lastUpdated: new Date().toLocaleTimeString(),
-      allNotificationIds: notifications.map((n) => n.id).slice(0, 3), // Show first 3 IDs
-    });
-  }, [notifications, unreadCount, highPriorityUnreadCount, isShaking]);
 
   // Get notifications by category
   const getNotificationsByCategory = useCallback(

@@ -65,21 +65,6 @@ const StaffNotificationBell = ({
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Debug effect để track props changes
-  useEffect(() => {
-    console.log("🔔 StaffNotificationBell Render:", {
-      notificationsCount: notifications.length,
-      unreadCount,
-      highPriorityUnreadCount,
-      isShaking,
-      loading,
-      timestamp: new Date().toLocaleTimeString(),
-      firstNotificationId: notifications[0]?.id || "None",
-      firstNotificationRead: notifications[0]?.read,
-      firstNotificationTitle: notifications[0]?.title || "None",
-    });
-  }, [notifications, unreadCount, highPriorityUnreadCount, isShaking, loading]);
-
   // Animation effect khi có thông báo mới - chỉ shake khi thực sự có thông báo chưa đọc
   useEffect(() => {
     if (isShaking && unreadCount > 0) {

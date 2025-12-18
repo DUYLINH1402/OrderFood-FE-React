@@ -21,6 +21,7 @@ import {
 // Components
 import MessageItem from "./MessageItem";
 import QuickReplies from "./QuickReplies";
+import { useConfirm } from "../ConfirmModal";
 
 // Styles
 import "../../assets/styles/components/Chatbot.scss";
@@ -33,6 +34,9 @@ const Chatbot = ({ onClose }) => {
   const sessionId = useSelector(selectSessionId);
   const error = useSelector(selectChatbotError);
   const settings = useSelector(selectChatbotSettings);
+
+  // Confirm modal hook
+  const confirm = useConfirm();
 
   // Local state
   const [input, setInput] = useState("");
@@ -147,10 +151,8 @@ const Chatbot = ({ onClose }) => {
   };
 
   const clearCurrentSession = () => {
-    if (window.confirm("Bạn có chắc muốn xóa cuộc hội thoại hiện tại?")) {
-      dispatch(clearSession());
-      dispatch(initializeSession({ userId: user?.id }));
-    }
+    dispatch(clearSession());
+    dispatch(initializeSession({ userId: user?.id }));
   };
 
   return (

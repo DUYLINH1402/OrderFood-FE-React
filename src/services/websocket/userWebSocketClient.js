@@ -107,7 +107,6 @@ class UserWebSocketClient {
         // Đặt timeout cho kết nối
         setTimeout(() => {
           if (!this.connected) {
-            console.error(" Timeout khi kết nối User WebSocket");
             reject(new Error("Connection timeout after 15 seconds"));
           }
         }, 15000);
@@ -149,18 +148,12 @@ class UserWebSocketClient {
       return;
     }
 
-    // Subscribe vào queue riêng của user
+    // Subscribe vào queue riêng của user cho order updates
     // Backend gửi tới: /user/{userId}/queue/order-updates
     const orderUpdatesDestination = `/user/${this.userId}/queue/order-updates`;
 
     this.subscribe(orderUpdatesDestination, "orderUpdate", (message) => {
       try {
-        console.log("Nhận được thông báo order update:", {
-          destination: orderUpdatesDestination,
-          body: message.body,
-          headers: message.headers,
-        });
-
         if (!message.body) {
           console.warn("Empty order update message body");
           return;
@@ -185,7 +178,9 @@ class UserWebSocketClient {
         this.notifyHandlers("orderUpdate", { message: message.body, type: "raw" });
       }
     });
-    console.log(" Đã subscribe vào tất cả topics cho user:", this.userId);
+
+    // Subscribe vào chat messages từ staff
+    this.subscribeToChatMessages();
   }
 
   /**
@@ -272,12 +267,6 @@ class UserWebSocketClient {
 
     try {
       const subscription = this.stompClient.subscribe(destination, (message) => {
-        console.log(`Nhận message từ ${destination}:`, {
-          body: message.body,
-          headers: message.headers,
-          timestamp: new Date().toISOString(),
-        });
-
         // Gọi callback được truyền vào
         if (typeof callback === "function") {
           callback(message);
@@ -309,7 +298,6 @@ class UserWebSocketClient {
     if (this.messageHandlers.has(messageType)) {
       const existingHandlers = this.messageHandlers.get(messageType);
       if (existingHandlers.has(handler)) {
-        console.log(`Handler cho ${messageType} đã tồn tại, bỏ qua...`);
         return () => {}; // Return empty cleanup function
       }
     }
@@ -344,40 +332,125 @@ class UserWebSocketClient {
           console.error(`Lỗi trong handler ${messageType}:`, error);
         }
       });
-    } else {
-      console.log(`Không có handler nào cho: ${messageType}`);
     }
   }
 
   /**
    * Gửi tin nhắn chat tới staff
+   * @param {string|object} messageOrOptions - Nội dung tin nhắn hoặc object options chứa message và thông tin reply
+   * @returns {boolean} True nếu gửi thành công
    */
-  chatToStaff(message) {
+  chatToStaff(messageOrOptions) {
     if (!this.connected) {
       console.warn("Chưa kết nối WebSocket");
       return false;
     }
 
+    if (!this.token || !this.userId) {
+      console.warn("Thiếu thông tin xác thực để gửi chat");
+      return false;
+    }
+
+    // Xử lý cả 2 trường hợp: string message hoặc object options
+    let message, replyToMessageId, replyContext;
+
+    if (typeof messageOrOptions === "string") {
+      message = messageOrOptions;
+    } else if (typeof messageOrOptions === "object") {
+      message = messageOrOptions.message;
+      replyToMessageId = messageOrOptions.replyToMessageId;
+      replyContext = messageOrOptions.replyContext;
+    }
+
+    if (!message || message.trim().length === 0) {
+      console.warn("Tin nhắn không được để trống");
+      return false;
+    }
+
     try {
+      // Tạo payload gồm tin nhắn, userId và token
+      const chatPayload = {
+        message: message.trim(),
+        userId: this.userId,
+        token: this.token,
+        timestamp: new Date().toISOString(),
+        type: "USER_TO_STAFF",
+      };
+
+      // Thêm thông tin reply nếu có
+      if (replyToMessageId) {
+        chatPayload.replyToMessageId = replyToMessageId;
+      }
+
+      if (replyContext) {
+        chatPayload.replyContext = {
+          originalText: replyContext.text || replyContext.originalText,
+          originalSender: replyContext.senderName || replyContext.originalSender || "Nhân viên",
+          originalTimestamp: replyContext.timestamp || replyContext.originalTimestamp,
+        };
+      }
+
       this.stompClient.publish({
-        destination: "/app/user/chat-to-staff",
-        body: message,
+        destination: "/app/chat/user-to-staff",
+        body: JSON.stringify(chatPayload),
         headers: {
-          "Content-Type": "text/plain",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
         },
       });
+
       return true;
     } catch (error) {
       console.error("Lỗi khi gửi tin nhắn chat:", error);
       return false;
     }
   }
+
+  /**
+   * Subscribe vào chat messages từ staff
+   */
+  subscribeToChatMessages() {
+    if (!this.connected || !this.userId) {
+      return;
+    }
+
+    const chatDestination = `/user/${this.userId}/queue/chat-messages`;
+
+    this.subscribe(chatDestination, "chatMessage", (message) => {
+      try {
+        if (!message.body) {
+          console.warn("Empty chat message body");
+          return;
+        }
+
+        let data;
+        if (message.body.trim().startsWith("{")) {
+          data = JSON.parse(message.body);
+        } else {
+          data = { message: message.body, type: "raw" };
+        }
+
+        // Thêm timestamp nếu chưa có
+        if (!data.timestamp) {
+          data.timestamp = new Date().toISOString();
+        }
+
+        this.notifyHandlers("chatMessage", data);
+      } catch (error) {
+        console.error("Lỗi parse chat message:", error);
+        this.notifyHandlers("chatMessage", {
+          message: message.body,
+          type: "raw",
+          error: error.message,
+        });
+      }
+    });
+  }
   /**
    * Lên lịch reconnect
    */
   scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error("Đã hết số lần thử reconnect");
       return;
     }
 
@@ -385,7 +458,6 @@ class UserWebSocketClient {
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
     setTimeout(() => {
       if (!this.connected && this.userId && this.token) {
-        console.log(`Đang thử reconnect lần ${this.reconnectAttempts}`);
         this.connect(this.userId, this.token).catch((error) => {
           console.error("Reconnect thất bại:", error);
         });
@@ -400,7 +472,6 @@ class UserWebSocketClient {
     this.subscriptions.forEach((subscription, key) => {
       try {
         subscription.unsubscribe();
-        console.log(`Đã unsubscribe: ${key}`);
       } catch (error) {
         console.error(`Lỗi khi unsubscribe ${key}:`, error);
       }
@@ -420,7 +491,6 @@ class UserWebSocketClient {
       this.token = null;
       this.reconnectAttempts = 0;
       this.messageHandlers.clear();
-      console.log("Đã ngắt kết nối User WebSocket");
     }
   }
 

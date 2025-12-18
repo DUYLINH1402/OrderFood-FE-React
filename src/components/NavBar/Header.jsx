@@ -26,8 +26,6 @@ const Header = () => {
   // Lấy trạng thái WebSocket từ context (đồng bộ với Layout)
   const { connected: wsConnected, addMessageHandler } = useUserWebSocketContext();
   const {
-    unreadCount,
-
     requestNotificationPermission,
     addOrderConfirmedNotification,
     addOrderInDeliveryNotification,
@@ -234,11 +232,6 @@ const Header = () => {
                         onClick={() => setDropdownOpen(false)}
                         className="px-4 py-3 hover:bg-gray-50 transition text-gray-700  sm:text-base text-sm">
                         Đơn hàng của tôi
-                        {unreadCount > 0 && (
-                          <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            {unreadCount}
-                          </span>
-                        )}
                       </Link>
                       <div className="border-t border-gray-100 my-1" />
                       <button

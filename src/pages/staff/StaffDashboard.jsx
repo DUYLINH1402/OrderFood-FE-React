@@ -5,7 +5,10 @@ import { Pagination } from "antd";
 import { useAuth, usePermissions } from "../../hooks/auth/useAuth";
 import { useOptimizedOrders } from "../../hooks/useOptimizedOrders";
 import { useStaffOrderWebSocket } from "../../hooks/useStaffOrderWebSocket";
+import { useStaffChatWebSocket } from "../../hooks/useStaffChatWebSocket";
 import { useStaffNotifications } from "../../hooks/useStaffNotifications";
+import { useAuthRedirect } from "../../hooks/useAuthRedirect";
+import { useGlobalAuthWatch } from "../../hooks/useGlobalAuthWatch";
 import StaffOrderDetailModal from "./modal/StaffOrderDetailModal";
 import OrderActionButtons from "./util/OrderActionButtons";
 import CancelOrderModal from "./modal/CancelOrderModal";
@@ -21,13 +24,30 @@ import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../../constants/orderConstant
 import { searchStaffOrderByCode } from "../../services/service/staffOrderService";
 import SpinnerCube from "../../components/Skeleton/SpinnerCube";
 import CustomerChatPanel from "./chat/CustomerChatPanel";
-import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import "../../assets/styles/components/CustomerChatPanel.scss";
 
 const StaffDashboard = () => {
   const { userRole } = useAuth();
   const { hasPermission } = usePermissions();
   const { user: userFromRedux } = useSelector((state) => state.auth);
+
+  // Sử dụng hook để tự động redirect khi token hết hạn
+  const isAuthenticated = useAuthRedirect();
+
+  // Theo dõi authentication state toàn cục
+  useGlobalAuthWatch();
+
+  // Early return nếu chưa authenticated để tránh render component và gọi API
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <SpinnerCube />
+          <p className="mt-4 text-gray-600">Đang kiểm tra phiên đăng nhập...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Sử dụng optimized orders hook
   const {
@@ -40,9 +60,6 @@ const StaffDashboard = () => {
     lastUpdated,
     refreshData,
     updateOrderStatus: optimizedUpdateOrderStatus,
-    connectionStatus,
-    cacheInfo,
-    webSocketConnected, // Add this to track WebSocket connection
   } = useOptimizedOrders("processing");
 
   // Sử dụng Staff Order WebSocket hook
@@ -55,9 +72,131 @@ const StaffDashboard = () => {
     status: wsStatus,
   } = useStaffOrderWebSocket();
 
+  // Sử dụng Staff Chat WebSocket hook
+  const {
+    connected: chatConnected,
+    connecting: chatConnecting,
+    error: chatError,
+    addMessageHandler: addChatMessageHandler,
+    sendMessageToCustomer,
+    getOnlineStaff,
+    service: chatService,
+  } = useStaffChatWebSocket();
+
   // Sử dụng staff notifications hook mới với localStorage và API sync
   const { addWebSocketNotification, addNewOrderNotification, addOrderStatusNotification } =
     useStaffNotifications();
+
+  // UI State
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderDetail, setShowOrderDetail] = useState(false);
+  const [searchCode, setSearchCode] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+
+  // State cho Customer Chat Panel - load từ localStorage nếu có
+  const [customerChatPanel, setCustomerChatPanel] = useState(() => {
+    try {
+      const savedState = localStorage.getItem("staff_chat_panel_state");
+      const savedUnreadData = localStorage.getItem("staff_chat_unread_data");
+
+      let initialState = {
+        isOpen: true,
+        isMinimized: true,
+        unreadCount: 0,
+      };
+
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        initialState = {
+          isOpen: parsed.isOpen ?? true,
+          isMinimized: parsed.isMinimized ?? true,
+          unreadCount: parsed.unreadCount ?? 0,
+        };
+      }
+
+      // Restore unread count từ localStorage nếu có và còn fresh (< 5 phút)
+      if (savedUnreadData) {
+        const unreadData = JSON.parse(savedUnreadData);
+        const now = Date.now();
+        const fiveMinutes = 5 * 60 * 1000;
+
+        if (unreadData.timestamp && now - unreadData.timestamp < fiveMinutes) {
+          initialState.unreadCount = Math.max(
+            initialState.unreadCount,
+            unreadData.totalUnread || 0
+          );
+        }
+      }
+
+      return initialState;
+    } catch (error) {
+      console.error("Lỗi khi load chat panel state từ localStorage:", error);
+      return {
+        isOpen: true,
+        isMinimized: true,
+        unreadCount: 0,
+      };
+    }
+  });
+
+  // State cho phone confirmation modal
+  const [phoneConfirmModal, setPhoneConfirmModal] = useState({
+    show: false,
+    orderCode: null,
+    orderInfo: null,
+  });
+
+  // State cho cancel modal
+  const [cancelModal, setCancelModal] = useState({
+    show: false,
+    orderId: null,
+    orderCode: null,
+  });
+  const [phoneConfirmLoading, setPhoneConfirmLoading] = useState(false);
+
+  // State cho delivery confirmation modal
+  const [deliveryModal, setDeliveryModal] = useState({
+    show: false,
+    orderCode: null,
+    orderInfo: null,
+  });
+  const [deliveryConfirmModal, setDeliveryConfirmModal] = useState({
+    show: false,
+    orderCode: null,
+    orderInfo: null,
+  });
+  const [deliveryConfirmLoading, setDeliveryConfirmLoading] = useState(false);
+
+  // State cho complete delivery confirmation modal
+  const [completeDeliveryModal, setCompleteDeliveryModal] = useState({
+    show: false,
+    orderCode: null,
+    orderInfo: null,
+  });
+  const [completeDeliveryLoading, setCompleteDeliveryLoading] = useState(false);
+
+  // Real-time notification states
+  const [notifications, setNotifications] = useState({
+    newOrders: 0,
+    statusUpdates: 0,
+    messageCount: 0,
+  });
+
+  // State cho notification modal
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [selectedNotificationOrder, setSelectedNotificationOrder] = useState(null);
+
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5); // 5 đơn hàng mỗi trang
+
+  // ===========================================
+  // CALLBACKS AND HANDLERS
+  // ===========================================
 
   // Xử lý đơn hàng mới từ WebSocket
   const handleNewOrder = useCallback(
@@ -146,73 +285,132 @@ const StaffDashboard = () => {
     }
   }, [wsConnected, handleNewOrder, handleOrderStatusUpdate, handlePong, addMessageHandler]);
 
+  // Xử lý tin nhắn từ khách hàng
+  const handleCustomerMessage = useCallback((messageData) => {
+    // KHÔNG tự động tăng unread count ở đây
+    // CustomerChatPanel sẽ tự xử lý unread count qua WebSocket
+
+    // Chỉ hiển thị toast notification
+    const customerName =
+      messageData.userName || messageData.customerName || messageData.userPhone || "Khách hàng";
+    const messageText = messageData.message || messageData.content || "Tin nhắn mới";
+
+    toast.info(`💬 ${customerName}: ${messageText.substring(0, 50)}...`, {
+      position: "top-right",
+      autoClose: 5000,
+      onClick: () => {
+        setCustomerChatPanel((prev) => ({
+          ...prev,
+          isOpen: true,
+          isMinimized: false,
+        }));
+      },
+    });
+  }, []);
+
+  // Xử lý các loại tin nhắn chat khác
+  const handleChatError = useCallback((errorData) => {
+    console.error("Lỗi chat:", errorData);
+    toast.error(errorData.message || "Lỗi trong hệ thống chat");
+  }, []);
+
+  const handleOnlineStaffList = useCallback((staffList) => {}, []);
+
+  // Handle unread count change từ chat panel
+  const handleUnreadCountChange = useCallback((count) => {
+    setCustomerChatPanel((prev) => ({ ...prev, unreadCount: count }));
+  }, []);
+
+  // Lưu chat panel state vào localStorage mỗi khi thay đổi
+  useEffect(() => {
+    // Chỉ lưu khi customerChatPanel đã được khởi tạo
+    if (customerChatPanel) {
+      try {
+        localStorage.setItem("staff_chat_panel_state", JSON.stringify(customerChatPanel));
+      } catch (error) {
+        console.error("Lỗi khi lưu chat panel state:", error);
+      }
+    }
+  }, [customerChatPanel]);
+
+  // Load initial unread count khi component mount (trước cả khi WebSocket connect)
+  useEffect(() => {
+    const loadInitialUnreadCount = async () => {
+      try {
+        const { chatApi } = await import("../../services/api/chatApi");
+        // LUÔN gọi getStaffUnreadCount() để lấy tổng số tin nhắn chưa đọc từ TẤT CẢ user
+        const totalUnreadCount = await chatApi.getStaffUnreadCount();
+        // LUÔN ưu tiên API count (đây là source of truth từ server)
+        setCustomerChatPanel((prev) => {
+          return { ...prev, unreadCount: totalUnreadCount };
+        });
+      } catch (error) {
+        console.error("Lỗi khi load initial unread count:", error);
+      }
+    };
+
+    if (userFromRedux) {
+      loadInitialUnreadCount();
+    }
+  }, [userFromRedux]); // Chỉ chạy một lần khi user đã login
+
+  // Handle chat panel minimize/expand - giữ nguyên unreadCount
+  const handleChatPanelMinimize = useCallback(() => {
+    setCustomerChatPanel((prev) => ({
+      ...prev,
+      isMinimized: !prev.isMinimized,
+      isOpen: true, // Luôn giữ isOpen = true để WebSocket handlers hoạt động
+    }));
+  }, []);
+
+  // Handle floating chat button click - expand chat và force sync
+  // const handleChatButtonClick = useCallback(() => {
+  //   setCustomerChatPanel((prev) => ({ ...prev, isOpen: true, isMinimized: false }));
+
+  // }, []);
+
+  // Setup Chat WebSocket handlers - luôn lắng nghe tin nhắn
+  useEffect(() => {
+    if (chatConnected && addChatMessageHandler) {
+      // Đăng ký handler cho tin nhắn từ khách hàng
+      const unsubscribeCustomerMessage = addChatMessageHandler(
+        "customerMessage",
+        handleCustomerMessage
+      );
+
+      // Thêm handler cho userChatMessage nữa để đảm bảo
+      const unsubscribeUserChatMessage = addChatMessageHandler(
+        "userChatMessage",
+        handleCustomerMessage
+      );
+
+      // Đăng ký handler cho lỗi chat
+      const unsubscribeChatError = addChatMessageHandler("chatError", handleChatError);
+
+      // Đăng ký handler cho danh sách staff online
+      const unsubscribeOnlineStaff = addChatMessageHandler(
+        "onlineStaffList",
+        handleOnlineStaffList
+      );
+
+      return () => {
+        unsubscribeCustomerMessage?.();
+        unsubscribeUserChatMessage?.();
+        unsubscribeChatError?.();
+        unsubscribeOnlineStaff?.();
+      };
+    }
+  }, [
+    chatConnected,
+    addChatMessageHandler,
+    handleCustomerMessage,
+    handleChatError,
+    handleOnlineStaffList,
+  ]);
   // Reset trang về 1 khi chuyển tab
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedTab]);
-
-  // UI State
-  const [cancelReason, setCancelReason] = useState("");
-  const [cancelLoading, setCancelLoading] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showOrderDetail, setShowOrderDetail] = useState(false);
-  const [searchCode, setSearchCode] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState(null);
-
-  // State cho Customer Chat Panel
-  const [customerChatPanel, setCustomerChatPanel] = useState({
-    isOpen: false,
-    isMinimized: false,
-    unreadCount: 0,
-  });
-
-  // State cho phone confirmation modal
-  const [phoneConfirmModal, setPhoneConfirmModal] = useState({
-    show: false,
-    orderCode: null,
-    orderInfo: null,
-  });
-
-  // State cho cancel modal
-  const [cancelModal, setCancelModal] = useState({
-    show: false,
-    orderId: null,
-    orderCode: null,
-  });
-  const [phoneConfirmLoading, setPhoneConfirmLoading] = useState(false);
-
-  // State cho delivery confirmation modal
-  const [deliveryConfirmModal, setDeliveryConfirmModal] = useState({
-    show: false,
-    orderCode: null,
-    orderInfo: null,
-  });
-  const [deliveryConfirmLoading, setDeliveryConfirmLoading] = useState(false);
-
-  // State cho complete delivery confirmation modal
-  const [completeDeliveryModal, setCompleteDeliveryModal] = useState({
-    show: false,
-    orderCode: null,
-    orderInfo: null,
-  });
-  const [completeDeliveryLoading, setCompleteDeliveryLoading] = useState(false);
-
-  // Real-time notification states
-  const [notifications, setNotifications] = useState({
-    newOrders: 0,
-    statusUpdates: 0,
-    messageCount: 0,
-  });
-
-  // State cho notification modal
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [selectedNotificationOrder, setSelectedNotificationOrder] = useState(null);
-
-  // State cho phân trang
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5); // 5 đơn hàng mỗi trang
 
   // Helper function để lấy ID từ order
   const getOrderId = (order) => order.orderId || order.id;
@@ -593,12 +791,7 @@ const StaffDashboard = () => {
               <AudioPermissionButton />
 
               {/* Notification Bell */}
-              <StaffNotificationBellContainer
-                onNotificationClick={handleNotificationClick}
-                onRefreshNotifications={() => {
-                  console.log("Staff notifications refreshed from API");
-                }}
-              />
+              <StaffNotificationBellContainer onNotificationClick={handleNotificationClick} />
 
               {/* WebSocket Status Indicators */}
               <WebSocketStatusIndicator
@@ -1125,42 +1318,12 @@ const StaffDashboard = () => {
       <CustomerChatPanel
         isOpen={customerChatPanel.isOpen}
         isMinimized={customerChatPanel.isMinimized}
-        onClose={() =>
-          setCustomerChatPanel((prev) => ({ ...prev, isOpen: false, isMinimized: false }))
-        }
-        onMinimize={() =>
-          setCustomerChatPanel((prev) => ({ ...prev, isMinimized: !prev.isMinimized }))
-        }
-        staffWebSocketClient={{
-          isConnected: () => wsConnected,
-          addMessageHandler: addMessageHandler,
-          sendMessageToCustomer: (customerId, message) => {
-            // Gửi tin nhắn tới customer qua WebSocket
-            // Bạn cần implement method này trong Staff WebSocket client
-            console.log(`Sending message to customer ${customerId}:`, message);
-            return true; // placeholder
-          },
-        }}
+        onMinimize={handleChatPanelMinimize}
+        onUnreadCountChange={handleUnreadCountChange}
+        staffWebSocketClient={chatService}
+        isConnected={chatConnected}
+        serverUnreadCount={customerChatPanel.unreadCount} // Truyền server count xuống Badge
       />
-
-      {/* Floating Chat Button */}
-      {!customerChatPanel.isOpen && (
-        <div className={`floating-chat-button ${customerChatPanel.isOpen ? "button-exit" : ""}`}>
-          <button
-            onClick={() =>
-              setCustomerChatPanel((prev) => ({ ...prev, isOpen: true, isMinimized: false }))
-            }
-            className="chat-button"
-            title="Mở chat khách hàng">
-            <ChatBubbleLeftRightIcon className="w-6 h-6" />
-            {customerChatPanel.unreadCount > 0 && (
-              <span className="unread-badge">
-                {customerChatPanel.unreadCount > 99 ? "99+" : customerChatPanel.unreadCount}
-              </span>
-            )}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

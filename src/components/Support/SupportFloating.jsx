@@ -5,10 +5,8 @@ import Chatbot from "../Chatbot/Chatbot";
 import StaffChat from "./StaffChat";
 import { ChatBubbleLeftRightIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { FaFacebookMessenger } from "react-icons/fa";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeadset } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
+import { useUserChat } from "../../hooks/useUserChat";
 
 const SupportFloating = () => {
   // Lấy thông tin user để kiểm tra role
@@ -18,8 +16,9 @@ const SupportFloating = () => {
   if (user?.roleCode === "ROLE_STAFF" || user?.roleCode === "ROLE_ADMIN") {
     return null;
   }
-  // State để quản lý hiển thị menu hỗ trợ
-  const [isSupportMenuOpen, setIsSupportMenuOpen] = useState(false);
+
+  // Lấy unread count và markAllAsRead từ useUserChat hook
+  const { unreadCount, markAllAsRead } = useUserChat();
 
   // State để quản lý hiển thị Chatbot
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -28,26 +27,15 @@ const SupportFloating = () => {
   const [isStaffChatOpen, setIsStaffChatOpen] = useState(false);
 
   // Refs để theo dõi các element
-  const supportWrapperRef = useRef(null);
   const chatbotWrapperRef = useRef(null);
   const staffChatWrapperRef = useRef(null);
 
   // State để theo dõi click cuối cùng cho double-click detection
-  const [lastClickTime, setLastClickTime] = useState(0);
   const [lastChatbotClickTime, setLastChatbotClickTime] = useState(0);
 
   // useEffect để xử lý click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Đóng support menu nếu click ra ngoài
-      if (
-        supportWrapperRef.current &&
-        !supportWrapperRef.current.contains(event.target) &&
-        isSupportMenuOpen
-      ) {
-        setIsSupportMenuOpen(false);
-      }
-
       // Đóng chatbot nếu click ra ngoài
       if (
         chatbotWrapperRef.current &&
@@ -74,22 +62,7 @@ const SupportFloating = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isSupportMenuOpen, isChatbotOpen, isStaffChatOpen]);
-
-  // Hàm xử lý double-click cho staff support
-  const handleStaffSupportClick = () => {
-    const currentTime = Date.now();
-    const timeDiff = currentTime - lastClickTime;
-
-    // Nếu click trong vòng 300ms thì coi là double-click
-    if (timeDiff < 300 && isSupportMenuOpen) {
-      setIsSupportMenuOpen(false);
-    } else {
-      setIsSupportMenuOpen(!isSupportMenuOpen);
-    }
-
-    setLastClickTime(currentTime);
-  };
+  }, [isChatbotOpen, isStaffChatOpen]);
 
   // Hàm xử lý double-click cho chatbot
   const handleChatbotClick = () => {
@@ -108,14 +81,16 @@ const SupportFloating = () => {
 
   // Hàm xử lý khi nhấn vào các lựa chọn hỗ trợ
   const handleSupportOptionClick = (option) => {
-    if (option === "chatbot") {
-      // Toggle hiển thị Chatbot
-      setIsChatbotOpen(!isChatbotOpen);
-      // Đóng staff chat nếu đang mở
-      if (isStaffChatOpen) setIsStaffChatOpen(false);
-    } else if (option === "staff") {
+    if (option === "staff") {
       // Toggle hiển thị Staff Chat
-      setIsStaffChatOpen(!isStaffChatOpen);
+      const willOpen = !isStaffChatOpen;
+      setIsStaffChatOpen(willOpen);
+
+      // Đánh dấu tất cả tin nhắn đã đọc khi mở chat
+      if (willOpen && unreadCount > 0) {
+        markAllAsRead();
+      }
+
       // Đóng chatbot nếu đang mở
       if (isChatbotOpen) setIsChatbotOpen(false);
     } else if (option === "phone") {
@@ -127,7 +102,6 @@ const SupportFloating = () => {
       // Mở Facebook Messenger
       window.open("https://m.me/foodorderpage", "_blank");
     }
-    setIsSupportMenuOpen(false); // Đóng menu sau khi chọn
   };
 
   return (
@@ -146,10 +120,7 @@ const SupportFloating = () => {
 
       {/* Support Floating Button */}
       <div className="support__icon fixed bottom-6 right-6 z-50">
-        <div ref={supportWrapperRef} className="support-wrapper ">
-          <div className="staff__support">
-            <FontAwesomeIcon icon={faHeadset} title="Hỗ trợ" onClick={handleStaffSupportClick} />
-          </div>
+        <div className="support-wrapper">
           <DotLottieReact
             title="Chat với AI"
             src="https://lottie.host/6979fcb6-f113-4562-bd2b-7086d19a7ace/WFs0aWXiG2.lottie"
@@ -159,22 +130,25 @@ const SupportFloating = () => {
             onClick={handleChatbotClick}
           />
 
-          {isSupportMenuOpen && (
-            <div className="support-options">
-              <div
-                className="support-option staff"
-                title="Chat với nhân viên"
-                onClick={() => handleSupportOptionClick("staff")}>
-                <ChatBubbleLeftRightIcon className="w-8 h-8" />
-              </div>
-              <div
-                className="support-option phone"
-                onClick={() => handleSupportOptionClick("phone")}
-                title="Liên hệ qua phone">
-                <PhoneIcon className="w-8 h-8" />
-              </div>
+          {/* Hiển thị luôn 2 options hỗ trợ */}
+          <div className="support-options">
+            <div
+              className="support-option staff"
+              title="Chat với nhân viên"
+              onClick={() => handleSupportOptionClick("staff")}>
+              <ChatBubbleLeftRightIcon className="w-8 h-8" />
+              {/* Hiển thị unread badge khi có tin nhắn chưa đọc */}
+              {unreadCount > 0 && !isStaffChatOpen && (
+                <span className="unread-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+              )}
             </div>
-          )}
+            <div
+              className="support-option phone"
+              onClick={() => handleSupportOptionClick("phone")}
+              title="Liên hệ qua phone">
+              <PhoneIcon className="w-8 h-8" />
+            </div>
+          </div>
         </div>
       </div>
     </>

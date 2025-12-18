@@ -4,33 +4,15 @@ const QuickReplies = ({ onQuickReply, isDisabled = false }) => {
   const quickReplies = [
     {
       id: "menu",
-      text: "Xem thực đơn",
-      icon: "🍽️",
+      text: "Thực đơn",
     },
     {
       id: "order",
       text: "Đặt hàng",
-      icon: "🛒",
-    },
-    {
-      id: "delivery",
-      text: "Giao hàng",
-      icon: "🚚",
-    },
-    {
-      id: "payment",
-      text: "Thanh toán",
-      icon: "💳",
-    },
-    {
-      id: "support",
-      text: "Hỗ trợ",
-      icon: "💬",
     },
     {
       id: "promotion",
       text: "Ưu đãi",
-      icon: "🎁",
     },
   ];
 
