@@ -275,7 +275,6 @@ class UserWebSocketClient {
         }
       });
       this.subscriptions.set(key, subscription);
-      console.warn(`THÀNH CÔNG subscribe vào: ${destination}`);
       return subscription;
     } catch (error) {
       console.error(`Lỗi khi subscribe vào ${destination}:`, error);
@@ -342,7 +341,6 @@ class UserWebSocketClient {
    */
   chatToStaff(messageOrOptions) {
     if (!this.connected) {
-      console.warn("Chưa kết nối WebSocket");
       return false;
     }
 

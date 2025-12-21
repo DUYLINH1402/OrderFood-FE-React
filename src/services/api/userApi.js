@@ -21,8 +21,6 @@ export const updateProfileApi = async (data) => {
 export const uploadAvatarApi = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
-  // Thêm log để debug
-  console.log("Uploading file:", file);
   const response = await apiClient.post("/api/users/avatar", formData, {
     headers: {
       "Content-Type": "multipart/form-data",

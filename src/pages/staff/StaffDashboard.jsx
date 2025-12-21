@@ -5,7 +5,7 @@ import { Pagination } from "antd";
 import { useAuth, usePermissions } from "../../hooks/auth/useAuth";
 import { useOptimizedOrders } from "../../hooks/useOptimizedOrders";
 import { useStaffOrderWebSocket } from "../../hooks/useStaffOrderWebSocket";
-import { useStaffChatWebSocket } from "../../hooks/useStaffChatWebSocket";
+
 import { useStaffNotifications } from "../../hooks/useStaffNotifications";
 import { useAuthRedirect } from "../../hooks/useAuthRedirect";
 import { useGlobalAuthWatch } from "../../hooks/useGlobalAuthWatch";
@@ -23,8 +23,6 @@ import { FiUser, FiTruck, FiHome, FiDollarSign, FiPackage, FiRefreshCw } from "r
 import { ORDER_STATUS, ORDER_STATUS_CONFIG } from "../../constants/orderConstants";
 import { searchStaffOrderByCode } from "../../services/service/staffOrderService";
 import SpinnerCube from "../../components/Skeleton/SpinnerCube";
-import CustomerChatPanel from "./chat/CustomerChatPanel";
-import "../../assets/styles/components/CustomerChatPanel.scss";
 
 const StaffDashboard = () => {
   const { userRole } = useAuth();
@@ -72,17 +70,6 @@ const StaffDashboard = () => {
     status: wsStatus,
   } = useStaffOrderWebSocket();
 
-  // Sử dụng Staff Chat WebSocket hook
-  const {
-    connected: chatConnected,
-    connecting: chatConnecting,
-    error: chatError,
-    addMessageHandler: addChatMessageHandler,
-    sendMessageToCustomer,
-    getOnlineStaff,
-    service: chatService,
-  } = useStaffChatWebSocket();
-
   // Sử dụng staff notifications hook mới với localStorage và API sync
   const { addWebSocketNotification, addNewOrderNotification, addOrderStatusNotification } =
     useStaffNotifications();
@@ -96,52 +83,6 @@ const StaffDashboard = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(null);
-
-  // State cho Customer Chat Panel - load từ localStorage nếu có
-  const [customerChatPanel, setCustomerChatPanel] = useState(() => {
-    try {
-      const savedState = localStorage.getItem("staff_chat_panel_state");
-      const savedUnreadData = localStorage.getItem("staff_chat_unread_data");
-
-      let initialState = {
-        isOpen: true,
-        isMinimized: true,
-        unreadCount: 0,
-      };
-
-      if (savedState) {
-        const parsed = JSON.parse(savedState);
-        initialState = {
-          isOpen: parsed.isOpen ?? true,
-          isMinimized: parsed.isMinimized ?? true,
-          unreadCount: parsed.unreadCount ?? 0,
-        };
-      }
-
-      // Restore unread count từ localStorage nếu có và còn fresh (< 5 phút)
-      if (savedUnreadData) {
-        const unreadData = JSON.parse(savedUnreadData);
-        const now = Date.now();
-        const fiveMinutes = 5 * 60 * 1000;
-
-        if (unreadData.timestamp && now - unreadData.timestamp < fiveMinutes) {
-          initialState.unreadCount = Math.max(
-            initialState.unreadCount,
-            unreadData.totalUnread || 0
-          );
-        }
-      }
-
-      return initialState;
-    } catch (error) {
-      console.error("Lỗi khi load chat panel state từ localStorage:", error);
-      return {
-        isOpen: true,
-        isMinimized: true,
-        unreadCount: 0,
-      };
-    }
-  });
 
   // State cho phone confirmation modal
   const [phoneConfirmModal, setPhoneConfirmModal] = useState({
@@ -285,128 +226,6 @@ const StaffDashboard = () => {
     }
   }, [wsConnected, handleNewOrder, handleOrderStatusUpdate, handlePong, addMessageHandler]);
 
-  // Xử lý tin nhắn từ khách hàng
-  const handleCustomerMessage = useCallback((messageData) => {
-    // KHÔNG tự động tăng unread count ở đây
-    // CustomerChatPanel sẽ tự xử lý unread count qua WebSocket
-
-    // Chỉ hiển thị toast notification
-    const customerName =
-      messageData.userName || messageData.customerName || messageData.userPhone || "Khách hàng";
-    const messageText = messageData.message || messageData.content || "Tin nhắn mới";
-
-    toast.info(`💬 ${customerName}: ${messageText.substring(0, 50)}...`, {
-      position: "top-right",
-      autoClose: 5000,
-      onClick: () => {
-        setCustomerChatPanel((prev) => ({
-          ...prev,
-          isOpen: true,
-          isMinimized: false,
-        }));
-      },
-    });
-  }, []);
-
-  // Xử lý các loại tin nhắn chat khác
-  const handleChatError = useCallback((errorData) => {
-    console.error("Lỗi chat:", errorData);
-    toast.error(errorData.message || "Lỗi trong hệ thống chat");
-  }, []);
-
-  const handleOnlineStaffList = useCallback((staffList) => {}, []);
-
-  // Handle unread count change từ chat panel
-  const handleUnreadCountChange = useCallback((count) => {
-    setCustomerChatPanel((prev) => ({ ...prev, unreadCount: count }));
-  }, []);
-
-  // Lưu chat panel state vào localStorage mỗi khi thay đổi
-  useEffect(() => {
-    // Chỉ lưu khi customerChatPanel đã được khởi tạo
-    if (customerChatPanel) {
-      try {
-        localStorage.setItem("staff_chat_panel_state", JSON.stringify(customerChatPanel));
-      } catch (error) {
-        console.error("Lỗi khi lưu chat panel state:", error);
-      }
-    }
-  }, [customerChatPanel]);
-
-  // Load initial unread count khi component mount (trước cả khi WebSocket connect)
-  useEffect(() => {
-    const loadInitialUnreadCount = async () => {
-      try {
-        const { chatApi } = await import("../../services/api/chatApi");
-        // LUÔN gọi getStaffUnreadCount() để lấy tổng số tin nhắn chưa đọc từ TẤT CẢ user
-        const totalUnreadCount = await chatApi.getStaffUnreadCount();
-        // LUÔN ưu tiên API count (đây là source of truth từ server)
-        setCustomerChatPanel((prev) => {
-          return { ...prev, unreadCount: totalUnreadCount };
-        });
-      } catch (error) {
-        console.error("Lỗi khi load initial unread count:", error);
-      }
-    };
-
-    if (userFromRedux) {
-      loadInitialUnreadCount();
-    }
-  }, [userFromRedux]); // Chỉ chạy một lần khi user đã login
-
-  // Handle chat panel minimize/expand - giữ nguyên unreadCount
-  const handleChatPanelMinimize = useCallback(() => {
-    setCustomerChatPanel((prev) => ({
-      ...prev,
-      isMinimized: !prev.isMinimized,
-      isOpen: true, // Luôn giữ isOpen = true để WebSocket handlers hoạt động
-    }));
-  }, []);
-
-  // Handle floating chat button click - expand chat và force sync
-  // const handleChatButtonClick = useCallback(() => {
-  //   setCustomerChatPanel((prev) => ({ ...prev, isOpen: true, isMinimized: false }));
-
-  // }, []);
-
-  // Setup Chat WebSocket handlers - luôn lắng nghe tin nhắn
-  useEffect(() => {
-    if (chatConnected && addChatMessageHandler) {
-      // Đăng ký handler cho tin nhắn từ khách hàng
-      const unsubscribeCustomerMessage = addChatMessageHandler(
-        "customerMessage",
-        handleCustomerMessage
-      );
-
-      // Thêm handler cho userChatMessage nữa để đảm bảo
-      const unsubscribeUserChatMessage = addChatMessageHandler(
-        "userChatMessage",
-        handleCustomerMessage
-      );
-
-      // Đăng ký handler cho lỗi chat
-      const unsubscribeChatError = addChatMessageHandler("chatError", handleChatError);
-
-      // Đăng ký handler cho danh sách staff online
-      const unsubscribeOnlineStaff = addChatMessageHandler(
-        "onlineStaffList",
-        handleOnlineStaffList
-      );
-
-      return () => {
-        unsubscribeCustomerMessage?.();
-        unsubscribeUserChatMessage?.();
-        unsubscribeChatError?.();
-        unsubscribeOnlineStaff?.();
-      };
-    }
-  }, [
-    chatConnected,
-    addChatMessageHandler,
-    handleCustomerMessage,
-    handleChatError,
-    handleOnlineStaffList,
-  ]);
   // Reset trang về 1 khi chuyển tab
   useEffect(() => {
     setCurrentPage(1);
@@ -546,7 +365,7 @@ const StaffDashboard = () => {
         }
       } else {
         toast.error(result.message || "Không thể xác nhận đơn hàng");
-        console.log("Failed to update order status:", result.message);
+        console.error("Failed to update order status:", result.message);
       }
     } catch (error) {
       console.error("Error confirming order:", error);
@@ -615,7 +434,7 @@ const StaffDashboard = () => {
         }
       } else {
         toast.error(result.message || "Không thể cập nhật trạng thái");
-        console.log("Failed to update order status:", result.message);
+        console.error("Failed to update order status:", result.message);
       }
     } catch (error) {
       console.error("Error starting delivery:", error);
@@ -683,7 +502,7 @@ const StaffDashboard = () => {
         }
       } else {
         toast.error(result.message || "Không thể cập nhật trạng thái");
-        console.log("Failed to update order status:", result.message);
+        console.error("Failed to update order status:", result.message);
       }
     } catch (error) {
       console.error("Error completing delivery:", error);
@@ -1312,17 +1131,6 @@ const StaffDashboard = () => {
           setSelectedNotificationOrder(null);
         }}
         onProcessOrder={handleProcessOrderFromNotification}
-      />
-
-      {/* Customer Chat Panel */}
-      <CustomerChatPanel
-        isOpen={customerChatPanel.isOpen}
-        isMinimized={customerChatPanel.isMinimized}
-        onMinimize={handleChatPanelMinimize}
-        onUnreadCountChange={handleUnreadCountChange}
-        staffWebSocketClient={chatService}
-        isConnected={chatConnected}
-        serverUnreadCount={customerChatPanel.unreadCount} // Truyền server count xuống Badge
       />
     </div>
   );

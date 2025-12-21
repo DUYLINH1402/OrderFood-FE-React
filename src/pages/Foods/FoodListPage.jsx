@@ -92,14 +92,22 @@ const FoodListPage = () => {
       <div className="bg-blob bg-blob-6 pointer-events-none select-none"></div>
       <div className="food-list-page-container">
         <div className="food-list-page">
-          {/* Sidebar trên desktop */}
+          {/* Sidebar trên desktop - Cố định khi cuộn */}
           <aside className="sidebar-menu-foods hidden lg:block">
-            <FoodSidebar
-              onSelectCategory={(id) => {
-                if (id) navigate(`/mon-an/${id}`);
-                else navigate(`/mon-an`);
-              }}
-            />
+            <div className="sticky top-24">
+              <div className="mb-4">
+                <h3 className="flex items-center text-base font-semibold text-gray-800 mb-3">
+                  <i className="fas fa-list-ul text-green-600 mr-2"></i>
+                  Danh mục món ăn
+                </h3>
+              </div>
+              <FoodSidebar
+                onSelectCategory={(id) => {
+                  if (id) navigate(`/mon-an/${id}`);
+                  else navigate(`/mon-an`);
+                }}
+              />
+            </div>
           </aside>
           {/* Sidebar trên mobile (dropdown) */}
           <div className="block lg:hidden">

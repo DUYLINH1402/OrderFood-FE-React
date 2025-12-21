@@ -198,12 +198,6 @@ export const chatApi = {
     try {
       const response = await apiClient.get("/api/chat/staff/unread-count");
       const unreadCount = response.data.unreadCount || 0;
-      console.log(
-        "📊 [getStaffUnreadCount] Server total unread:",
-        unreadCount,
-        "- Raw response:",
-        response.data
-      );
       return unreadCount;
     } catch (error) {
       console.error("Lỗi khi lấy số tin nhắn chưa đọc:", error);
@@ -219,17 +213,8 @@ export const chatApi = {
   getUserReadStatus: async (userId) => {
     try {
       const response = await apiClient.get(`/api/chat/staff/user/${userId}/read-status`);
-
       // Xử lý dữ liệu từ backend
       const data = response.data;
-
-      // Log chi tiết response từ API để debug
-      console.log(`📊 [getUserReadStatus] User ${userId} - API response:`, {
-        hasUnreadMessages: data.hasUnreadMessages,
-        unreadCount: data.unreadCount,
-        rawData: data,
-      });
-
       return {
         allMessagesRead: data.hasUnreadMessages === false, // hasUnreadMessages: false nghĩa là đã đọc hết
         unreadMessages: data.unreadCount || 0, // Sử dụng unreadCount từ backend

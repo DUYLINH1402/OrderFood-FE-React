@@ -24,6 +24,8 @@ function FoodGridItem({ food, index = 0 }) {
         isFeatured={food.isFeatured}
         isBestSeller={food.isBestSeller}
         variants={food.variants}
+        status={food.status}
+        statusNote={food.statusNote}
       />
     </ScrollRevealContainer>
   );

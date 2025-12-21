@@ -20,11 +20,16 @@ const DishCard = ({
   isNew,
   isFeatured,
   isBestSeller,
+  status = "AVAILABLE", // Trạng thái món ăn: AVAILABLE hoặc UNAVAILABLE
+  statusNote = "", // Ghi chú lý do hết hàng
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const imageRef = useRef();
   const token = getToken();
+
+  // Kiểm tra món ăn có khả dụng không
+  const isUnavailable = status === "UNAVAILABLE";
 
   const currentVariant = Array.isArray(variants) ? variants[0] : null;
   const variantId = currentVariant?.id || null;
@@ -52,6 +57,8 @@ const DishCard = ({
   };
 
   const handleClick = () => {
+    // Không cho phép click vào xem chi tiết khi món hết hàng
+    if (isUnavailable) return;
     navigate(`/mon-an/chi-tiet/${slug}`);
   };
 
@@ -83,7 +90,9 @@ const DishCard = ({
   };
 
   return (
-    <div className="dish-card cursor-pointer" onClick={handleClick}>
+    <div
+      className={`dish-card ${isUnavailable ? "cursor-not-allowed" : "cursor-pointer"}`}
+      onClick={handleClick}>
       <div className="card_box relative">
         {token && variants?.length === 0 && (
           <button
@@ -103,6 +112,17 @@ const DishCard = ({
         {isFeatured && <span className="is-featured-foods"></span>}
         {isBestSeller && <span className="is-best-seller-foods"></span>}
 
+        {/* Overlay và badge khi hết hàng */}
+        {isUnavailable && (
+          <>
+            <div className="absolute inset-0 bg-black/40 z-[5] rounded-t-lg rounded-b-lg" />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[6] bg-red-600 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg whitespace-nowrap">
+              <i className="fa-solid fa-ban mr-1.5"></i>
+              Hết hàng
+            </div>
+          </>
+        )}
+
         <FlyImage
           ref={imageRef}
           src={imageUrl}
@@ -118,24 +138,36 @@ const DishCard = ({
         <p className="price">{price.toLocaleString()}đ</p>
 
         <div className="action-wrapper">
-          <button
-            className="dish-card-action-btn sm:text-sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/mon-an/chi-tiet/${slug}`);
-            }}>
-            {variants?.length > 0 ? "Tuỳ chọn" : "Đặt ngay"}
-            <i className="fa fa-shopping-basket"></i>
-          </button>
+          {isUnavailable ? (
+            <button
+              className="dish-card-action-btn sm:text-sm bg-gray-400 cursor-not-allowed"
+              onClick={(e) => e.stopPropagation()}
+              disabled>
+              Tạm hết hàng
+              <i className="fa-solid fa-clock ml-1"></i>
+            </button>
+          ) : (
+            <>
+              <button
+                className="dish-card-action-btn sm:text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/mon-an/chi-tiet/${slug}`);
+                }}>
+                {variants?.length > 0 ? "Tuỳ chọn" : "Đặt ngay"}
+                <i className="fa fa-shopping-basket"></i>
+              </button>
 
-          <button
-            className="shopping-cart-icon"
-            onClick={handleAddToCart}
-            disabled={variants?.length > 0}
-            title={variants?.length > 0 ? "Chọn biến thể trước" : "Thêm vào giỏ hàng"}
-            style={variants?.length > 0 ? { opacity: 0.4, pointerEvents: "none" } : {}}>
-            <i className="fa-solid fa-cart-arrow-down"></i>
-          </button>
+              <button
+                className="shopping-cart-icon"
+                onClick={handleAddToCart}
+                disabled={variants?.length > 0}
+                title={variants?.length > 0 ? "Chọn biến thể trước" : "Thêm vào giỏ hàng"}
+                style={variants?.length > 0 ? { opacity: 0.4, pointerEvents: "none" } : {}}>
+                <i className="fa-solid fa-cart-arrow-down"></i>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

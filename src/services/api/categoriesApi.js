@@ -17,6 +17,34 @@ export const getCategoriesByParentFromSQL = async (parentId) => {
   return res.data;
 };
 
+// LẤY TẤT CẢ CATEGORIES CHA KÈM THEO CHILDREN (cho Staff dropdown)
+export const getAllCategoriesWithChildrenFromSQL = async () => {
+  try {
+    // Lấy tất cả categories gốc
+    const rootCategories = await getRootCategoriesFromSQL();
+
+    // Với mỗi category gốc, lấy children của nó
+    const categoriesWithChildren = await Promise.all(
+      rootCategories.map(async (rootCategory) => {
+        try {
+          const children = await getCategoriesByParentFromSQL(rootCategory.id);
+          return {
+            ...rootCategory,
+            children: Array.isArray(children) ? children : [],
+          };
+        } catch {
+          return { ...rootCategory, children: [] };
+        }
+      })
+    );
+
+    return categoriesWithChildren;
+  } catch (error) {
+    console.error("Lỗi khi fetch all categories with children:", error);
+    return [];
+  }
+};
+
 // LẤY DANH MỤC THEO ID
 export const getCategoryByIdFromSQL = async (categoryId) => {
   try {

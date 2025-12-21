@@ -11,7 +11,7 @@ let isRedirectingToLogin = false;
 // Tạo axios instance cho API cần authentication
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -20,7 +20,7 @@ const apiClient = axios.create({
 // Tạo axios instance cho API công khai (không cần token)
 const publicClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000, // Tránh request bị "treo" vô hạn
+  timeout: 100000, // Tăng timeout lên 30s để tránh timeout khi server chậm
   headers: {
     "Content-Type": "application/json",
   },
@@ -32,16 +32,6 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // Log for debugging
-    if (config.url && config.url.includes("/notifications/staff/")) {
-      console.log("🔑 Staff notification API request:", {
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        hasToken: !!token,
-        headers: config.headers,
-      });
     }
 
     return config;
@@ -71,7 +61,7 @@ apiClient.interceptors.response.use(
         console.warn("Authentication failed - redirecting to login");
 
         // Hiển thị thông báo
-        toast.error("Phiên đăng nhập đã hết hạn. Đang chuyển hướng đến trang đăng nhập...", {
+        toast.error("Đăng nhập đã hết hạn", {
           autoClose: 2000,
           hideProgressBar: false,
           closeOnClick: true,

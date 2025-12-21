@@ -34,6 +34,8 @@ const FavoriteDishesSection = () => {
           imageUrl={dish.imageUrl}
           variants={dish.variants}
           isBestSeller={dish.isBestSeller}
+          status={dish.status}
+          statusNote={dish.statusNote}
         />
       )}
     />

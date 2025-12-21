@@ -115,7 +115,6 @@ export const updateOrderStatusByStaffApi = async (orderId, statusRequest) => {
 export const searchOrderByCodeApi = async (orderCode) => {
   try {
     const response = await apiClient.get(`/api/staff/orders/${orderCode}`);
-    console.log("Tìm kiếm đơn hàng:", response.data);
     return {
       success: true,
       data: response.data.data,

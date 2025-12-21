@@ -33,6 +33,8 @@ const FeaturedDishesSection = () => {
           imageUrl={dish.imageUrl}
           variants={dish.variants}
           isFeatured={dish.isFeatured}
+          status={dish.status}
+          statusNote={dish.statusNote}
         />
       )}
     />

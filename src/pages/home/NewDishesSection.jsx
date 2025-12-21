@@ -32,6 +32,8 @@ const NewDishesSection = () => {
           imageUrl={dish.imageUrl}
           variants={dish.variants}
           isNew={dish.isNew}
+          status={dish.status}
+          statusNote={dish.statusNote}
         />
       )}
     />
