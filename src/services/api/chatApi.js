@@ -12,12 +12,15 @@ export const chatApi = {
    */
   getChatHistory: async (page = 0, size = 5) => {
     try {
+      // Kiểm tra token trước khi gọi API
+      const token = localStorage.getItem("accessToken");
+
       const response = await apiClient.get("/api/chat/history", {
         params: { page, size },
       });
       return response.data;
     } catch (error) {
-      console.error("Lỗi khi lấy lịch sử chat:", error);
+      console.error("[chatApi] Lỗi khi lấy lịch sử chat:", error);
       throw error;
     }
   },

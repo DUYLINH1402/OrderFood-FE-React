@@ -8,6 +8,14 @@ import {
   deleteFeedbackInSQL,
 } from "../api/feedbackApi";
 
+import {
+  getAllFeedbacksFromFirebase,
+  getFeedbackByIdFromFirebase,
+  createFeedbackInFirebase,
+  updateFeedbackInFirebase,
+  deleteFeedbackInFirebase,
+} from "../firebase/feedbackFirebase";
+
 // LẤY DANH SÁCH FEEDBACK
 export const getAllFeedbacks = async () => {
   return useFirebase ? await getAllFeedbacksFromFirebase() : await getAllFeedbacksFromSQL();

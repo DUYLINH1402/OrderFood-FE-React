@@ -23,17 +23,32 @@ export const useUserChat = () => {
   });
 
   // Lấy thông tin user từ Redux store
-  const { user, token } = useSelector((state) => state.auth);
+  // Chú ý: Redux store lưu token với key 'accessToken', không phải 'token'
+  const { user, accessToken: reduxToken } = useSelector((state) => state.auth);
   const userId = user?.id;
+
+  // Fallback: Lấy token từ localStorage nếu Redux không có
+  // Điều này xảy ra khi Redux chưa được hydrate hoặc token không được lưu đúng
+  const token = reduxToken || localStorage.getItem("accessToken");
 
   // Ref để tránh duplicate subscriptions
   const handlersRef = useRef({});
-
   /**
    * Load lịch sử chat từ API (trang đầu tiên)
    */
   const loadChatHistory = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      console.log("[useUserChat] Cannot load chat history: userId is missing");
+      return;
+    }
+
+    if (!token) {
+      const localToken = localStorage.getItem("accessToken");
+      if (!localToken) {
+        console.log("[useUserChat] No token in localStorage either");
+        return;
+      }
+    }
 
     setIsLoading(true);
     setError(null);
@@ -53,7 +68,7 @@ export const useUserChat = () => {
           isLast: result.isLast,
         });
       } else {
-        console.warn("getChatHistory không trả về đúng format:", result);
+        console.warn("[useUserChat] getChatHistory không trả về đúng format:", result);
         setChatHistory([]);
         setPagination({
           currentPage: 0,
@@ -69,13 +84,23 @@ export const useUserChat = () => {
       const unread = await chatService.getUnreadCount();
       setUnreadCount(unread);
     } catch (err) {
-      console.error("Lỗi khi load chat history:", err);
-      setError("Không thể tải lịch sử chat");
+      console.error("[useUserChat] Lỗi khi load chat history:", err);
+
+      // Hiển thị lỗi cụ thể hơn
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setError("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+      } else if (err.response?.status === 404) {
+        setError("API chat không tìm thấy. Vui lòng liên hệ hỗ trợ.");
+      } else if (err.message?.includes("HTML")) {
+        setError("Lỗi kết nối server. Vui lòng thử lại sau.");
+      } else {
+        setError("Không thể tải lịch sử chat");
+      }
       setChatHistory([]);
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, token]);
 
   /**
    * Load thêm tin nhắn cũ hơn (cho infinite scroll)
@@ -313,8 +338,6 @@ export const useUserChat = () => {
    */
   const handleNewChatMessage = useCallback(
     (data) => {
-      console.log("Nhận tin nhắn chat mới:", data);
-
       // Xử lý replyTo context nếu có từ WebSocket
       let replyTo = null;
       if (data.replyToMessageId || data.replyTo || data.replyContext) {
@@ -405,16 +428,20 @@ export const useUserChat = () => {
    * Khởi tạo WebSocket connection
    */
   useEffect(() => {
-    if (!userId || !token) return;
+    if (!userId || !token) {
+      return;
+    }
 
     const initializeWebSocket = async () => {
       try {
         // Kết nối WebSocket nếu chưa kết nối
         if (!userWebSocketClient.isConnected()) {
           await userWebSocketClient.connect(userId, token);
+        } else {
         }
 
-        setIsConnected(userWebSocketClient.isConnected());
+        const isConnectedNow = userWebSocketClient.isConnected();
+        setIsConnected(isConnectedNow);
 
         // Đăng ký handler cho tin nhắn chat mới
         if (!handlersRef.current.chatMessage) {
@@ -424,7 +451,11 @@ export const useUserChat = () => {
           );
         }
       } catch (err) {
-        console.error("Lỗi khi khởi tạo WebSocket cho chat:", err);
+        console.error("[useUserChat] Lỗi khi khởi tạo WebSocket cho chat:", err);
+        console.error("[useUserChat] WebSocket error details:", {
+          message: err.message,
+          stack: err.stack,
+        });
         setError("Không thể kết nối đến server chat");
         setIsConnected(false);
       }

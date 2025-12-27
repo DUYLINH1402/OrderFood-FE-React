@@ -274,7 +274,7 @@ const StaffProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-8xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Hồ sơ cá nhân</h1>
@@ -609,7 +609,7 @@ const StaffProfile = () => {
           {/* Password Tab */}
           {activeTab === "password" && (
             <div className="p-8">
-              <div className="max-w-md mx-auto">
+              <div className="max-w-5xl mx-auto">
                 <h3 className="text-lg font-semibold text-gray-900 text-center mb-8">
                   Đổi mật khẩu
                 </h3>

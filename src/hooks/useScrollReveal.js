@@ -3,6 +3,9 @@ import { useEffect, useState, useRef } from "react";
 /**
  * useScrollReveal - Hook tối ưu cho scroll reveal animation
  *
+ * Hiệu ứng chỉ xuất hiện MỘT LẦN DUY NHẤT khi element vào viewport (cuộn xuống).
+ * Sau khi đã hiện, element sẽ giữ nguyên trạng thái visible, không ẩn lại.
+ *
  * Hỗ trợ 2 chế độ sử dụng:
  * 1. Legacy mode (tương thích với code cũ): useScrollReveal(refsArray, options)
  * 2. New mode (trả về ref và state): const [ref, isVisible] = useScrollReveal(options)
@@ -12,10 +15,10 @@ import { useEffect, useState, useRef } from "react";
  * @returns {void|Array} - Không trả về gì (legacy) hoặc [ref, isVisible] (new)
  */
 export default function useScrollReveal(refOrRefsOrOptions, optionsLegacy) {
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [scrollDirection, setScrollDirection] = useState("down");
   const [isVisible, setIsVisible] = useState(false);
   const newRef = useRef();
+  // Set để theo dõi các element đã được reveal (chỉ reveal 1 lần)
+  const revealedElementsRef = useRef(new Set());
 
   // Detect usage mode
   const isLegacyMode =
@@ -26,20 +29,10 @@ export default function useScrollReveal(refOrRefsOrOptions, optionsLegacy) {
 
   // Get options based on mode
   const options = isLegacyMode
-    ? { threshold: 0.01, rootMargin: "0px 0px 150px 0px", ...(optionsLegacy || {}) }
-    : { threshold: 0.01, rootMargin: "0px 0px 200px 0px", ...(refOrRefsOrOptions || {}) };
+    ? { threshold: 0.1, rootMargin: "0px 0px -50px 0px", ...(optionsLegacy || {}) }
+    : { threshold: 0.1, rootMargin: "0px 0px -50px 0px", ...(refOrRefsOrOptions || {}) };
 
   useEffect(() => {
-    // Theo dõi hướng scroll
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const direction = currentScrollY > lastScrollY ? "down" : "up";
-      setScrollDirection(direction);
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
     if (isLegacyMode) {
       // Legacy mode: xử lý array refs
       let elements = Array.isArray(refOrRefsOrOptions.current)
@@ -48,74 +41,63 @@ export default function useScrollReveal(refOrRefsOrOptions, optionsLegacy) {
       elements = elements.filter((el) => el && el instanceof Element);
 
       if (!elements.length || !window.IntersectionObserver) {
-        window.removeEventListener("scroll", handleScroll);
         return;
       }
 
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-          const isIntersecting = entry.isIntersecting;
-          const rect = entry.boundingClientRect;
-          const windowHeight = window.innerHeight;
-
-          // Logic cải tiến: Element sẽ hiện khi có một phần trong viewport
-          // và ẩn khi hoàn toàn ra khỏi viewport
-          if (isIntersecting) {
-            // Element đang giao với viewport -> hiện
+          // Chỉ xử lý khi element vào viewport và chưa được reveal
+          if (entry.isIntersecting && !revealedElementsRef.current.has(entry.target)) {
+            // Đánh dấu element đã được reveal
+            revealedElementsRef.current.add(entry.target);
+            // Thêm class visible (chỉ 1 lần, không bao giờ xóa)
             entry.target.classList.add("is-visible");
             entry.target.classList.remove("is-hidden");
-          } else {
-            // Element không giao với viewport -> ẩn
-            // Chỉ ẩn khi element thực sự ra khỏi viewport (với một chút buffer)
-            const isCompletelyAbove = rect.bottom < -10;
-            const isCompletelyBelow = rect.top > windowHeight + 10;
-
-            if (isCompletelyAbove || isCompletelyBelow) {
-              entry.target.classList.remove("is-visible");
-              entry.target.classList.add("is-hidden");
-            }
+            // Ngừng observe element này vì đã reveal xong
+            observer.unobserve(entry.target);
           }
         });
       }, options);
 
-      elements.forEach((el) => observer.observe(el));
+      elements.forEach((el) => {
+        // Chỉ observe những element chưa được reveal
+        if (!revealedElementsRef.current.has(el)) {
+          observer.observe(el);
+        }
+      });
 
       // Trigger initial check cho các elements đã có trong viewport
       setTimeout(() => {
         elements.forEach((el) => {
+          if (revealedElementsRef.current.has(el)) return;
+
           const rect = el.getBoundingClientRect();
           const windowHeight = window.innerHeight;
           const isInViewport = rect.top < windowHeight && rect.bottom > 0;
 
           if (isInViewport) {
+            revealedElementsRef.current.add(el);
             el.classList.add("is-visible");
             el.classList.remove("is-hidden");
+            observer.unobserve(el);
           }
         });
       }, 50);
 
       return () => {
-        window.removeEventListener("scroll", handleScroll);
         observer.disconnect();
       };
     } else {
       // New mode: xử lý single ref và trả về state
+      // Nếu đã visible rồi thì không cần observe nữa
+      if (isVisible) return;
+
       const observer = new IntersectionObserver(([entry]) => {
-        const isIntersecting = entry.isIntersecting;
-        const rect = entry.boundingClientRect;
-        const windowHeight = window.innerHeight;
-
-        // Logic cải tiến cho new mode
-        if (isIntersecting) {
+        // Chỉ set visible khi element vào viewport (chỉ 1 lần)
+        if (entry.isIntersecting && !isVisible) {
           setIsVisible(true);
-        } else {
-          // Chỉ ẩn khi element thực sự ra khỏi viewport
-          const isCompletelyAbove = rect.bottom < -10;
-          const isCompletelyBelow = rect.top > windowHeight + 10;
-
-          if (isCompletelyAbove || isCompletelyBelow) {
-            setIsVisible(false);
-          }
+          // Ngừng observe vì đã reveal xong
+          observer.disconnect();
         }
       }, options);
 
@@ -124,10 +106,7 @@ export default function useScrollReveal(refOrRefsOrOptions, optionsLegacy) {
       }
 
       return () => {
-        window.removeEventListener("scroll", handleScroll);
-        if (newRef.current) {
-          observer.unobserve(newRef.current);
-        }
+        observer.disconnect();
       };
     }
   }, [
@@ -139,14 +118,13 @@ export default function useScrollReveal(refOrRefsOrOptions, optionsLegacy) {
     options.threshold,
     options.rootMargin,
     refOrRefsOrOptions,
-    scrollDirection,
-    lastScrollY,
     isLegacyMode,
+    isVisible,
   ]);
 
   // Return based on mode
   if (isNewMode) {
-    return [newRef, isVisible, scrollDirection];
+    return [newRef, isVisible];
   }
   // Legacy mode returns nothing (void)
 }

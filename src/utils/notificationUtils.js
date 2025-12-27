@@ -504,48 +504,31 @@ export const isDuplicateNotification = (newNotification, existingNotifications) 
       return true;
     }
 
-    // So sánh theo orderCode KHÔNG quan tâm type (vì API và WebSocket có type khác)
+    // So sánh theo orderCode VÀ orderStatus (để phân biệt các update khác nhau của cùng order)
     if (newNotification.orderData?.orderCode && existing.orderData?.orderCode) {
       const isSameOrder = newNotification.orderData.orderCode === existing.orderData.orderCode;
+      // Phải cùng orderStatus mới được coi là duplicate
+      const isSameStatus =
+        newNotification.orderData?.orderStatus === existing.orderData?.orderStatus;
       const isWithinTimeRange =
-        Math.abs(new Date(newNotification.timestamp) - new Date(existing.timestamp)) < 300000; // 5 phút
+        Math.abs(new Date(newNotification.timestamp) - new Date(existing.timestamp)) < 60000; // Giảm xuống 1 phút
 
-      if (isSameOrder && isWithinTimeRange) {
-        console.log("🔍 isDuplicateNotification: Detected duplicate by orderCode", {
-          new: {
-            id: newNotification.id,
-            type: newNotification.type,
-            orderCode: newNotification.orderData.orderCode,
-          },
-          existing: {
-            id: existing.id,
-            type: existing.type,
-            orderCode: existing.orderData.orderCode,
-          },
-          timeDiff:
-            Math.abs(new Date(newNotification.timestamp) - new Date(existing.timestamp)) / 1000 +
-            " seconds",
-        });
+      if (isSameOrder && isSameStatus && isWithinTimeRange) {
+        return true;
+      }
+      // Nếu cùng orderCode nhưng khác status, KHÔNG phải duplicate
+      if (isSameOrder && !isSameStatus) {
+        return false;
       }
 
-      return isSameOrder && isWithinTimeRange;
+      return false;
     }
 
     // So sánh theo title và message KHÔNG quan tâm type (fallback)
     const isSameContent =
       newNotification.title === existing.title && newNotification.message === existing.message;
     const isWithinTimeRange =
-      Math.abs(new Date(newNotification.timestamp) - new Date(existing.timestamp)) < 60000; // 1 phút
-
-    if (isSameContent && isWithinTimeRange) {
-      console.log("🔍 isDuplicateNotification: Detected duplicate by content", {
-        new: { id: newNotification.id, type: newNotification.type, title: newNotification.title },
-        existing: { id: existing.id, type: existing.type, title: existing.title },
-        timeDiff:
-          Math.abs(new Date(newNotification.timestamp) - new Date(existing.timestamp)) / 1000 +
-          " seconds",
-      });
-    }
+      Math.abs(new Date(newNotification.timestamp) - new Date(existing.timestamp)) < 30000; // Giảm xuống 30 giây
 
     return isSameContent && isWithinTimeRange;
   });

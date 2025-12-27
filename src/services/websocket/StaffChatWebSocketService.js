@@ -12,23 +12,55 @@ class StaffChatWebSocketService {
     this.messageHandlers = new Map();
     this.staffId = null;
     this.token = null;
+    this.debug = true; // Bật debug mode để giám sát WebSocket trên production
   }
 
   async connect(staffId, token) {
     if (this.connected) {
+      console.log("[StaffChatWS] Already connected");
       return Promise.resolve();
     }
 
     this.staffId = staffId;
     this.token = token;
 
-    const wsUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8081"}/ws`;
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081").trim();
+    const wsUrl = `${baseUrl}/ws`;
+
+    // Log chi tiết để debug production
+    console.log("[StaffChatWS] ====== CONNECTION DEBUG ======");
+    console.log("[StaffChatWS] Environment:", import.meta.env.MODE);
+    console.log("[StaffChatWS] WebSocket URL:", wsUrl);
+    console.log("[StaffChatWS] Staff ID:", staffId);
+    console.log("[StaffChatWS] Token exists:", !!token);
+    console.log("[StaffChatWS] ===============================");
 
     return new Promise((resolve, reject) => {
       try {
         this.stompClient = new Client({
           webSocketFactory: () => {
-            const sockJS = new SockJS(wsUrl);
+            console.log("[StaffChatWS] Creating SockJS connection to:", wsUrl);
+            const sockJS = new SockJS(wsUrl, null, {
+              // Thêm options cho SockJS để hỗ trợ production với HTTPS
+              transports: ["websocket", "xhr-streaming", "xhr-polling"],
+              timeout: 10000,
+            });
+
+            // Thêm listeners để debug SockJS
+            sockJS.onopen = () => {
+              console.log("[StaffChatWS] SockJS connection opened");
+            };
+            sockJS.onerror = (e) => {
+              console.error("[StaffChatWS] SockJS error:", e);
+            };
+            sockJS.onclose = (e) => {
+              console.log("[StaffChatWS] SockJS connection closed:", {
+                code: e.code,
+                reason: e.reason,
+                wasClean: e.wasClean,
+              });
+            };
+
             return sockJS;
           },
           connectHeaders: token
@@ -40,19 +72,38 @@ class StaffChatWebSocketService {
           reconnectDelay: this.reconnectDelay,
           heartbeatIncoming: 10000,
           heartbeatOutgoing: 10000,
-          connectionTimeout: 10000,
+          connectionTimeout: 15000,
+
+          // Thêm debug cho STOMP
+          debug: (str) => {
+            if (this.debug) {
+              console.log("[StaffChatWS] STOMP Debug:", str);
+            }
+          },
         });
 
         this.stompClient.onConnect = (frame) => {
+          console.log("[StaffChatWS] STOMP connected successfully");
+          console.log("[StaffChatWS] Connection frame:", frame);
           this.connected = true;
           this.reconnectAttempts = 0;
-          this.registerStaff();
-          this.subscribeToStaffChat();
+
+          // Đợi để đảm bảo connection ổn định
+          setTimeout(() => {
+            if (this.stompClient && this.stompClient.connected && this.stompClient.active) {
+              console.log("[StaffChatWS] Registering staff after stable connection");
+              this.registerStaff();
+              this.subscribeToStaffChat();
+            }
+          }, 500);
+
           this.notifyHandlers("connectionStatus", { connected: true });
           resolve();
         };
 
         this.stompClient.onStompError = (frame) => {
+          console.error("[StaffChatWS] STOMP Error:", frame);
+          console.error("[StaffChatWS] STOMP Error headers:", frame.headers);
           this.connected = false;
           const errorMsg = frame.headers?.message || "Unknown STOMP error";
           this.notifyHandlers("connectionStatus", { connected: false, error: errorMsg });
@@ -60,13 +111,25 @@ class StaffChatWebSocketService {
         };
 
         this.stompClient.onWebSocketError = (error) => {
+          console.error("[StaffChatWS] WebSocket Error:", error);
           this.connected = false;
           reject(error);
         };
 
         this.stompClient.onWebSocketClose = (event) => {
+          console.log("[StaffChatWS] WebSocket closed:", {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean,
+          });
           this.connected = false;
           this.notifyHandlers("connectionStatus", { connected: false });
+
+          // Tự động reconnect nếu không phải do người dùng đóng
+          if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+            console.log("[StaffChatWS] Scheduling reconnect, attempt:", this.reconnectAttempts + 1);
+            this.scheduleReconnect();
+          }
         };
 
         this.stompClient.onDisconnect = () => {
@@ -344,6 +407,29 @@ class StaffChatWebSocketService {
         }
       });
     }
+  }
+
+  /**
+   * Lên lịch reconnect với exponential backoff
+   */
+  scheduleReconnect() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error("[StaffChatWS] Đã hết số lần thử reconnect");
+      return;
+    }
+
+    this.reconnectAttempts++;
+    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+
+    console.log(`[StaffChatWS] Reconnect sau ${delay}ms, lần thử ${this.reconnectAttempts}`);
+
+    setTimeout(() => {
+      if (!this.connected && this.staffId && this.token) {
+        this.connect(this.staffId, this.token).catch((error) => {
+          console.error("[StaffChatWS] Reconnect thất bại:", error);
+        });
+      }
+    }, delay);
   }
 
   clearSubscriptions() {

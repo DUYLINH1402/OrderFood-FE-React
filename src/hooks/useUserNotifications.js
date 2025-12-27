@@ -259,10 +259,18 @@ export const useUserNotifications = () => {
   // Thêm thông báo mới từ WebSocket
   const addWebSocketNotification = useCallback(
     (wsNotificationData) => {
+      console.log("[useUserNotifications] ====== addWebSocketNotification called ======");
+      console.log("[useUserNotifications] Input data:", wsNotificationData);
+      console.log("[useUserNotifications] isAuthenticated:", isAuthenticated);
+      console.log("[useUserNotifications] user?.id:", user?.id);
+
       const transformedNotification = transformNotificationFromWebSocket(wsNotificationData);
+      console.log("[useUserNotifications] Transformed notification:", transformedNotification);
 
       if (isAuthenticated && user?.id) {
         // ===== USER ĐÃ LOGIN: STRATEGY MỚI =====
+        console.log("[useUserNotifications] User is authenticated, using new strategy");
+
         // 1. KHÔNG thêm vào main notifications
         // 2. CHỈ lưu vào wsNotifications để track
         // 3. CHỈ show UI effects
@@ -271,19 +279,25 @@ export const useUserNotifications = () => {
         // Cập nhật WebSocket notifications list (cho tracking)
         setWsNotifications((prev) => {
           const updated = [transformedNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
+          console.log("[useUserNotifications] Updated wsNotifications count:", updated.length);
           return updated;
         });
 
         // Show UI effects ngay lập tức
         setNotifications((prev) => {
+          console.log("[useUserNotifications] Current notifications count:", prev.length);
+
           // Kiểm tra duplicate trước
           if (isDuplicateNotification(transformedNotification, prev)) {
-            console.log("Duplicate WebSocket notification detected, skipping UI update");
+            console.log(
+              "[useUserNotifications] Duplicate notification detected, skipping UI update"
+            );
             return prev;
           }
 
           // Thêm vào đầu list để show UI, KHÔNG save localStorage
           const updated = [transformedNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
+          console.log("[useUserNotifications] New notifications count:", updated.length);
           return updated;
         });
 
@@ -294,14 +308,17 @@ export const useUserNotifications = () => {
         }
 
         autoSyncTimeoutRef.current = setTimeout(() => {
+          console.log("[useUserNotifications] Auto-syncing with API...");
           loadNotificationsFromAPI();
           autoSyncTimeoutRef.current = null;
         }, 3000); // 3 giây cho backend xử lý
       } else {
         // ===== USER CHƯA LOGIN: STRATEGY CŨ =====
+        console.log("[useUserNotifications] User NOT authenticated, using old strategy");
+
         setNotifications((prev) => {
           if (isDuplicateNotification(transformedNotification, prev)) {
-            console.log("Duplicate WebSocket notification detected, skipping");
+            console.log("[useUserNotifications] Duplicate notification detected, skipping");
             return prev;
           }
 
@@ -320,6 +337,7 @@ export const useUserNotifications = () => {
       }
 
       // Trigger visual effects cho cả 2 cases
+      console.log("[useUserNotifications] Triggering visual effects...");
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), SHAKE_DURATION);
 
@@ -334,6 +352,8 @@ export const useUserNotifications = () => {
           : undefined,
       });
 
+      console.log("[useUserNotifications] ====== addWebSocketNotification completed ======");
+
       return transformedNotification;
     },
     [saveNotifications, playNotificationSound, showBrowserNotification, isAuthenticated, user?.id]
@@ -342,6 +362,10 @@ export const useUserNotifications = () => {
   // Thêm thông báo mới (legacy function for backward compatibility)
   const addNotification = useCallback(
     (notification) => {
+      console.log("[useUserNotifications] ====== addNotification called ======");
+      console.log("[useUserNotifications] notification input:", notification);
+      console.log("[useUserNotifications] isAuthenticated:", isAuthenticated, "userId:", user?.id);
+
       const newNotification = {
         id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date().toISOString(),
@@ -350,26 +374,33 @@ export const useUserNotifications = () => {
         ...notification,
       };
 
+      console.log("[useUserNotifications] newNotification created:", newNotification);
+
       setNotifications((prev) => {
+        console.log("[useUserNotifications] setNotifications prev length:", prev.length);
+
         // Kiểm tra duplicate với utility function
         if (isDuplicateNotification(newNotification, prev)) {
           console.log(
-            "Duplicate notification detected, skipping:",
+            "[useUserNotifications] Duplicate notification detected, skipping:",
             newNotification.orderData?.orderCode || newNotification.id
           );
           return prev;
         }
 
         const updated = [newNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
+        console.log("[useUserNotifications] updated notifications length:", updated.length);
 
         // Clean duplicates từ toàn bộ array
         const cleanedUpdated = removeDuplicateNotifications(updated);
+        console.log("[useUserNotifications] cleanedUpdated length:", cleanedUpdated.length);
 
         saveNotifications(cleanedUpdated);
         return cleanedUpdated;
       });
 
       // Trigger visual effects
+      console.log("[useUserNotifications] Setting isShaking to true");
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), SHAKE_DURATION);
 
@@ -382,15 +413,18 @@ export const useUserNotifications = () => {
         actions: notification.orderData ? [{ action: "view", title: "Xem đơn hàng" }] : undefined,
       });
 
+      console.log("[useUserNotifications] ====== addNotification completed ======");
       return newNotification;
     },
-    [saveNotifications, playNotificationSound, showBrowserNotification]
+    [saveNotifications, playNotificationSound, showBrowserNotification, isAuthenticated, user?.id]
   );
 
   // Các loại thông báo cụ thể cho đơn hàng
   const addOrderConfirmedNotification = useCallback(
     (orderData) => {
-      return addNotification({
+      console.log("[useUserNotifications] ====== addOrderConfirmedNotification called ======");
+      console.log("[useUserNotifications] orderData:", orderData);
+      const result = addNotification({
         type: "ORDER_CONFIRMED",
         title: orderData.title || "Đơn hàng đã được xác nhận",
         message:
@@ -402,6 +436,8 @@ export const useUserNotifications = () => {
         priority: "high",
         category: "order_update",
       });
+      console.log("[useUserNotifications] addNotification result:", result);
+      return result;
     },
     [addNotification]
   );

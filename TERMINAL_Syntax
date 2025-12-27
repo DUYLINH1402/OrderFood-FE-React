@@ -1,0 +1,3 @@
+ <!-- build ứng dụng với Vite (một build tool hiện đại cho web apps) với môi trường production -->
+
+NODE_ENV=production npx vite build

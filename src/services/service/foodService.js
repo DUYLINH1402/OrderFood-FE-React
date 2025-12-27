@@ -1,7 +1,5 @@
 const useFirebase = import.meta.env.VITE_USE_FIREBASE === "true";
 
-import { getNewFoodsFromFirebase } from "../firebase/foodFirebase";
-
 import {
   getNewFoodsFromSQL,
   getFeaturedFoodsFromSQL,
@@ -12,6 +10,15 @@ import {
   getFoodBySlugFromSQL,
   updateFoodStatusFromSQL,
 } from "../api/foodApi";
+
+import {
+  getNewFoodsFromFirebase,
+  getFeaturedFoodsFromFirebase,
+  getBestSellerFoodsFromFirebase,
+  getAllFoodsFromFirebase,
+  getFoodsByCategoryFromFirebase,
+  getFoodBySlugFromFirebase,
+} from "../firebase/foodFirebase";
 
 // LẤY DANH SÁCH MÓN MỚI
 export const getNewFoods = async (page, size) => {

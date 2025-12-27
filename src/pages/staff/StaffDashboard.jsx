@@ -35,19 +35,7 @@ const StaffDashboard = () => {
   // Theo dõi authentication state toàn cục
   useGlobalAuthWatch();
 
-  // Early return nếu chưa authenticated để tránh render component và gọi API
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <SpinnerCube />
-          <p className="mt-4 text-gray-600">Đang kiểm tra phiên đăng nhập...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Sử dụng optimized orders hook
+  // Sử dụng optimized orders hook - phải gọi trước early return
   const {
     selectedTab,
     setSelectedTab,
@@ -60,7 +48,7 @@ const StaffDashboard = () => {
     updateOrderStatus: optimizedUpdateOrderStatus,
   } = useOptimizedOrders("processing");
 
-  // Sử dụng Staff Order WebSocket hook
+  // Sử dụng Staff Order WebSocket hook - phải gọi trước early return
   const {
     connected: wsConnected,
     connecting: wsConnecting,
@@ -74,7 +62,7 @@ const StaffDashboard = () => {
   const { addWebSocketNotification, addNewOrderNotification, addOrderStatusNotification } =
     useStaffNotifications();
 
-  // UI State
+  // UI State - phải khai báo tất cả hooks trước early return
   const [cancelReason, setCancelReason] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -230,6 +218,18 @@ const StaffDashboard = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedTab]);
+
+  // Early return nếu chưa authenticated - đặt SAU khi tất cả hooks đã được gọi
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <SpinnerCube />
+          <p className="mt-4 text-gray-600">Đang kiểm tra phiên đăng nhập...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Helper function để lấy ID từ order
   const getOrderId = (order) => order.orderId || order.id;

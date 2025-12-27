@@ -132,12 +132,12 @@ const StaffOrderDetailModal = ({ order, isOpen, onClose }) => {
       open={isOpen}
       onCancel={onClose}
       footer={null}
-      width="92vw"
+      width="80vw"
       style={{
         top: 10,
       }}
       styles={{
-        body: { maxHeight: "85vh", overflowY: "auto" },
+        body: { maxHeight: "80vh", overflowY: "auto" },
       }}
       className="staff-order-detail-modal">
       <div className="space-y-4 tablet:space-y-6">
@@ -202,7 +202,9 @@ const StaffOrderDetailModal = ({ order, isOpen, onClose }) => {
               <div className="flex justify-between items-center">
                 <Text className="text-sm tablet:text-md">Tổng tiền gốc:</Text>
                 <Text strong className="text-sm tablet:text-md desktop:text-md">
-                  {formatCurrency(order.originalAmount || order.totalPrice || 0)}
+                  {formatCurrency(
+                    order.totalBeforeDiscount || order.originalAmount || order.totalPrice || 0
+                  )}
                 </Text>
               </div>
 
@@ -251,7 +253,7 @@ const StaffOrderDetailModal = ({ order, isOpen, onClose }) => {
                   Tổng cộng:
                 </Text>
                 <Text strong className="text-base tablet:text-lg desktop:text-xl text-red-600">
-                  {formatCurrency(order.totalPrice || 0)}
+                  {formatCurrency(order.finalAmount || order.totalPrice || 0)}
                 </Text>
               </div>
             </div>
@@ -369,7 +371,7 @@ const StaffOrderDetailModal = ({ order, isOpen, onClose }) => {
               <div className="flex items-center space-x-1">
                 <FiClock className="text-gray-500" size={14} />
                 <Text type="secondary" className="text-gray-500 text-sm tablet:text-md">
-                  Thời Gian Thanh Toán:
+                  Thời Gian:
                 </Text>
               </div>
               <Text className="text-sm tablet:text-md break-all">

@@ -9,9 +9,9 @@ import SearchBar from "../SearchBar";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../store/slices/authSlice";
 import { clearCart } from "../../store/slices/cartSlice";
-import { useUserWebSocketContext } from "../../services/websocket/UserWebSocketProvider";
 import { useUserNotifications } from "../../hooks/useUserNotifications";
 import NotificationBellContainer from "../Notification/NotificationBellContainer";
+import { useUserWebSocketContext } from "../../services/websocket/UserWebSocketProvider";
 
 const Header = () => {
   const cartItems = useSelector((state) => state.cart.items);
@@ -23,64 +23,13 @@ const Header = () => {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [hideLoginCart, setHideLoginCart] = useState(false);
 
-  // Lấy trạng thái WebSocket từ context (đồng bộ với Layout)
-  const { connected: wsConnected, addMessageHandler } = useUserWebSocketContext();
-  const {
-    requestNotificationPermission,
-    addOrderConfirmedNotification,
-    addOrderInDeliveryNotification,
-    addOrderCompletedNotification,
-    addOrderCancelledNotification,
-    addSystemNotification,
-  } = useUserNotifications();
+  // Lấy trạng thái kết nối WebSocket
+  const wsContext = useUserWebSocketContext();
+  const wsConnected = wsContext?.connected || false;
 
-  // Đăng ký nhận thông báo từ BE khi WebSocket kết nối
-  useEffect(() => {
-    if (!wsConnected || !authUser) return;
-
-    // Đăng ký nhận thông báo từ BE với enum OrderStatus mới
-    const unsubOrderUpdate = addMessageHandler("orderUpdate", (data) => {
-      // Xử lý theo messageType từ BE
-      if (data.messageType === "CUSTOMER_ORDER_UPDATE") {
-        // Sử dụng orderStatus từ enum để tạo notification
-        switch (data.orderStatus?.toUpperCase()) {
-          case "CONFIRMED":
-            addOrderConfirmedNotification(data);
-            break;
-          case "DELIVERING":
-            addOrderInDeliveryNotification(data);
-            break;
-          case "COMPLETED":
-            addOrderCompletedNotification(data);
-            break;
-          case "CANCELLED":
-            addOrderCancelledNotification(data);
-            break;
-          default:
-            addSystemNotification(data);
-            break;
-        }
-      } else {
-        // Fallback cho các loại message khác
-        if (data.type === "ORDER_CONFIRMED") addOrderConfirmedNotification(data.orderData);
-        else if (data.type === "ORDER_IN_DELIVERY") addOrderInDeliveryNotification(data.orderData);
-        else if (data.type === "ORDER_COMPLETED") addOrderCompletedNotification(data.orderData);
-        else if (data.type === "ORDER_CANCELLED") addOrderCancelledNotification(data.orderData);
-        else addSystemNotification(data);
-      }
-    });
-
-    return () => unsubOrderUpdate();
-  }, [
-    wsConnected,
-    authUser,
-    addMessageHandler,
-    addOrderConfirmedNotification,
-    addOrderInDeliveryNotification,
-    addOrderCompletedNotification,
-    addOrderCancelledNotification,
-    addSystemNotification,
-  ]);
+  // Chỉ lấy requestNotificationPermission từ hook,
+  // việc xử lý WebSocket được thực hiện ở NotificationBellContainer
+  const { requestNotificationPermission } = useUserNotifications();
 
   // Request notification permission khi user đăng nhập lần đầu
   useEffect(() => {

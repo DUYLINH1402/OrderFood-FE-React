@@ -116,6 +116,7 @@ const OrderStatistics = () => {
         setAllOrders(orders);
         setStats(calculateStats(orders));
         setLastUpdated(new Date());
+        console.log("Loaded orders:", orders);
       } else {
         setOrdersError(response.message || "Không thể tải danh sách đơn hàng");
       }
@@ -226,11 +227,11 @@ const OrderStatistics = () => {
   // Calculate additional statistics
   const totalRevenue = filteredOrders
     .filter((order) => order.status === ORDER_STATUS.COMPLETED)
-    .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+    .reduce((sum, order) => sum + (order.finalAmount || 0), 0);
 
   const avgOrderValue =
     filteredOrders.length > 0
-      ? filteredOrders.reduce((sum, order) => sum + (order.totalPrice || 0), 0) /
+      ? filteredOrders.reduce((sum, order) => sum + (order.finalAmount || 0), 0) /
         filteredOrders.length
       : 0;
 
@@ -241,7 +242,7 @@ const OrderStatistics = () => {
         <div className="mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="mb-4 lg:mb-0">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center">
                 <FiBarChart className="w-6 h-6 mr-2 text-blue-600" />
                 Thống kê đơn hàng
               </h1>
@@ -438,7 +439,7 @@ const OrderStatistics = () => {
                         <div>
                           <p className="text-sm text-gray-600">
                             <span className="font-medium">Tổng tiền:</span>{" "}
-                            {searchResult.totalPrice?.toLocaleString() || 0} VNĐ
+                            {searchResult.finalAmount?.toLocaleString() || 0} VNĐ
                           </p>
                           <p className="text-sm text-gray-600">
                             <span className="font-medium">Thanh toán:</span>{" "}
@@ -641,7 +642,7 @@ const OrderStatistics = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-semibold text-gray-900">
-                              {order.totalPrice?.toLocaleString() || 0} VNĐ
+                              {order.finalAmount?.toLocaleString() || 0} VNĐ
                             </p>
                             <p className="text-sm text-gray-500">
                               {new Date(order.createdAt).toLocaleString("vi-VN")}

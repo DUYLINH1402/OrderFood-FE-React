@@ -8,8 +8,8 @@ const AdminDashboard = () => {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Bảng điều khiển quản trị</h1>
-        <p className="text-gray-600">Tổng quan hệ thống nhà hàng</p>
+        <h1 className="text-4xl font-bold text-gray-900">Bảng điều khiển quản trị</h1>
+        <p className="text-base text-gray-600">Tổng quan hệ thống nhà hàng</p>
       </div>
 
       {/* Thống kê tổng quan */}

@@ -10,6 +10,9 @@ class StaffOrderWebSocketService {
   constructor() {
     this.stompClient = null;
     this.connected = false;
+    this.connecting = false; // Cờ để tránh duplicate connection
+    this.registered = false; // Cờ để tránh duplicate registration
+    this.subscribed = false; // Cờ để tránh duplicate subscription
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000;
@@ -17,6 +20,47 @@ class StaffOrderWebSocketService {
     this.messageHandlers = new Map(); // Lưu trữ các handler cho từng loại message
     this.staffId = null;
     this.token = null;
+    this.debug = true; // Bật debug mode để giám sát WebSocket
+
+    // Message queue để buffer messages khi chưa có handler
+    this.messageQueue = new Map(); // Map<messageType, Array<data>>
+    this.maxQueueSize = 50; // Giới hạn số message trong queue
+    this.queueRetentionTime = 30000; // Thời gian giữ message trong queue (30 giây)
+
+    // Queue processor interval
+    this.queueProcessorInterval = null;
+    this.startQueueProcessor();
+  }
+
+  /**
+   * Bắt đầu queue processor để retry xử lý messages định kỳ
+   */
+  startQueueProcessor() {
+    // Dừng interval cũ nếu có
+    if (this.queueProcessorInterval) {
+      clearInterval(this.queueProcessorInterval);
+    }
+
+    // Kiểm tra và xử lý queue mỗi 2 giây
+    this.queueProcessorInterval = setInterval(() => {
+      this.processAllQueuedMessages();
+    }, 2000);
+  }
+
+  /**
+   * Xử lý tất cả messages trong queue cho tất cả messageTypes
+   */
+  processAllQueuedMessages() {
+    if (this.messageQueue.size === 0) {
+      return;
+    }
+
+    // Lặp qua tất cả messageTypes trong queue
+    for (const [messageType, queue] of this.messageQueue.entries()) {
+      if (queue.length > 0 && this.messageHandlers.has(messageType)) {
+        this.processQueuedMessages(messageType);
+      }
+    }
   }
 
   /**
@@ -26,25 +70,52 @@ class StaffOrderWebSocketService {
    */
   async connect(staffId, token) {
     if (this.connected) {
-      // console.log("🔗 WebSocket đã được kết nối rồi");
       return Promise.resolve();
     }
 
+    // Kiểm tra nếu đang trong quá trình kết nối
+    if (this.connecting) {
+      return Promise.resolve();
+    }
+
+    this.connecting = true; // Đánh dấu đang kết nối
     this.staffId = staffId;
     this.token = token;
 
     // Sử dụng HTTP URL thay vì WebSocket URL vì SockJS sẽ handle protocol
-    const wsUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8081"}/ws`;
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081").trim();
+    const wsUrl = `${baseUrl}/ws`;
 
     return new Promise((resolve, reject) => {
       try {
         // Tạo STOMP client với SockJS fallback
         this.stompClient = new Client({
           webSocketFactory: () => {
-            const sockJS = new SockJS(wsUrl);
+            const sockJS = new SockJS(wsUrl, null, {
+              // Thêm options cho SockJS để hỗ trợ production với HTTPS
+              transports: ["websocket", "xhr-streaming", "xhr-polling"],
+              timeout: 10000,
+            });
 
-            sockJS.onopen = () =>
-              (sockJS.onclose = () => (sockJS.onerror = (e) => console.error("SockJS error:", e)));
+            // Thêm listeners để debug SockJS
+            sockJS.onopen = () => {
+              console.log("[StaffOrderWS] SockJS connection opened");
+            };
+            sockJS.onerror = (e) => {
+              console.error("[StaffOrderWS] SockJS error:", e);
+              console.error("[StaffOrderWS] SockJS error details:", {
+                readyState: sockJS.readyState,
+                protocol: sockJS.protocol,
+                url: sockJS.url,
+              });
+            };
+            sockJS.onclose = (e) => {
+              console.log("[StaffOrderWS] SockJS connection closed:", {
+                code: e.code,
+                reason: e.reason,
+                wasClean: e.wasClean,
+              });
+            };
 
             return sockJS;
           },
@@ -58,17 +129,27 @@ class StaffOrderWebSocketService {
           reconnectDelay: this.reconnectDelay,
           heartbeatIncoming: 10000,
           heartbeatOutgoing: 10000,
-          // Thêm timeout để tránh kết nối treo
-          connectionTimeout: 10000,
+          // Tăng timeout cho production
+          connectionTimeout: 15000,
         });
 
         // Xử lý khi kết nối thành công
         this.stompClient.onConnect = (frame) => {
           this.connected = true;
+          this.connecting = false; // Reset cờ connecting
           this.reconnectAttempts = 0;
 
-          // Đăng ký staff ngay sau khi kết nối
-          this.registerStaff();
+          // Đợi để đảm bảo connection ổn định trước khi đăng ký
+          setTimeout(() => {
+            if (this.stompClient && this.stompClient.connected && this.stompClient.active) {
+              // Chỉ đăng ký nếu chưa đăng ký
+              if (!this.registered) {
+                this.registerStaff();
+              }
+            } else {
+              console.warn("[StaffOrderWS] Connection lost before registration");
+            }
+          }, 300);
 
           resolve();
         };
@@ -76,6 +157,7 @@ class StaffOrderWebSocketService {
         // Xử lý lỗi STOMP
         this.stompClient.onStompError = (frame) => {
           this.connected = false;
+          this.connecting = false;
 
           const errorMsg = frame.headers?.message || "Unknown STOMP error";
           reject(new Error(`STOMP Error: ${errorMsg}`));
@@ -84,12 +166,16 @@ class StaffOrderWebSocketService {
         // Xử lý lỗi WebSocket
         this.stompClient.onWebSocketError = (error) => {
           this.connected = false;
+          this.connecting = false;
           reject(error);
         };
 
         // Xử lý khi WebSocket đóng
         this.stompClient.onWebSocketClose = (event) => {
           this.connected = false;
+          this.connecting = false;
+          this.registered = false; // Reset để có thể đăng ký lại khi reconnect
+          this.subscribed = false; // Reset để có thể subscribe lại khi reconnect
           // Tự động reconnect nếu không phải do người dùng đóng
           if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
             this.scheduleReconnect();
@@ -99,6 +185,9 @@ class StaffOrderWebSocketService {
         // Xử lý khi ngắt kết nối
         this.stompClient.onDisconnect = () => {
           this.connected = false;
+          this.connecting = false;
+          this.registered = false;
+          this.subscribed = false;
           this.clearSubscriptions();
         };
         // Kích hoạt kết nối
@@ -123,21 +212,35 @@ class StaffOrderWebSocketService {
    * Đăng ký staff với server để nhận thông báo
    */
   registerStaff() {
-    if (!this.connected || !this.staffId) {
-      console.warn(" Không thể đăng ký staff: chưa kết nối hoặc thiếu staffId");
+    // Kiểm tra nếu đã đăng ký rồi
+    if (this.registered) {
+      return;
+    }
+
+    if (!this.stompClient) {
+      return;
+    }
+
+    if (!this.stompClient.connected || !this.stompClient.active) {
+      return;
+    }
+
+    if (!this.staffId) {
+      console.warn("[StaffOrderWS] Không thể đăng ký staff: thiếu staffId");
       return;
     }
 
     try {
       this.stompClient.publish({
         destination: "/app/staff/register",
-        body: this.staffId,
+        body: this.staffId.toString(),
         headers: {
           "Content-Type": "text/plain",
         },
       });
+      this.registered = true; // Đánh dấu đã đăng ký
     } catch (error) {
-      console.error("Lỗi khi đăng ký staff:", error);
+      console.error("[StaffOrderWS] Lỗi khi đăng ký staff:", error);
     }
   }
 
@@ -145,10 +248,17 @@ class StaffOrderWebSocketService {
    * Subscribe vào các topic để nhận thông báo
    */
   subscribeToOrderUpdates() {
-    if (!this.connected) {
-      console.warn(" Chưa kết nối WebSocket");
+    // Kiểm tra nếu đã subscribe rồi
+    if (this.subscribed) {
       return;
     }
+
+    if (!this.stompClient || !this.stompClient.connected) {
+      return;
+    }
+
+    // Đánh dấu đã subscribe
+    this.subscribed = true;
 
     // Subscribe nhận đơn hàng mới
     this.subscribe("/topic/new-orders", "newOrder", (message) => {
@@ -159,7 +269,7 @@ class StaffOrderWebSocketService {
         const orderData = JSON.parse(message.body.trim());
         this.notifyHandlers("newOrder", orderData);
       } catch (error) {
-        console.error(" Message body:", message.body);
+        console.error("[StaffOrderWS] Message body:", message.body);
       }
     });
   }
@@ -183,7 +293,20 @@ class StaffOrderWebSocketService {
     if (!this.messageHandlers.has(messageType)) {
       this.messageHandlers.set(messageType, new Set());
     }
-    this.messageHandlers.get(messageType).add(handler);
+
+    const existingHandlers = this.messageHandlers.get(messageType);
+
+    // Nếu đã có handler, xóa handler cũ trước khi thêm mới
+    // Điều này giúp tránh duplicate handlers khi component re-render
+    if (existingHandlers.size > 0) {
+      existingHandlers.clear();
+    }
+    existingHandlers.add(handler);
+
+    // Xử lý các messages đã queue cho messageType này
+    setTimeout(() => {
+      this.processQueuedMessages(messageType);
+    }, 100);
 
     // Trả về hàm để unsubscribe
     return () => {
@@ -199,18 +322,79 @@ class StaffOrderWebSocketService {
 
   /**
    * Thông báo đến các handlers
+   * Nếu không có handler, message sẽ được queue lại để xử lý sau
    */
   notifyHandlers(messageType, data) {
     const handlers = this.messageHandlers.get(messageType);
-    if (handlers) {
+    if (handlers && handlers.size > 0) {
       handlers.forEach((handler) => {
         try {
           handler(data);
         } catch (error) {
-          console.error(`Lỗi trong handler ${messageType}:`, error);
+          console.error(`[StaffOrderWS] Lỗi trong handler ${messageType}:`, error);
         }
       });
+    } else {
+      // Queue message để xử lý sau khi có handler đăng ký
+      this.queueMessage(messageType, data);
     }
+  }
+
+  /**
+   * Queue message để xử lý sau khi có handler
+   */
+  queueMessage(messageType, data) {
+    if (!this.messageQueue.has(messageType)) {
+      this.messageQueue.set(messageType, []);
+    }
+
+    const queue = this.messageQueue.get(messageType);
+
+    // Thêm timestamp để có thể xóa message cũ
+    const queuedMessage = {
+      data,
+      timestamp: Date.now(),
+    };
+
+    queue.push(queuedMessage);
+
+    // Giới hạn kích thước queue
+    if (queue.length > this.maxQueueSize) {
+      queue.shift(); // Xóa message cũ nhất
+    }
+  }
+
+  /**
+   * Xử lý các messages đã queue cho một messageType
+   */
+  processQueuedMessages(messageType) {
+    const queue = this.messageQueue.get(messageType);
+    if (!queue || queue.length === 0) {
+      return;
+    }
+
+    const now = Date.now();
+    const handlers = this.messageHandlers.get(messageType);
+
+    if (!handlers || handlers.size === 0) {
+      return;
+    }
+
+    // Xử lý tất cả messages trong queue còn hợp lệ (chưa hết hạn)
+    const validMessages = queue.filter((msg) => now - msg.timestamp < this.queueRetentionTime);
+
+    validMessages.forEach((queuedMessage) => {
+      handlers.forEach((handler) => {
+        try {
+          handler(queuedMessage.data);
+        } catch (error) {
+          console.error(`Lỗi khi xử lý queued message ${messageType}:`, error);
+        }
+      });
+    });
+
+    // Xóa queue sau khi xử lý
+    this.messageQueue.delete(messageType);
   }
 
   /**
@@ -230,7 +414,6 @@ class StaffOrderWebSocketService {
           "Content-Type": "text/plain",
         },
       });
-      // console.log("Đã yêu cầu chi tiết đơn hàng:", orderId);
       return true;
     } catch (error) {
       console.error("Lỗi khi yêu cầu chi tiết đơn hàng:", error);
@@ -276,7 +459,7 @@ class StaffOrderWebSocketService {
    */
   scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error("❌ Đã hết số lần thử reconnect");
+      console.error("Đã hết số lần thử reconnect");
       return;
     }
 
@@ -285,7 +468,6 @@ class StaffOrderWebSocketService {
 
     setTimeout(() => {
       if (!this.connected && this.staffId && this.token) {
-        // console.log(`🔄 Đang thử reconnect lần ${this.reconnectAttempts}`);
         this.connect(this.staffId, this.token).catch((error) => {
           console.error("Reconnect thất bại:", error);
         });
@@ -312,14 +494,17 @@ class StaffOrderWebSocketService {
    */
   disconnect() {
     if (this.stompClient) {
-      // console.log("🔌 Đang ngắt kết nối WebSocket...");
       this.clearSubscriptions();
       this.stompClient.deactivate();
       this.connected = false;
+      this.connecting = false; // Reset flag connecting
+      this.registered = false; // Reset flag registered
+      this.subscribed = false; // Reset flag subscribed
       this.staffId = null;
       this.token = null;
       this.reconnectAttempts = 0;
       this.messageHandlers.clear();
+      this.messageQueue.clear(); // Clear message queue
     }
   }
 

@@ -1,5 +1,4 @@
-/* Custom styles for Order Notification Modal */
-.order-notification-modal .ant-modal-header {
+Custom styles for Order Notification Modal .order-notification-modal .ant-modal-header {
   background: linear-gradient(90deg, #1890ff 0%, #36cfc9 100%);
   border-radius: 8px 8px 0 0;
 }
