@@ -6,10 +6,16 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [
+    "redirects": [
       {
-        "source": "**",
-        "destination": "/index.html"
+        "source": "https://oder-4c1f2.web.app/**",  
+        "destination": "https://dongxanhfood.shop/:splat",
+        "type": 301
+      },
+      {
+        "source": "https://oder-4c1f2.firebaseapp.com/**",  
+        "destination": "https://dongxanhfood.shop/:splat",
+        "type": 301
       }
     ]
   }

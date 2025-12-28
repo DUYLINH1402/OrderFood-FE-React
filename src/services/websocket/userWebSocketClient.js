@@ -40,9 +40,6 @@ class UserWebSocketClient {
       this.eventListeners.set(eventType, new Set());
     }
     this.eventListeners.get(eventType).add(callback);
-
-    console.log(`[UserWebSocket] Event listener added for: ${eventType}`);
-
     return () => {
       const listeners = this.eventListeners.get(eventType);
       if (listeners) {
@@ -57,7 +54,6 @@ class UserWebSocketClient {
   emitEvent(eventType, data) {
     const listeners = this.eventListeners.get(eventType);
     if (listeners && listeners.size > 0) {
-      console.log(`[UserWebSocket] Emitting event ${eventType} to ${listeners.size} listeners`);
       listeners.forEach((callback) => {
         try {
           callback(data);
@@ -90,15 +86,9 @@ class UserWebSocketClient {
     if (this.messageQueue.size === 0) {
       return;
     }
-
-    console.log(`[UserWebSocket] Queue processor checking ${this.messageQueue.size} queues...`);
-
     // Lặp qua tất cả messageTypes trong queue
     for (const [messageType, queue] of this.messageQueue.entries()) {
       if (queue.length > 0 && this.messageHandlers.has(messageType)) {
-        console.log(
-          `[UserWebSocket] Queue processor found handlers for ${messageType}, processing...`
-        );
         this.processQueuedMessages(messageType);
       }
     }
@@ -112,19 +102,16 @@ class UserWebSocketClient {
   async connect(userId, token) {
     // Kiểm tra nếu đã kết nối với cùng user
     if (this.connected && this.userId === userId) {
-      console.log("[UserWebSocket] Already connected with userId:", userId);
       return Promise.resolve();
     }
 
     // Kiểm tra nếu đang trong quá trình kết nối
     if (this.connecting) {
-      console.log("[UserWebSocket] Connection already in progress, skipping...");
       return Promise.resolve();
     }
 
     // Ngắt kết nối cũ nếu đang kết nối với user khác
     if (this.connected && this.userId !== userId) {
-      console.log("[UserWebSocket] Disconnecting from previous user:", this.userId);
       this.disconnect();
     }
 
@@ -137,21 +124,10 @@ class UserWebSocketClient {
     const baseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081").trim();
     const wsUrl = `${baseUrl}/ws`;
 
-    // Log chi tiết để debug production
-    console.log("[UserWebSocket] ====== CONNECTION DEBUG ======");
-    console.log("[UserWebSocket] Environment:", import.meta.env.MODE);
-    console.log("[UserWebSocket] API Base URL:", baseUrl);
-    console.log("[UserWebSocket] WebSocket URL:", wsUrl);
-    console.log("[UserWebSocket] User ID:", userId);
-    console.log("[UserWebSocket] Token exists:", !!token);
-    console.log("[UserWebSocket] Token length:", token ? token.length : 0);
-    console.log("[UserWebSocket] ===============================");
-
     return new Promise((resolve, reject) => {
       try {
         this.stompClient = new Client({
           webSocketFactory: () => {
-            console.log("[UserWebSocket] Creating SockJS connection to:", wsUrl);
             const sockJS = new SockJS(wsUrl, null, {
               // Thêm options cho SockJS để debug
               transports: ["websocket", "xhr-streaming", "xhr-polling"],
@@ -159,22 +135,12 @@ class UserWebSocketClient {
             });
 
             // Thêm listeners để debug SockJS
-            sockJS.onopen = () => {
-              console.log("[UserWebSocket] SockJS connection opened");
-            };
             sockJS.onerror = (e) => {
               console.error("[UserWebSocket] SockJS error:", e);
               console.error("[UserWebSocket] SockJS error details:", {
                 readyState: sockJS.readyState,
                 protocol: sockJS.protocol,
                 url: sockJS.url,
-              });
-            };
-            sockJS.onclose = (e) => {
-              console.log("[UserWebSocket] SockJS connection closed:", {
-                code: e.code,
-                reason: e.reason,
-                wasClean: e.wasClean,
               });
             };
 
@@ -191,19 +157,10 @@ class UserWebSocketClient {
           heartbeatIncoming: 10000,
           heartbeatOutgoing: 10000,
           connectionTimeout: 15000, // Tăng timeout cho production
-
-          // Thêm debug cho STOMP
-          debug: (str) => {
-            if (this.debug) {
-              console.log("[UserWebSocket] STOMP Debug:", str);
-            }
-          },
         });
 
         // Xử lý khi kết nối thành công
         this.stompClient.onConnect = (frame) => {
-          console.log("[UserWebSocket] STOMP connected successfully");
-          console.log("[UserWebSocket] Connection frame:", frame);
           this.connected = true;
           this.connecting = false; // Reset cờ connecting
           this.reconnectAttempts = 0;
@@ -214,7 +171,6 @@ class UserWebSocketClient {
             if (this.stompClient && this.stompClient.connected && this.stompClient.active) {
               // Chỉ đăng ký nếu chưa đăng ký
               if (!this.registered) {
-                console.log("[UserWebSocket] Registering user after stable connection");
                 this.registerUser();
               }
 
@@ -222,7 +178,6 @@ class UserWebSocketClient {
               if (!this.subscribed) {
                 setTimeout(() => {
                   if (this.stompClient && this.stompClient.connected) {
-                    console.log("[UserWebSocket] Subscribing to user topics");
                     this.subscribeToUserTopics();
                   } else {
                     console.warn("[UserWebSocket] Connection lost before subscribing to topics");
@@ -264,20 +219,11 @@ class UserWebSocketClient {
 
         // Xử lý khi WebSocket đóng
         this.stompClient.onWebSocketClose = (event) => {
-          console.log("[UserWebSocket] WebSocket closed:", {
-            code: event.code,
-            reason: event.reason,
-            wasClean: event.wasClean,
-          });
           this.connected = false;
           this.connecting = false;
           this.registered = false; // Reset để có thể đăng ký lại khi reconnect
           this.subscribed = false; // Reset để có thể subscribe lại khi reconnect
           if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
-            console.log(
-              "[UserWebSocket] Scheduling reconnect, attempt:",
-              this.reconnectAttempts + 1
-            );
             this.scheduleReconnect();
           }
         };
@@ -314,7 +260,6 @@ class UserWebSocketClient {
   registerUser() {
     // Kiểm tra nếu đã đăng ký rồi
     if (this.registered) {
-      console.log("[UserWebSocket] User already registered, skipping...");
       return;
     }
 
@@ -338,7 +283,6 @@ class UserWebSocketClient {
     }
 
     try {
-      console.log("[UserWebSocket] Đang đăng ký user:", this.userId);
       this.stompClient.publish({
         destination: "/app/user/register",
         body: this.userId.toString(),
@@ -347,7 +291,6 @@ class UserWebSocketClient {
         },
       });
       this.registered = true; // Đánh dấu đã đăng ký
-      console.log("[UserWebSocket] Đăng ký user thành công");
     } catch (error) {
       console.error("[UserWebSocket] Lỗi khi đăng ký user:", error);
     }
@@ -359,7 +302,6 @@ class UserWebSocketClient {
   subscribeToUserTopics() {
     // Kiểm tra nếu đã subscribe rồi
     if (this.subscribed) {
-      console.log("[UserWebSocket] Already subscribed to topics, skipping...");
       return;
     }
 
@@ -379,13 +321,8 @@ class UserWebSocketClient {
     // Subscribe vào queue riêng của user cho order updates
     // Backend gửi tới: /user/{userId}/queue/order-updates
     const orderUpdatesDestination = `/user/${this.userId}/queue/order-updates`;
-    console.log("[UserWebSocket] Subscribing to:", orderUpdatesDestination);
 
     this.subscribe(orderUpdatesDestination, "orderUpdate", (message) => {
-      console.log("[UserWebSocket] ====== RECEIVED ORDER UPDATE ======");
-      console.log("[UserWebSocket] Raw message:", message);
-      console.log("[UserWebSocket] Message body:", message.body);
-
       try {
         if (!message.body) {
           console.warn("Empty order update message body");
@@ -399,11 +336,9 @@ class UserWebSocketClient {
         if (message.body.trim().startsWith("{")) {
           // Đây là JSON
           data = JSON.parse(message.body);
-          console.log("[UserWebSocket] Parsed JSON data:", data);
         } else {
           // Đây có thể là định dạng key=value
           data = this.parseKeyValueFormat(message.body);
-          console.log("[UserWebSocket] Parsed key=value data:", data);
         }
 
         this.notifyHandlers("orderUpdate", data);
@@ -492,7 +427,6 @@ class UserWebSocketClient {
    */
   subscribe(destination, key, callback) {
     if (this.subscriptions.has(key)) {
-      console.log(`[UserWebSocket] Already subscribed to ${destination} with key ${key}`);
       return this.subscriptions.get(key);
     }
 
@@ -504,9 +438,7 @@ class UserWebSocketClient {
     }
 
     try {
-      console.log(`[UserWebSocket] Subscribing to ${destination}...`);
       const subscription = this.stompClient.subscribe(destination, (message) => {
-        console.log(`[UserWebSocket] Message received on ${destination}:`, message);
         // Gọi callback được truyền vào
         if (typeof callback === "function") {
           callback(message);
@@ -515,9 +447,7 @@ class UserWebSocketClient {
         }
       });
       this.subscriptions.set(key, subscription);
-      console.log(
-        `[UserWebSocket] Successfully subscribed to ${destination} with id: ${subscription.id}`
-      );
+
       return subscription;
     } catch (error) {
       console.error(`[UserWebSocket] Lỗi khi subscribe vào ${destination}:`, error);
@@ -547,13 +477,7 @@ class UserWebSocketClient {
     if (existingHandlers.size > 0) {
       existingHandlers.clear();
     }
-
     existingHandlers.add(handler);
-
-    console.log(
-      `[UserWebSocket] Handler registered for ${messageType}. Total handlers:`,
-      Array.from(this.messageHandlers.keys())
-    );
 
     // Xử lý các messages đã queue cho messageType này
     // Delay một chút để đảm bảo handler đã được đăng ký hoàn toàn
@@ -579,15 +503,11 @@ class UserWebSocketClient {
    * Đồng thời emit event để các component có thể subscribe
    */
   notifyHandlers(messageType, data) {
-    console.log(`[UserWebSocket] notifyHandlers called for: ${messageType}`, data);
-    console.log(`[UserWebSocket] Current handlers:`, Array.from(this.messageHandlers.keys()));
-
     // Luôn emit event để broadcast ra tất cả listeners
     this.emitEvent(messageType, data);
 
     const handlers = this.messageHandlers.get(messageType);
     if (handlers && handlers.size > 0) {
-      console.log(`[UserWebSocket] Found ${handlers.size} handlers for ${messageType}`);
       handlers.forEach((handler) => {
         try {
           handler(data);
@@ -597,7 +517,6 @@ class UserWebSocketClient {
       });
     } else {
       // Queue message để xử lý sau khi có handler đăng ký
-      console.log(`[UserWebSocket] No handlers for ${messageType}, queueing message...`);
       this.queueMessage(messageType, data);
     }
   }
@@ -624,8 +543,6 @@ class UserWebSocketClient {
     if (queue.length > this.maxQueueSize) {
       queue.shift(); // Xóa message cũ nhất
     }
-
-    console.log(`[UserWebSocket] Message queued for ${messageType}. Queue size: ${queue.length}`);
   }
 
   /**
@@ -636,9 +553,6 @@ class UserWebSocketClient {
     if (!queue || queue.length === 0) {
       return;
     }
-
-    console.log(`[UserWebSocket] Processing ${queue.length} queued messages for ${messageType}`);
-
     const now = Date.now();
     const handlers = this.messageHandlers.get(messageType);
 
@@ -652,10 +566,6 @@ class UserWebSocketClient {
     validMessages.forEach((queuedMessage) => {
       handlers.forEach((handler) => {
         try {
-          console.log(
-            `[UserWebSocket] Processing queued message for ${messageType}:`,
-            queuedMessage.data
-          );
           handler(queuedMessage.data);
         } catch (error) {
           console.error(`Lỗi khi xử lý queued message ${messageType}:`, error);
@@ -665,7 +575,6 @@ class UserWebSocketClient {
 
     // Xóa queue sau khi xử lý
     this.messageQueue.delete(messageType);
-    console.log(`[UserWebSocket] Cleared queue for ${messageType}`);
   }
 
   /**
@@ -815,7 +724,6 @@ class UserWebSocketClient {
    * Ngắt kết nối WebSocket
    */
   disconnect() {
-    console.log("[UserWebSocket] Disconnecting...");
     if (this.stompClient) {
       this.clearSubscriptions();
       this.stompClient.deactivate();

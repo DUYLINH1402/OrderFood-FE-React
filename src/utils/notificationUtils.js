@@ -107,31 +107,6 @@ export const isHighPriorityNotification = (orderStatus) => {
   const highPriorityStatuses = ["CONFIRMED", "DELIVERING", "CANCELLED"];
   return highPriorityStatuses.includes(orderStatus?.toUpperCase());
 };
-
-/**
- * Tạo âm thanh thông báo dựa trên loại đơn hàng
- * @param {string} orderStatus - Trạng thái đơn hàng từ BE enum
- * @returns {string} - Tên file âm thanh
- */
-// export const getNotificationSound = (orderStatus) => {
-//   switch (orderStatus?.toUpperCase()) {
-//     case "PENDING":
-//       return "pending.mp3";
-//     case "PROCESSING":
-//       return "processing.mp3";
-//     case "CONFIRMED":
-//       return "confirmation.mp3";
-//     case "DELIVERING":
-//       return "priority.mp3";
-//     case "COMPLETED":
-//       return "success.mp3";
-//     case "CANCELLED":
-//       return "alert.mp3";
-//     default:
-//       return "default.mp3";
-//   }
-// };
-
 /**
  * Lọc thông báo theo trạng thái
  * @param {Array} notifications - Danh sách thông báo
