@@ -10,6 +10,12 @@ export const useGlobalAuthWatch = () => {
 
   useEffect(() => {
     const checkAuthAndRedirect = () => {
+      // Kiểm tra nếu đang trong quá trình logout thì không redirect
+      const isLoggingOut = sessionStorage.getItem("isLoggingOut") === "true";
+      if (isLoggingOut) {
+        return;
+      }
+
       const currentPath = window.location.pathname;
       const protectedPaths = ["/staff", "/admin", "/profile"];
       const isProtectedPath = protectedPaths.some((path) => currentPath.startsWith(path));
@@ -43,6 +49,12 @@ export const useGlobalAuthWatch = () => {
   // Theo dõi storage changes từ các tab khác
   useEffect(() => {
     const handleStorageChange = (event) => {
+      // Kiểm tra nếu đang trong quá trình logout thì không redirect
+      const isLoggingOut = sessionStorage.getItem("isLoggingOut") === "true";
+      if (isLoggingOut) {
+        return;
+      }
+
       if (event.key === "accessToken" || event.key === "user") {
         const currentPath = window.location.pathname;
         const protectedPaths = ["/staff", "/admin", "/profile"];

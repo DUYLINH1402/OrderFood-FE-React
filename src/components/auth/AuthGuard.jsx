@@ -10,9 +10,17 @@ const AuthGuard = ({ children, requiredRole = null, allowedRoles = [] }) => {
   const { isAuthenticated, userRole } = useAuth();
   const location = useLocation();
 
-  // Nếu chưa đăng nhập
-  if (!isAuthenticated) {
+  // Kiểm tra nếu đang trong quá trình logout thì không redirect
+  const isLoggingOut = sessionStorage.getItem("isLoggingOut") === "true";
+
+  // Nếu chưa đăng nhập và không phải đang logout
+  if (!isAuthenticated && !isLoggingOut) {
     return <Navigate to="/dang-nhap" state={{ from: location.pathname }} replace />;
+  }
+
+  // Nếu đang logout, cho phép render children (sẽ reload trang ngay sau đó)
+  if (isLoggingOut) {
+    return children;
   }
 
   // Nếu có yêu cầu role cụ thể

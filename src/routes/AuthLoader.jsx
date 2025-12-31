@@ -9,6 +9,11 @@ export default function AuthLoader({ children }) {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const hasInitialized = useRef(false);
 
+  // Clear flag logout khi component mount (sau khi page reload)
+  useEffect(() => {
+    sessionStorage.removeItem("isLoggingOut");
+  }, []);
+
   useEffect(() => {
     // Ngăn chặn việc chạy lại nếu đã khởi tạo hoặc đã login
     if (hasInitialized.current || isLoggedIn) {

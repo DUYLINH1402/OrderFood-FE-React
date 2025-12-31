@@ -1,55 +1,118 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Select, Switch, message } from "antd";
-import { createAdminUserApi } from "../../../services/api/adminUserApi";
+import React, { useState } from "react";
+import { Modal, Form, Input, Select, Switch, Button, Row, Col, Tooltip, message, Tag } from "antd";
+import {
+  UserAddOutlined,
+  MailOutlined,
+  LockOutlined,
+  PhoneOutlined,
+  IdcardOutlined,
+  LinkOutlined,
+  SafetyCertificateOutlined,
+  ReloadOutlined,
+  UserOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 import { toast } from "react-toastify";
+import { createAdminUserApi } from "../../../services/api/adminUserApi";
+import { createAdminEmployeeApi } from "../../../services/api/adminEmployeeApi";
 
 const { Option } = Select;
-
-// Role options
-const ROLE_OPTIONS = [
-  { value: "ROLE_USER", label: "Khách hàng" },
-  { value: "ROLE_STAFF", label: "Nhân viên" },
-  { value: "ROLE_ADMIN", label: "Quản trị viên" },
-];
 
 const CreateUserModal = ({ open, onClose, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("ROLE_USER");
 
-  // Reset form khi mở modal
-  useEffect(() => {
-    if (open) {
-      form.resetFields();
-      form.setFieldsValue({
-        roleCode: "ROLE_USER",
-        isActive: true,
-        isVerified: false,
-      });
+  const handleClose = () => {
+    form.resetFields();
+    setSelectedRole("ROLE_USER"); // Reset về mặc định
+    onClose();
+  };
+
+  // Tạo mật khẩu ngẫu nhiên
+  const generatePassword = () => {
+    const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowercase = "abcdefghijklmnopqrstuvwxyz";
+    const numbers = "0123456789";
+    const symbols = "!@#$%^&*";
+
+    // Đảm bảo mỗi loại có ít nhất 1 ký tự
+    let password = "";
+    password += uppercase[Math.floor(Math.random() * uppercase.length)];
+    password += lowercase[Math.floor(Math.random() * lowercase.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += symbols[Math.floor(Math.random() * symbols.length)];
+
+    // Thêm các ký tự ngẫu nhiên còn lại cho đủ độ dài 12
+    const allChars = uppercase + lowercase + numbers + symbols;
+    for (let i = 0; i < 8; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
     }
-  }, [open, form]);
 
-  // Xử lý submit form
+    // Trộn ngẫu nhiên chuỗi mật khẩu
+    password = password
+      .split("")
+      .sort(() => 0.5 - Math.random())
+      .join("");
+
+    form.setFieldsValue({
+      password: password,
+      confirmPassword: password,
+    });
+
+    message.success("Đã tạo mật khẩu ngẫu nhiên!");
+    navigator.clipboard.writeText(password);
+    message.info("Đã copy vào bộ nhớ tạm");
+  };
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
 
-      const response = await createAdminUserApi(values);
+      // 1. Chuẩn bị payload cơ bản
+      const payload = {
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        fullName: values.fullName || null,
+        phoneNumber: values.phoneNumber || null,
+        address: values.address || null,
+        avatarUrl: values.avatarUrl || null,
+        isActive: values.isActive ?? true,
+        isVerified: values.isVerified ?? false,
+      };
+
+      let response;
+
+      // 2. PHÂN LUỒNG VÀ TRUYỀN ROLE ĐÚNG ĐỊNH DẠNG BE CẦN
+      if (values.roleCode === "ROLE_USER") {
+        // Đối với User thông thường, gửi kèm roleCode
+        response = await createAdminUserApi({
+          ...payload,
+          roleCode: values.roleCode,
+        });
+      } else {
+        // ĐỐI VỚI STAFF/ADMIN: Kiểm tra lại BE cần field nào?
+        // Thường BE sẽ cần 'role' (string) hoặc 'roles' (array)
+        response = await createAdminEmployeeApi({
+          ...payload,
+          role: values.roleCode, // Thêm dòng này nếu BE cần trường 'role'
+          roles: [values.roleCode], // Thêm dòng này nếu BE cần mảng 'roles'
+        });
+      }
 
       if (response.success) {
-        toast.success("Tạo người dùng thành công");
+        toast.success(`Tạo tài khoản [${values.roleCode}] thành công!`);
+        handleClose();
         onSuccess?.();
-        onClose();
       } else {
-        toast.error(response.message || "Không thể tạo người dùng");
+        toast.error(response.message || "Không thể tạo tài khoản");
       }
     } catch (error) {
-      if (error.errorFields) {
-        // Lỗi validation form
-        return;
-      }
-      console.error("Lỗi khi tạo người dùng:", error);
-      toast.error("Đã xảy ra lỗi khi tạo người dùng");
+      // ... xử lý lỗi
     } finally {
       setLoading(false);
     }
@@ -58,192 +121,212 @@ const CreateUserModal = ({ open, onClose, onSuccess }) => {
   return (
     <Modal
       open={open}
-      onCancel={onClose}
+      onCancel={handleClose}
       title={
-        <div className="flex items-center">
-          <svg
-            className="w-5 h-5 mr-2 text-green-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-            />
-          </svg>
-          Thêm người dùng mới
+        <div className="flex items-center gap-3 py-3 border-b border-gray-100">
+          <div className="w-11 h-11 rounded-full bg-indigo-50 flex items-center justify-center border border-indigo-100">
+            <UserAddOutlined className="text-indigo-600 text-xl" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 m-0">Tạo Tài Khoản Mới</h3>
+            <p className="text-sm text-gray-500 m-0">Quản lý người dùng và nhân viên hệ thống</p>
+          </div>
         </div>
       }
-      width={600}
+      footer={[
+        <Button key="cancel" onClick={handleClose} className="hover:bg-gray-100 border-gray-300">
+          Đóng
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          loading={loading}
+          onClick={handleSubmit}
+          className="bg-indigo-600 hover:bg-indigo-500 h-10 px-6 font-medium shadow-sm"
+          icon={<CheckOutlined />}>
+          Xác nhận tạo
+        </Button>,
+      ]}
+      width={850}
       centered
-      okText="Tạo người dùng"
-      cancelText="Hủy"
-      onOk={handleSubmit}
-      confirmLoading={loading}
-      okButtonProps={{
-        className: "bg-indigo-600 hover:bg-indigo-700",
-      }}>
-      <Form form={form} layout="vertical" className="mt-4">
-        {/* Thông tin đăng nhập */}
-        <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-            <svg
-              className="w-4 h-4 mr-2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-              />
-            </svg>
-            Thông tin đăng nhập
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item
-              name="username"
-              label="Tên đăng nhập"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên đăng nhập" },
-                { min: 3, message: "Tên đăng nhập phải có ít nhất 3 ký tự" },
-                { max: 50, message: "Tên đăng nhập không được quá 50 ký tự" },
-                {
-                  pattern: /^[a-zA-Z0-9_]+$/,
-                  message: "Tên đăng nhập chỉ chứa chữ cái, số và dấu gạch dưới",
-                },
-              ]}>
-              <Input placeholder="Nhập tên đăng nhập" />
-            </Form.Item>
+      destroyOnClose
+      maskClosable={false}>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{
+          roleCode: "ROLE_USER",
+          isActive: true,
+          isVerified: false,
+        }}
+        className="pt-4 px-2"
+        onValuesChange={(changedValues) => {
+          if (changedValues.roleCode) {
+            setSelectedRole(changedValues.roleCode);
+          }
+        }}>
+        <Row gutter={24}>
+          {/* CỘT TRÁI: THÔNG TIN HỆ THỐNG */}
+          <Col span={12}>
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 h-full flex flex-col">
+              <div className="flex items-center gap-2 mb-4">
+                <SafetyCertificateOutlined className="text-indigo-600" />
+                <span className="font-bold text-gray-700">Thông tin đăng nhập & Vai trò</span>
+              </div>
 
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: "Vui lòng nhập email" },
-                { type: "email", message: "Email không hợp lệ" },
-              ]}>
-              <Input placeholder="Nhập địa chỉ email" />
-            </Form.Item>
-          </div>
+              {/* CHỌN VAI TRÒ - ĐIỂM KHÁC BIỆT CHÍNH */}
+              <div className="mb-4 bg-white p-3 rounded border border-gray-200 shadow-sm">
+                <Form.Item name="roleCode" label="Loại tài khoản" className="mb-0">
+                  <Select size="large" className="w-full">
+                    <Option value="ROLE_USER">
+                      <div className="flex items-center gap-2">
+                        <UserOutlined className="text-green-500" />
+                        <span>Khách hàng (User)</span>
+                      </div>
+                    </Option>
+                    <Option value="ROLE_STAFF">
+                      <div className="flex items-center gap-2">
+                        <TeamOutlined className="text-blue-500" />
+                        <span>Nhân viên (Staff)</span>
+                      </div>
+                    </Option>
+                    <Option value="ROLE_ADMIN">
+                      <div className="flex items-center gap-2">
+                        <SafetyCertificateOutlined className="text-red-500" />
+                        <span>Quản trị viên (Admin)</span>
+                      </div>
+                    </Option>
+                  </Select>
+                </Form.Item>
 
-          <Form.Item
-            name="password"
-            label="Mật khẩu"
-            rules={[
-              { required: true, message: "Vui lòng nhập mật khẩu" },
-              { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
-              { max: 100, message: "Mật khẩu không được quá 100 ký tự" },
-            ]}>
-            <Input.Password placeholder="Nhập mật khẩu" />
-          </Form.Item>
-        </div>
+                {/* Hiển thị chú thích tùy theo role */}
+                <div className="mt-2 text-sm">
+                  {selectedRole === "ROLE_USER" && <Tag color="green">Khách hàng mua sắm</Tag>}
+                  {selectedRole === "ROLE_STAFF" && <Tag color="blue">Nhân viên nhà hàng</Tag>}
+                  {selectedRole === "ROLE_ADMIN" && <Tag color="red">Toàn quyền hệ thống</Tag>}
+                </div>
+              </div>
 
-        {/* Thông tin cá nhân */}
-        <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-            <svg
-              className="w-4 h-4 mr-2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            Thông tin cá nhân
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item
-              name="fullName"
-              label="Họ và tên"
-              rules={[{ max: 100, message: "Họ tên không được quá 100 ký tự" }]}>
-              <Input placeholder="Nhập họ và tên" />
-            </Form.Item>
+              <Form.Item
+                name="username"
+                label="Tên đăng nhập"
+                rules={[
+                  { required: true, message: "Bắt buộc nhập" },
+                  { pattern: /^[a-zA-Z0-9_]+$/, message: "Không chứa ký tự đặc biệt" },
+                ]}>
+                <Input
+                  prefix={<UserOutlined className="text-gray-400" />}
+                  placeholder="VD: user123"
+                />
+              </Form.Item>
 
-            <Form.Item
-              name="phoneNumber"
-              label="Số điện thoại"
-              rules={[
-                { max: 20, message: "Số điện thoại không được quá 20 ký tự" },
-                {
-                  pattern: /^[0-9+\-\s]*$/,
-                  message: "Số điện thoại không hợp lệ",
-                },
-              ]}>
-              <Input placeholder="Nhập số điện thoại" />
-            </Form.Item>
-          </div>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[{ required: true, type: "email", message: "Email không hợp lệ" }]}>
+                <Input
+                  prefix={<MailOutlined className="text-gray-400" />}
+                  placeholder="VD: email@example.com"
+                />
+              </Form.Item>
 
-          <Form.Item
-            name="address"
-            label="Địa chỉ"
-            rules={[{ max: 255, message: "Địa chỉ không được quá 255 ký tự" }]}>
-            <Input.TextArea placeholder="Nhập địa chỉ" rows={2} />
-          </Form.Item>
+              {/* PASSWORD GENERATOR */}
+              <div className="mt-auto">
+                <div className="p-3 bg-white rounded border border-gray-200">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sx font-semibold text-gray-500 uppercase">Bảo mật</span>
+                    <Tooltip title="Tạo mật khẩu ngẫu nhiên & Copy">
+                      <Button
+                        type="link"
+                        size="small"
+                        icon={<ReloadOutlined />}
+                        onClick={generatePassword}>
+                        Tạo tự động
+                      </Button>
+                    </Tooltip>
+                  </div>
 
-          <Form.Item name="avatarUrl" label="URL Avatar">
-            <Input placeholder="Nhập URL hình ảnh avatar" />
-          </Form.Item>
-        </div>
+                  <Form.Item
+                    name="password"
+                    noStyle
+                    rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}>
+                    <Input.Password
+                      prefix={<LockOutlined className="text-gray-400" />}
+                      placeholder="Mật khẩu"
+                      className="mb-2"
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+          </Col>
 
-        {/* Cài đặt tài khoản */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-            <svg
-              className="w-4 h-4 mr-2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            Cài đặt tài khoản
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Form.Item name="roleCode" label="Vai trò" rules={[{ required: true }]}>
-              <Select placeholder="Chọn vai trò">
-                {ROLE_OPTIONS.map((role) => (
-                  <Option key={role.value} value={role.value}>
-                    {role.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+          {/* CỘT PHẢI: THÔNG TIN CÁ NHÂN */}
+          <Col span={12}>
+            <div className="h-full flex flex-col">
+              <div className="flex items-center gap-2 mb-4 pl-1">
+                <IdcardOutlined className="text-indigo-600" />
+                <span className="font-bold text-gray-700">Thông tin cá nhân</span>
+              </div>
 
-            <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
-              <Switch
-                checkedChildren="Hoạt động"
-                unCheckedChildren="Khóa"
-                className="bg-gray-300"
-              />
-            </Form.Item>
+              <Form.Item
+                name="fullName"
+                label="Họ và tên"
+                rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}>
+                <Input
+                  prefix={<IdcardOutlined className="text-gray-400" />}
+                  placeholder="Nhập họ tên đầy đủ"
+                />
+              </Form.Item>
 
-            <Form.Item name="isVerified" label="Xác thực" valuePropName="checked">
-              <Switch
-                checkedChildren="Đã xác thực"
-                unCheckedChildren="Chưa xác thực"
-                className="bg-gray-300"
-              />
-            </Form.Item>
-          </div>
-        </div>
+              <Form.Item
+                name="phoneNumber"
+                label="Số điện thoại"
+                rules={[{ pattern: /^[0-9]{10,11}$/, message: "Số điện thoại không hợp lệ" }]}>
+                <Input
+                  prefix={<PhoneOutlined className="text-gray-400" />}
+                  placeholder="09xxxx (Tùy chọn)"
+                />
+              </Form.Item>
+
+              <Form.Item name="address" label="Địa chỉ">
+                <Input.TextArea rows={2} placeholder="Địa chỉ liên hệ/Giao hàng" />
+              </Form.Item>
+
+              <Form.Item name="avatarUrl" label="Ảnh đại diện">
+                <Input
+                  prefix={<LinkOutlined className="text-gray-400" />}
+                  placeholder="URL hình ảnh (Tùy chọn)"
+                />
+              </Form.Item>
+
+              {/* TRẠNG THÁI */}
+              <div className="mt-auto pt-4 border-t border-gray-100">
+                <div className="flex gap-8">
+                  <Form.Item name="isActive" valuePropName="checked" className="mb-0">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-gray-500">Trạng thái</span>
+                      <Switch
+                        checkedChildren={<CheckOutlined />}
+                        unCheckedChildren={<CloseOutlined />}
+                      />
+                    </div>
+                  </Form.Item>
+
+                  <Form.Item name="isVerified" valuePropName="checked" className="mb-0">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-gray-500">Xác thực Email</span>
+                      <Switch
+                        checkedChildren={<CheckOutlined />}
+                        unCheckedChildren={<CloseOutlined />}
+                      />
+                    </div>
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+          </Col>
+        </Row>
       </Form>
     </Modal>
   );

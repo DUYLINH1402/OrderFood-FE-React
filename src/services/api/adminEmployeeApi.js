@@ -71,6 +71,7 @@ export const getAdminEmployeeByIdApi = async (id) => {
 export const createAdminEmployeeApi = async (data) => {
   try {
     const response = await apiClient.post("/api/admin/employees", data);
+    console.log("Tạo nhân viên thành công:", response.data);
     return {
       success: true,
       data: response.data,

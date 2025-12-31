@@ -3,25 +3,36 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiHome,
-  FiShoppingBag,
   FiUsers,
-  FiBarChart,
   FiMenu,
   FiChevronRight,
   FiBookOpen,
+  FiSettings,
+  FiGift,
+  FiUser,
 } from "react-icons/fi";
 import { MdDashboard, MdRestaurantMenu } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
+import { HiOutlineClipboardList, HiOutlineUserGroup } from "react-icons/hi";
+import { BiLineChart } from "react-icons/bi";
 import useHeaderHeight from "../../hooks/useHeaderHeight";
 import "./Sidebar.css";
 
 // Icon mapping
 const iconMap = {
+  // Admin icons
   dashboard: MdDashboard,
-  orders: FiShoppingBag,
+  users: FiUsers,
+  staff: HiOutlineUserGroup,
+  orders: HiOutlineClipboardList,
   menu: MdRestaurantMenu,
-  customers: FiUsers,
-  reports: FiBarChart,
+  analytics: BiLineChart,
+  promotions: FiGift,
+  settings: FiSettings,
+  // Staff icons
+  reports: BiLineChart,
+  customers: FiUser,
+  // Common icons
   home: FiHome,
   book: FiBookOpen,
 };

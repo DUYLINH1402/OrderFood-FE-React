@@ -86,14 +86,15 @@ export default function LoginRegisterForm() {
       const redirectPath = localStorage.getItem("redirectAfterLogin");
       if (redirectPath) {
         localStorage.removeItem("redirectAfterLogin");
-        navigate(redirectPath);
+        // Sử dụng window.location.href để reload trang hoàn toàn
+        window.location.href = redirectPath;
       } else {
-        // Redirect theo role của user
+        // Redirect theo role của user - dùng window.location.href để reload trang
         const userRole = data.roleCode;
         if (userRole === ROLES.ADMIN) {
-          navigate("/admin/dashboard");
+          window.location.href = "/admin/dashboard";
         } else if (userRole === ROLES.STAFF) {
-          navigate("/staff/dashboard");
+          window.location.href = "/staff/dashboard";
         } else {
           // Customer hoặc role khác về trang chủ
           navigate("/");

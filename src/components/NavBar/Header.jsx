@@ -9,6 +9,7 @@ import SearchBar from "../SearchBar";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../store/slices/authSlice";
 import { clearCart } from "../../store/slices/cartSlice";
+import { persistor } from "../../store";
 import { useUserNotifications } from "../../hooks/useUserNotifications";
 import NotificationBellContainer from "../Notification/NotificationBellContainer";
 import { useUserWebSocketContext } from "../../services/websocket/UserWebSocketProvider";
@@ -64,8 +65,12 @@ const Header = () => {
 
   // Handle Logout
   const handleLogout = () => {
+    // Set flag để ngăn các guard redirect về trang login trước khi reload
+    sessionStorage.setItem("isLoggingOut", "true");
+
     dispatch(logout());
     dispatch(clearCart()); // xoá Redux cart + localStorage
+    persistor.purge(); // Xóa persisted state sau khi logout
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     window.location.href = "/";

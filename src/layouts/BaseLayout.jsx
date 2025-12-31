@@ -89,9 +89,13 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
   };
 
   const handleLogout = () => {
+    // Set flag để ngăn các guard redirect về trang login trước khi reload
+    sessionStorage.setItem("isLoggingOut", "true");
+
     dispatch(logout());
     persistor.purge(); // Xóa persisted state sau khi logout
-    navigate("/");
+    // Sử dụng window.location.href để reload hoàn toàn trang, tránh màn hình trắng
+    window.location.href = "/";
   };
 
   const handleProfileClick = () => {
@@ -224,9 +228,9 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
 
       {/* Main content */}
       <main
-        className="transition-all duration-300 ease-in-out min-h-screen p-4 laptop:p-6"
+        className="transition-all bg-[#dfe7df] duration-300 ease-in-out min-h-screen p-4 laptop:p-6"
         style={{
-          marginLeft: !isMobile && sidebarOpen ? "336px" : "0px", // 320px sidebar + 16px margin
+          marginLeft: !isMobile && sidebarOpen ? "270px" : "0px", // 320px sidebar + 16px margin
         }}>
         <div className=" mx-auto">{children}</div>
       </main>

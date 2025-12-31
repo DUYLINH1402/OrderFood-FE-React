@@ -147,14 +147,14 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
             <button
               onClick={handleClose}
               className="absolute top-3 right-3 tablet:top-4 tablet:right-4 p-2 tablet:p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all duration-200 group">
-              <FiX className="w-4 h-4 tablet:w-5 tablet:h-5 text-gray-600 group-hover:text-gray-900 transition-colors" />
+              <FiX className="w-5 h-5 tablet:w-5 tablet:h-5 text-gray-600 group-hover:text-gray-900 transition-colors" />
             </button>
 
             {/* Badge trạng thái */}
             <div className="absolute bottom-3 left-3 tablet:bottom-4 tablet:left-4">
               <span
-                className={`inline-flex items-center gap-1.5 px-3 tablet:px-4 py-1.5 tablet:py-2 text-sx tablet:text-sm font-semibold rounded-full shadow-lg ${statusConfig.bg} ${statusConfig.text}`}>
-                <StatusIcon className="w-3.5 h-3.5 tablet:w-4 tablet:h-4" />
+                className={`inline-flex items-center gap-1.5 px-3 tablet:px-4 py-1.5 tablet:py-2 text-sm tablet:text-sm font-semibold rounded-full shadow-lg ${statusConfig.bg} ${statusConfig.text}`}>
+                <StatusIcon className="w-5 h-5 tablet:w-5 tablet:h-5" />
                 {statusConfig.label}
               </span>
             </div>
@@ -166,7 +166,7 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
                   {food.price?.toLocaleString("vi-VN")}đ
                 </span>
                 {food.originalPrice && food.originalPrice > food.price && (
-                  <span className="ml-2 text-sx tablet:text-sm text-gray-400 line-through">
+                  <span className="ml-2 text-sm tablet:text-sm text-gray-400 line-through">
                     {food.originalPrice?.toLocaleString("vi-VN")}đ
                   </span>
                 )}
@@ -185,32 +185,32 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
               {/* Tags */}
               <div className="flex flex-wrap gap-1.5 tablet:gap-2">
                 {food.slug && (
-                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sx tablet:text-sm font-medium transition-transform hover:scale-105">
-                    <FiTag className="w-3 h-3 tablet:w-3.5 tablet:h-3.5 mr-1.5" />
+                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm tablet:text-sm font-medium transition-transform hover:scale-105">
+                    <FiTag className="w-5 h-5 tablet:w-5 tablet:h-5 mr-1.5" />
                     {food.slug}
                   </span>
                 )}
                 {food.categoryName && (
-                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-sx tablet:text-sm font-medium transition-transform hover:scale-105">
-                    <FiPackage className="w-3 h-3 tablet:w-3.5 tablet:h-3.5 mr-1.5" />
+                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-sm tablet:text-sm font-medium transition-transform hover:scale-105">
+                    <FiPackage className="w-5 h-5 tablet:w-5 tablet:h-5 mr-1.5" />
                     {food.categoryName}
                   </span>
                 )}
                 {food.isBestSeller && (
-                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-gradient-to-r from-red-50 to-orange-50 text-red-600 rounded-lg text-sx tablet:text-sm font-medium animate-pulse">
-                    <FiTrendingUp className="w-3 h-3 tablet:w-3.5 tablet:h-3.5 mr-1.5" />
+                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-gradient-to-r from-red-50 to-orange-50 text-red-600 rounded-lg text-sm tablet:text-sm font-medium animate-pulse">
+                    <FiTrendingUp className="w-5 h-5 tablet:w-5 tablet:h-5 mr-1.5" />
                     Bán chạy
                   </span>
                 )}
                 {food.isFeatured && (
-                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-600 rounded-lg text-sx tablet:text-sm font-medium">
-                    <FiStar className="w-3 h-3 tablet:w-3.5 tablet:h-3.5 mr-1.5" />
+                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-600 rounded-lg text-sm tablet:text-sm font-medium">
+                    <FiStar className="w-5 h-5 tablet:w-5 tablet:h-5 mr-1.5" />
                     Đặc biệt
                   </span>
                 )}
                 {food.isNew && (
-                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-gradient-to-r from-green-50 to-emerald-50 text-emerald-600 rounded-lg text-sx tablet:text-sm font-medium">
-                    <FiTag className="w-3 h-3 tablet:w-3.5 tablet:h-3.5 mr-1.5" />
+                  <span className="inline-flex items-center px-2.5 tablet:px-3 py-1 bg-gradient-to-r from-green-50 to-emerald-50 text-emerald-600 rounded-lg text-sm tablet:text-sm font-medium">
+                    <FiTag className="w-5 h-5 tablet:w-5 tablet:h-5 mr-1.5" />
                     Món mới
                   </span>
                 )}
@@ -220,7 +220,7 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
             {/* Mô tả */}
             <div className="mb-5 tablet:mb-6">
               <h3 className="text-sm tablet:text-md font-semibold text-gray-800 mb-2 flex items-center">
-                <FiInfo className="w-4 h-4 tablet:w-4.5 tablet:h-4.5 mr-2 text-blue-500" />
+                <FiInfo className="w-5 h-5 tablet:w-4.5 tablet:h-4.5 mr-2 text-blue-500" />
                 Mô tả món ăn
               </h3>
               <div className="bg-gray-50 rounded-xl p-3 tablet:p-4">
@@ -234,14 +234,14 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
             {food.ingredients && food.ingredients.length > 0 && (
               <div className="mb-5 tablet:mb-6">
                 <h3 className="text-sm tablet:text-md font-semibold text-gray-800 mb-2 flex items-center">
-                  <FiPackage className="w-4 h-4 tablet:w-4.5 tablet:h-4.5 mr-2 text-purple-500" />
+                  <FiPackage className="w-5 h-5 tablet:w-4.5 tablet:h-4.5 mr-2 text-purple-500" />
                   Thành phần
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {food.ingredients.map((ingredient, index) => (
                     <span
                       key={index}
-                      className="px-3 tablet:px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sx tablet:text-sm font-medium transition-all duration-200 cursor-default">
+                      className="px-3 tablet:px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm tablet:text-sm font-medium transition-all duration-200 cursor-default">
                       {ingredient}
                     </span>
                   ))}
@@ -253,7 +253,7 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
             {food.allergens && food.allergens.length > 0 && (
               <div className="mb-5 tablet:mb-6">
                 <h3 className="text-sm tablet:text-md font-semibold text-red-700 mb-2 flex items-center">
-                  <FiAlertTriangle className="w-4 h-4 tablet:w-4.5 tablet:h-4.5 mr-2 text-red-500" />
+                  <FiAlertTriangle className="w-5 h-5 tablet:w-4.5 tablet:h-4.5 mr-2 text-red-500" />
                   Cảnh báo dị ứng
                 </h3>
                 <div className="bg-red-50 border border-red-100 rounded-xl p-3 tablet:p-4">
@@ -261,7 +261,7 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
                     {food.allergens.map((allergen, index) => (
                       <span
                         key={index}
-                        className="px-3 tablet:px-4 py-1.5 bg-red-100 text-red-700 rounded-full text-sx tablet:text-sm font-medium">
+                        className="px-3 tablet:px-4 py-1.5 bg-red-100 text-red-700 rounded-full text-sm tablet:text-sm font-medium">
                         {allergen}
                       </span>
                     ))}
@@ -274,8 +274,8 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
             <div className="grid grid-cols-2 tablet:grid-cols-4 gap-3 tablet:gap-4 pt-4 border-t border-gray-100">
               {food.preparationTime && (
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 tablet:p-4 text-center transition-transform hover:scale-105">
-                  <FiClock className="w-5 h-5 tablet:w-6 tablet:h-6 text-blue-500 mx-auto mb-1.5" />
-                  <span className="block text-sx tablet:text-sm text-gray-500 mb-0.5">
+                  <FiClock className="w-5 h-5 tablet:w-5 tablet:h-5 text-blue-500 mx-auto mb-1.5" />
+                  <span className="block text-sm tablet:text-sm text-gray-500 mb-0.5">
                     Chuẩn bị
                   </span>
                   <p className="font-semibold text-gray-900 text-sm tablet:text-md">
@@ -285,8 +285,8 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
               )}
               {food.calories && (
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 tablet:p-4 text-center transition-transform hover:scale-105">
-                  <FiTrendingUp className="w-5 h-5 tablet:w-6 tablet:h-6 text-green-500 mx-auto mb-1.5" />
-                  <span className="block text-sx tablet:text-sm text-gray-500 mb-0.5">
+                  <FiTrendingUp className="w-5 h-5 tablet:w-5 tablet:h-5 text-green-500 mx-auto mb-1.5" />
+                  <span className="block text-sm tablet:text-sm text-gray-500 mb-0.5">
                     Calories
                   </span>
                   <p className="font-semibold text-gray-900 text-sm tablet:text-md">
@@ -294,19 +294,19 @@ const FoodDetailModal = ({ food, isOpen, onClose }) => {
                   </p>
                 </div>
               )}
-              {food.soldCount !== undefined && food.soldCount !== null && (
+              {food.totalSold !== undefined && food.totalSold !== null && (
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-3 tablet:p-4 text-center transition-transform hover:scale-105">
-                  <FiPackage className="w-5 h-5 tablet:w-6 tablet:h-6 text-orange-500 mx-auto mb-1.5" />
-                  <span className="block text-sx tablet:text-sm text-gray-500 mb-0.5">Đã bán</span>
+                  <FiPackage className="w-5 h-5 tablet:w-5 tablet:h-5 text-orange-500 mx-auto mb-1.5" />
+                  <span className="block text-sm tablet:text-sm text-gray-500 mb-0.5">Đã bán</span>
                   <p className="font-semibold text-gray-900 text-sm tablet:text-md">
-                    {food.soldCount?.toLocaleString("vi-VN")} phần
+                    {food.totalSold?.toLocaleString("vi-VN")} phần
                   </p>
                 </div>
               )}
               {food.rating && (
                 <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-3 tablet:p-4 text-center transition-transform hover:scale-105">
-                  <FiStar className="w-5 h-5 tablet:w-6 tablet:h-6 text-yellow-500 mx-auto mb-1.5" />
-                  <span className="block text-sx tablet:text-sm text-gray-500 mb-0.5">
+                  <FiStar className="w-5 h-5 tablet:w-5 tablet:h-5 text-yellow-500 mx-auto mb-1.5" />
+                  <span className="block text-sm tablet:text-sm text-gray-500 mb-0.5">
                     Đánh giá
                   </span>
                   <p className="font-semibold text-gray-900 text-sm tablet:text-md flex items-center justify-center">

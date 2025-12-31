@@ -6,9 +6,9 @@ import {
   updateAdminEmployeeStatusApi,
 } from "../../services/api/adminEmployeeApi";
 import StaffDetailModal from "./modal/StaffDetailModal";
-import CreateStaffModal from "./modal/CreateStaffModal";
 import EditStaffModal from "./modal/EditStaffModal";
 import { useConfirm } from "../../components/ConfirmModal";
+import CreateUserModal from "./modal/CreateUserModal";
 
 // Status config cho filter
 const STATUS_OPTIONS = [
@@ -650,7 +650,7 @@ const AdminStaff = () => {
         onClose={handleCloseDetailModal}
       />
 
-      <CreateStaffModal
+      <CreateUserModal
         open={createModal.open}
         onClose={handleCloseCreateModal}
         onSuccess={handleSuccess}

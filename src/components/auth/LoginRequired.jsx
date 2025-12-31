@@ -10,7 +10,10 @@ const LoginRequired = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
-  if (!isAuthenticated) {
+  // Kiểm tra nếu đang trong quá trình logout thì không redirect
+  const isLoggingOut = sessionStorage.getItem("isLoggingOut") === "true";
+
+  if (!isAuthenticated && !isLoggingOut) {
     return <Navigate to="/dang-nhap" state={{ from: location.pathname }} replace />;
   }
 
