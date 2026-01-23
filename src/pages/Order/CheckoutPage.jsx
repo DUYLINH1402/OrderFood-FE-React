@@ -84,7 +84,7 @@ export default function CheckoutPage() {
   // State cho UI và loading
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState("COD");
+  const [selectedPayment, setSelectedPayment] = useState("VISA");
   const [deliveryType, setDeliveryType] = useState("DELIVERY");
   const [showAllItems, setShowAllItems] = useState(false);
 
@@ -324,7 +324,7 @@ export default function CheckoutPage() {
     }
 
     setShowPaymentModal(true);
-    setSelectedPayment("MOMO");
+    setSelectedPayment("VISA");
   };
 
   // Xử lý submit đơn hàng

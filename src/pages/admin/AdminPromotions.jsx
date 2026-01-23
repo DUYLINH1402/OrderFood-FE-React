@@ -3,6 +3,11 @@ import {
   getCouponDashboardApi,
   filterCouponsApi,
   getCouponPerformanceApi,
+  activateCouponApi,
+  deactivateCouponApi,
+  deleteCouponApi,
+  createCouponApi,
+  updateCouponApi,
 } from "../../services/api/couponAdminApi";
 import CouponStatisticsCards from "./promotions/CouponStatisticsCards";
 import CouponUsageTrendChart from "./promotions/CouponUsageTrendChart";
@@ -11,6 +16,7 @@ import TopCouponsTable from "./promotions/TopCouponsTable";
 import TopCouponUsersTable from "./promotions/TopCouponUsersTable";
 import CouponListTable from "./promotions/CouponListTable";
 import CouponDetailModal from "./promotions/CouponDetailModal";
+import CouponFormModal from "./promotions/CouponFormModal";
 
 /**
  * Trang quản lý khuyến mãi - Admin Dashboard
@@ -43,6 +49,11 @@ const AdminPromotions = () => {
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
+
+  // State cho modal tạo/sửa coupon
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState(null);
+  const [savingCoupon, setSavingCoupon] = useState(false);
 
   // State cho tab hiện tại
   const [activeTab, setActiveTab] = useState("overview");
@@ -103,10 +114,92 @@ const AdminPromotions = () => {
     }
   };
 
-  // Đóng modal
+  // Đóng modal chi tiết
   const handleCloseModal = () => {
     setIsDetailModalOpen(false);
     setSelectedCoupon(null);
+  };
+
+  // Mở modal tạo coupon mới
+  const handleOpenCreateModal = () => {
+    setEditingCoupon(null);
+    setIsFormModalOpen(true);
+  };
+
+  // Mở modal sửa coupon
+  const handleOpenEditModal = (coupon) => {
+    setEditingCoupon(coupon);
+    setIsFormModalOpen(true);
+  };
+
+  // Đóng modal form
+  const handleCloseFormModal = () => {
+    setIsFormModalOpen(false);
+    setEditingCoupon(null);
+  };
+
+  // Lưu coupon (tạo mới hoặc cập nhật)
+  const handleSaveCoupon = async (couponData) => {
+    setSavingCoupon(true);
+    try {
+      let response;
+      if (editingCoupon) {
+        response = await updateCouponApi(editingCoupon.couponId, couponData);
+      } else {
+        response = await createCouponApi(couponData);
+      }
+      if (response.success) {
+        handleCloseFormModal();
+        fetchCoupons();
+        fetchDashboardData();
+      } else {
+        console.error("Lỗi khi lưu coupon:", response.error);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lưu coupon:", error);
+    } finally {
+      setSavingCoupon(false);
+    }
+  };
+
+  // Kích hoạt coupon
+  const handleActivateCoupon = async (couponId) => {
+    try {
+      const response = await activateCouponApi(couponId);
+      if (response.success) {
+        fetchCoupons();
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error("Lỗi khi kích hoạt coupon:", error);
+    }
+  };
+
+  // Vô hiệu hóa coupon
+  const handleDeactivateCoupon = async (couponId) => {
+    try {
+      const response = await deactivateCouponApi(couponId);
+      if (response.success) {
+        fetchCoupons();
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error("Lỗi khi vô hiệu hóa coupon:", error);
+    }
+  };
+
+  // Xóa coupon
+  const handleDeleteCoupon = async (couponId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa mã giảm giá này?")) return;
+    try {
+      const response = await deleteCouponApi(couponId);
+      if (response.success) {
+        fetchCoupons();
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa coupon:", error);
+    }
   };
 
   // Xử lý filter
@@ -196,7 +289,9 @@ const AdminPromotions = () => {
             </svg>
             Làm mới
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm text-white rounded-lg hover:bg-blue-700 transition-colors">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -271,6 +366,10 @@ const AdminPromotions = () => {
           onFilter={handleFilter}
           onPageChange={handlePageChange}
           onViewDetail={handleViewDetail}
+          onEdit={handleOpenEditModal}
+          onActivate={handleActivateCoupon}
+          onDeactivate={handleDeactivateCoupon}
+          onDelete={handleDeleteCoupon}
         />
       )}
 
@@ -302,6 +401,15 @@ const AdminPromotions = () => {
         coupon={selectedCoupon}
         isOpen={isDetailModalOpen}
         onClose={handleCloseModal}
+      />
+
+      {/* Form Modal */}
+      <CouponFormModal
+        isOpen={isFormModalOpen}
+        onClose={handleCloseFormModal}
+        onSave={handleSaveCoupon}
+        coupon={editingCoupon}
+        loading={savingCoupon}
       />
     </div>
   );

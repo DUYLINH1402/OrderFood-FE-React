@@ -11,6 +11,10 @@ const CouponListTable = ({
   onFilter,
   onPageChange,
   onViewDetail,
+  onEdit,
+  onActivate,
+  onDeactivate,
+  onDelete,
 }) => {
   const [filters, setFilters] = useState({
     status: "",
@@ -256,11 +260,41 @@ const CouponListTable = ({
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => onViewDetail && onViewDetail(coupon)}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        Chi tiết
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => onViewDetail && onViewDetail(coupon)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                          title="Xem chi tiết">
+                          Chi tiết
+                        </button>
+                        <button
+                          onClick={() => onEdit && onEdit(coupon)}
+                          className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+                          title="Chỉnh sửa">
+                          Sửa
+                        </button>
+                        {coupon.status === "ACTIVE" ? (
+                          <button
+                            onClick={() => onDeactivate && onDeactivate(coupon.couponId)}
+                            className="text-orange-600 hover:text-orange-800 text-sm font-medium"
+                            title="Vô hiệu hóa">
+                            Tắt
+                          </button>
+                        ) : coupon.status === "INACTIVE" ? (
+                          <button
+                            onClick={() => onActivate && onActivate(coupon.couponId)}
+                            className="text-green-600 hover:text-green-800 text-sm font-medium"
+                            title="Kích hoạt">
+                            Bật
+                          </button>
+                        ) : null}
+                        <button
+                          onClick={() => onDelete && onDelete(coupon.couponId)}
+                          className="text-red-600 hover:text-red-800 text-sm font-medium"
+                          title="Xóa">
+                          Xóa
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

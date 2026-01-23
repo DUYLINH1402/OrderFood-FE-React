@@ -29,6 +29,7 @@ Luôn phản hồi cho người dùng bằng Tiếng Việt trong mọi tình hu
 
 ## Quy tắc code Frontend (chi tiết từ toàn bộ dự án)
 
+- Dùng thư viện AOS (Animate On Scroll)
 - Kiến trúc chuẩn React: Tách rõ các component, page, service, store, utils, hooks. Component chia nhỏ, dễ tái sử dụng, ưu tiên functional component và hooks.
 - Quản lý state với Redux: Sử dụng Redux Toolkit, chia slice cho từng nghiệp vụ (cart, auth, favorite, points...). Kết hợp redux-persist để lưu state vào localStorage.
 - Sử dụng React Router cho điều hướng: Tách page cho từng màn hình, sử dụng useNavigate, useLocation.

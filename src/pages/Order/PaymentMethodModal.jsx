@@ -38,7 +38,7 @@ export default function PaymentMethodModal({
               : "border-gray-300 text-gray-400 opacity-60"
           }`}
           onClick={() => user && user.hasOrdered && setSelectedPayment("COD")}
-          disabled={!(user && user.hasOrdered)}>
+          disabled={true}>
           <div className="flex flex-col items-center text-center w-full">
             <span className="text-sm md:text-base font-medium">Thanh toán khi nhận hàng (COD)</span>
             <span className="text-xs md:text-sm text-gray-400 italic mt-1">
@@ -51,9 +51,9 @@ export default function PaymentMethodModal({
           className={`border rounded-xl px-6 py-4 font-semibold flex items-center justify-center w-full text-base transition-all duration-150 ${
             selectedPayment === "MOMO"
               ? "border-green-600 bg-green-50 text-green-700"
-              : "border-gray-300"
+              : "border-gray-300 text-gray-400 opacity-60"
           }`}
-          disabled
+          disabled={true}
           onClick={() => setSelectedPayment("MOMO")}>
           <LazyImage src={momoIcon} alt="MoMo" className="w-8 h-8 object-contain mr-3" />
           <span className="text-sm md:text-base">Ví MoMo</span>
@@ -63,8 +63,9 @@ export default function PaymentMethodModal({
           className={`border rounded-xl px-6 py-4 font-semibold flex items-center justify-center w-full text-base transition-all duration-150 ${
             selectedPayment === "ZALOPAY"
               ? "border-green-600 bg-green-50 text-green-700"
-              : "border-gray-300"
+              : "border-gray-300 text-gray-400 opacity-60"
           }`}
+          disabled={true}
           onClick={() => setSelectedPayment("ZALOPAY")}>
           <LazyImage src={zaloPayIcon} alt="ZaloPay" className="w-8 h-8 object-contain mr-3" />
           <span className="text-sm md:text-base">Ví ZaloPay</span>
@@ -74,8 +75,9 @@ export default function PaymentMethodModal({
           className={`border rounded-xl px-6 py-4 font-semibold flex items-center justify-center w-full text-base transition-all duration-150 ${
             selectedPayment === "ATM"
               ? "border-green-600 bg-green-50 text-green-700"
-              : "border-gray-300"
+              : "border-gray-300 text-gray-400 opacity-60"
           }`}
+          disabled={true}
           onClick={() => setSelectedPayment("ATM")}>
           <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center mr-3">
             <span className="text-white text-xs font-bold">ATM</span>
