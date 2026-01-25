@@ -96,7 +96,58 @@ export const mapAuthError = (type, errorCode) => {
         general: "Yêu cầu quá 3 lần. Vui lòng thử lại sau",
       },
     },
+    google: {
+      GOOGLE_LOGIN_FAILED: { general: "Đăng nhập Google thất bại" },
+      INVALID_GOOGLE_TOKEN: { general: "Token Google không hợp lệ" },
+      USER_LOCKED: { general: "Tài khoản đã bị khóa" },
+      GOOGLE_AUTH_ERROR: { general: "Lỗi xác thực với Google" },
+    },
   };
 
   return errorMap?.[type]?.[errorCode] || { general: errorCode };
+};
+
+// Hàm ánh xạ lỗi đăng nhập Google (bao gồm lỗi từ Firebase và Backend)
+export const mapGoogleLoginError = (errorCode) => {
+  const errorMap = {
+    // Lỗi từ Firebase popup
+    "auth/popup-closed-by-user": "Bạn đã đóng cửa sổ đăng nhập",
+    "auth/popup-blocked": "Trình duyệt đã chặn popup. Vui lòng cho phép popup",
+    "auth/cancelled-popup-request": "Yêu cầu đăng nhập bị hủy",
+    "auth/network-request-failed": "Lỗi kết nối mạng. Vui lòng thử lại",
+    "auth/too-many-requests": "Quá nhiều yêu cầu. Vui lòng thử lại sau",
+    "auth/user-disabled": "Tài khoản đã bị vô hiệu hóa",
+    "auth/account-exists-with-different-credential":
+      "Email đã được sử dụng với phương thức đăng nhập khác",
+
+    // Lỗi từ Backend
+    GOOGLE_LOGIN_FAILED: "Đăng nhập Google thất bại",
+    GOOGLE_EMAIL_NOT_VERIFIED: "Email Google chưa được xác minh",
+    INVALID_GOOGLE_TOKEN: "Token Google không hợp lệ",
+    USER_LOCKED: "Tài khoản đã bị khóa",
+    GOOGLE_AUTH_ERROR: "Lỗi xác thực với Google",
+    OAUTH2_LOGIN_FAILED: "Đăng nhập thất bại. Vui lòng thử lại",
+    OAUTH2_ACCESS_DENIED: "Bạn đã từ chối cấp quyền đăng nhập",
+    OAUTH2_INVALID_TOKEN: "Token không hợp lệ",
+    OAUTH2_TOKEN_EXPIRED: "Token đã hết hạn",
+  };
+
+  return errorMap[errorCode] || "Đã có lỗi xảy ra khi đăng nhập với Google";
+};
+
+// Hàm ánh xạ lỗi đăng nhập Facebook (bao gồm lỗi từ Backend OAuth2)
+export const mapFacebookLoginError = (errorCode) => {
+  const errorMap = {
+    // Lỗi từ Backend OAuth2
+    FACEBOOK_EMAIL_NOT_VERIFIED: "Email Facebook chưa được xác minh",
+    OAUTH2_EMAIL_REQUIRED: "Vui lòng cấp quyền email để đăng nhập",
+    USER_LOCKED: "Tài khoản đã bị khóa",
+    OAUTH2_LOGIN_FAILED: "Đăng nhập thất bại. Vui lòng thử lại",
+    OAUTH2_ACCESS_DENIED: "Bạn đã từ chối cấp quyền đăng nhập",
+    UNSUPPORTED_OAUTH2_PROVIDER: "Phương thức đăng nhập không được hỗ trợ",
+    OAUTH2_INVALID_TOKEN: "Token không hợp lệ",
+    OAUTH2_TOKEN_EXPIRED: "Token đã hết hạn",
+  };
+
+  return errorMap[errorCode] || "Đã có lỗi xảy ra khi đăng nhập với Facebook";
 };

@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { AppRoutes } from "./routes/AppRoutes";
 import { ToastContainer } from "react-toastify";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./store";
 import "react-toastify/dist/ReactToastify.css";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import "./assets/styles/components/ScrollToTop.scss";
 import "./assets/styles/components/SupportFloating.scss";
 import AuthLoader from "./routes/AuthLoader";
@@ -15,6 +17,15 @@ import SupportFloating from "./components/Support/SupportFloating";
 import ScrollToTop from "./components/Support/ScrollToTop";
 
 function App() {
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      easing: "ease-out-cubic",
+      once: true,
+      offset: 50,
+    });
+  }, []);
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>

@@ -1,24 +1,7 @@
-import React, { useRef } from "react";
-import useScrollReveal from "../hooks/useScrollReveal";
+import React from "react";
 import LazyImage from "../components/LazyImage";
 
 const DongXanhIntro = () => {
-  // refs cho hiệu ứng scroll reveal
-  const boxRef = useRef();
-  const imgRefs = useRef([]);
-  const h2Ref = useRef();
-  const h3Refs = useRef([]);
-  useScrollReveal(boxRef);
-  useScrollReveal(imgRefs);
-  useScrollReveal(h2Ref);
-  useScrollReveal(h3Refs);
-  const setImgRef = (el, idx) => {
-    imgRefs.current[idx] = el;
-  };
-  const setH3Ref = (el, idx) => {
-    h3Refs.current[idx] = el;
-  };
-
   return (
     <div className="wrap-page px-8 sm:px-8" style={{ position: "relative", overflow: "hidden" }}>
       {/* Blob background elements, always at bottom, never break layout */}
@@ -29,12 +12,13 @@ const DongXanhIntro = () => {
       <div className="bg-blob bg-blob-5" />
       <div className="bg-blob bg-blob-6" />
       <div
-        className="scroll-reveal glass-box max-w-6xl mx-auto p-4 sm:p-10 mx-[10px] sm:mx-[30px] sm:px-6 md:px-16 text-justify"
-        ref={boxRef}
+        className="glass-box max-w-6xl mx-auto p-4 sm:p-10 mx-[10px] sm:mx-[30px] sm:px-6 md:px-16 text-justify"
+        data-aos="fade-up"
         style={{ position: "relative", zIndex: 1, padding: "30px" }}>
         <h2
-          className="scroll-reveal text-3xl font-bold mb-6 text-[#fff] dongxanh-section-title"
-          ref={h2Ref}>
+          className="text-3xl font-bold mb-6 text-[#fff] dongxanh-section-title"
+          data-aos="fade-right"
+          data-aos-delay="100">
           Giới thiệu về Đồng Xanh
         </h2>
 
@@ -51,14 +35,15 @@ const DongXanhIntro = () => {
         </p>
 
         <LazyImage
-          src="https://bizweb.dktcdn.net/thumb/grande/100/400/734/files/1-min-c0e165b2-0da5-4035-bfb4-5208cf3cd019.png?v=1697257755167"
+          src="https://res.cloudinary.com/ddia5yfia/image/upload/v1769232875/gioi-thieu_pannxf.png"
           alt="Hình ảnh Đồng Xanh"
-          className="scroll-reveal-img w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
-          ref={(el) => setImgRef(el, 0)}
+          className="w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
+          data-aos="zoom-in"
+          data-aos-delay="200"
         />
 
         <div className="mb-6">
-          <h3 className="scroll-reveal dongxanh-section-title" ref={(el) => setH3Ref(el, 0)}>
+          <h3 className="dongxanh-section-title" data-aos="fade-right" data-aos-delay="100">
             🌿 Không gian và trải nghiệm
           </h3>
           <ul className="list-disc list-inside space-y-2 text-sm sm:text-base leading-relaxed pl-4">
@@ -74,14 +59,15 @@ const DongXanhIntro = () => {
         </div>
 
         <LazyImage
-          src="https://bizweb.dktcdn.net/thumb/grande/100/400/734/files/1-min-c0e165b2-0da5-4035-bfb4-5208cf3cd019.png?v=1697257755167"
+          src="https://res.cloudinary.com/ddia5yfia/image/upload/v1769232875/gioi-thieu-5_toimpx.png"
           alt="Hình ảnh Đồng Xanh"
-          className="scroll-reveal-img w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
-          ref={(el) => setImgRef(el, 1)}
+          className="w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
+          data-aos="zoom-in"
+          data-aos-delay="200"
         />
 
         <div className="mb-6">
-          <h3 className="scroll-reveal dongxanh-section-title" ref={(el) => setH3Ref(el, 1)}>
+          <h3 className="dongxanh-section-title" data-aos="fade-right" data-aos-delay="100">
             🎉 Dịch vụ và ưu đãi
           </h3>
           <ul className="list-disc list-inside space-y-2 text-sm sm:text-base leading-relaxed pl-4">
@@ -92,14 +78,29 @@ const DongXanhIntro = () => {
         </div>
 
         <LazyImage
-          src="https://bizweb.dktcdn.net/thumb/grande/100/400/734/files/1-min-c0e165b2-0da5-4035-bfb4-5208cf3cd019.png?v=1697257755167"
+          src="https://res.cloudinary.com/ddia5yfia/image/upload/v1769232875/gioi-thieu-3_glkk9g.png"
           alt="Hình ảnh Đồng Xanh"
-          className="scroll-reveal-img w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
-          ref={(el) => setImgRef(el, 2)}
+          className="w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
+          data-aos="zoom-in"
+          data-aos-delay="200"
+        />
+        <LazyImage
+          src="https://res.cloudinary.com/ddia5yfia/image/upload/v1769232875/gioi-thieu-4_itoelr.jpg"
+          alt="Hình ảnh Đồng Xanh"
+          className="w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
+          data-aos="zoom-in"
+          data-aos-delay="200"
+        />
+        <LazyImage
+          src="https://res.cloudinary.com/ddia5yfia/image/upload/v1769232875/gioi-thieu-2_vfrklt.jpg"
+          alt="Hình ảnh Đồng Xanh"
+          className="w-full h-[180px] sm:h-[300px] md:h-[380px] lg:h-[440px] object-cover rounded-2xl shadow-md mt-6 mb-6"
+          data-aos="zoom-in"
+          data-aos-delay="200"
         />
 
         <div>
-          <h3 className="scroll-reveal dongxanh-section-title" ref={(el) => setH3Ref(el, 2)}>
+          <h3 className="dongxanh-section-title" data-aos="fade-right" data-aos-delay="100">
             📍 Thông tin liên hệ
           </h3>
           <ul className="space-y-2 text-sm sm:text-base leading-relaxed">
@@ -115,11 +116,11 @@ const DongXanhIntro = () => {
             <li>
               <strong>Website:</strong>{" "}
               <a
-                href="https://dongxanhcantho.com"
+                href="https://dongxanhfood.shop/"
                 className="text-blue-600 hover:underline"
                 target="_blank"
                 rel="noreferrer">
-                dongxanhcantho.com
+                dongxanhfood.shop
               </a>
             </li>
             <li>

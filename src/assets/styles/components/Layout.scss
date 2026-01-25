@@ -10,6 +10,24 @@
   }
 
   .layout__sidebar {
+    transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+
+    &.hidden {
+      .menu-button {
+        transform: translateY(-150%);
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+
+    &.visible {
+      .menu-button {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
     .menu-button {
       position: fixed;
       top: 100px;
@@ -26,7 +44,7 @@
       border-radius: 8px;
       cursor: pointer;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      transition: all 0.25s ease;
+      transition: all 1s ease;
       z-index: 1000;
       @media (max-width: 640px) {
         font-size: 1.2rem;

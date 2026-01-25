@@ -14,6 +14,11 @@ import { addFavorite, removeFavorite } from "../../../store/slices/favoriteSlice
 import RelatedFoods from "./RelatedFoods";
 import FoodSidebar from "../FoodSidebar";
 import FoodSidebarMobileWrapper from "../Mobile/FoodSidebarMobileWrapper";
+import useShare from "../../../hooks/useShare";
+import { TARGET_TYPES } from "../../../hooks/useLike";
+import ShareButton from "../../../components/ShareButton";
+import LikeButton from "../../../components/LikeButton";
+import { CommentSection, COMMENT_TARGET_TYPES } from "../../../components/Comment";
 
 export default function FoodDetailPage() {
   const { slug } = useParams();
@@ -35,8 +40,15 @@ export default function FoodDetailPage() {
 
   // Kiểm tra món ăn có hết hàng không
   const isFoodUnavailable = food?.status === "UNAVAILABLE";
-  console.log("food:", food);
   const selectedVariant = food?.variants?.find((v) => v.id === selectedVariantId);
+
+  // Hook quản lý Share
+  const { shareCount, shareUrl, shareContent, handleShare, handleCopyLink } = useShare(
+    TARGET_TYPES.FOOD,
+    food?.id,
+    { slug: food?.slug, name: food?.name, description: food?.description },
+    food?.totalShares || 0
+  );
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -154,13 +166,13 @@ export default function FoodDetailPage() {
               className="hover:text-green-600 transition-colors duration-200">
               Trang chủ
             </button>
-            <i className="fas fa-chevron-right text-xs"></i>
+            <i className="fas fa-chevron-right text-sx"></i>
             <button
               onClick={() => navigate("/mon-an")}
               className="hover:text-green-600 transition-colors duration-200">
               Món ăn
             </button>
-            <i className="fas fa-chevron-right text-xs"></i>
+            <i className="fas fa-chevron-right text-sx"></i>
             <span className="text-gray-900 font-medium">{food.name}</span>
           </nav>
         </div>
@@ -207,26 +219,59 @@ export default function FoodDetailPage() {
                         style={{ display: imageLoading ? "none" : "block" }}
                       />
 
-                      {/* Image overlay with actions */}
-                      <div className="absolute top-4 right-4 flex space-x-2">
-                        {token && !(food.variants?.length > 0 && selectedVariantId == null) && (
-                          <button
-                            onClick={toggleFavorite}
-                            className="group bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 hover:scale-110"
-                            title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}>
-                            <i
-                              className={`${
-                                isFavorite
-                                  ? "fas fa-heart text-base text-red-500"
-                                  : "far fa-heart text-base text-gray-600 group-hover:text-red-500"
-                              } transition-colors duration-300`}></i>
-                          </button>
-                        )}
-                        <button
-                          className="group text-base bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 hover:scale-110"
-                          title="Chia sẻ">
-                          <i className="fas fa-share-nodes text-gray-600 group-hover:text-blue-500 transition-colors duration-300"></i>
-                        </button>
+                      {/* Image overlay with actions - PROFESSIONAL DESIGN */}
+                      <div className="absolute top-4 right-4">
+                        <div className="backdrop-blur-xl bg-gradient-to-br from-white/90 to-white/70 rounded-3xl shadow-2xl p-1.5 border border-white/50">
+                          <div className="flex gap-2">
+                            {/* Favorite Button */}
+                            {token && !(food.variants?.length > 0 && selectedVariantId == null) && (
+                              <button
+                                onClick={toggleFavorite}
+                                className={`group relative p-3.5 rounded-2xl transition-all duration-300 hover:scale-110 ${
+                                  isFavorite
+                                    ? "bg-gradient-to-br from-red-500 to-pink-500 shadow-lg shadow-red-500/50"
+                                    : "hover:bg-white/80"
+                                }`}>
+                                <i
+                                  className={`${
+                                    isFavorite
+                                      ? "fas fa-heart text-white"
+                                      : "far fa-heart text-gray-700 group-hover:text-red-500"
+                                  } text-base transition-all duration-300 ${
+                                    isFavorite ? "animate-pulse" : ""
+                                  }`}></i>
+
+                                {/* Tooltip */}
+                                <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sx px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap shadow-lg pointer-events-none z-10">
+                                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                  {isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                                </div>
+                              </button>
+                            )}
+
+                            {/* Like Button */}
+                            <LikeButton
+                              targetType={TARGET_TYPES.FOOD}
+                              targetId={food?.id}
+                              initialLikeCount={food?.totalLikes || 0}
+                              tooltipLike="Thích món này"
+                              tooltipUnlike="Bỏ thích"
+                              loginMessage="Vui lòng đăng nhập để thích món ăn"
+                            />
+
+                            {/* Share Button */}
+                            <ShareButton
+                              url={shareUrl}
+                              title={shareContent.title}
+                              description={shareContent.description}
+                              imageUrl={mainImage}
+                              hashtag={shareContent.hashtag}
+                              shareCount={shareCount}
+                              onShare={handleShare}
+                              onCopyLink={handleCopyLink}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -453,6 +498,16 @@ export default function FoodDetailPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Comment Section */}
+            <div className="mt-10">
+              <CommentSection
+                targetType={COMMENT_TARGET_TYPES.FOOD}
+                targetId={food.id}
+                title="Bình luận về món ăn"
+                pageSize={10}
+              />
             </div>
 
             {/* Related Products */}

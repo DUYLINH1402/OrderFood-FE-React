@@ -98,6 +98,58 @@
         }
       }
     }
+
+    // Price and Like wrapper
+    .price-like-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+      margin-bottom: 8px;
+
+      .price {
+        margin-bottom: 0 !important;
+        font-size: 16px;
+      }
+
+      .like-button {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+        &:hover {
+          transform: scale(1.05);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+
+        &.liked {
+          background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+          color: #e91e63;
+        }
+
+        i {
+          font-size: 14px;
+          transition: transform 0.3s ease;
+        }
+
+        span {
+          font-weight: 500;
+          min-width: 12px;
+          text-align: center;
+        }
+      }
+    }
+
     .dish-card-action-btn::before {
       position: absolute;
       content: "";

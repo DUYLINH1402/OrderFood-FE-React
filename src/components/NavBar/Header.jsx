@@ -13,6 +13,7 @@ import { persistor } from "../../store";
 import { useUserNotifications } from "../../hooks/useUserNotifications";
 import NotificationBellContainer from "../Notification/NotificationBellContainer";
 import { useUserWebSocketContext } from "../../services/websocket/UserWebSocketProvider";
+import { useHeaderVisibility } from "../../contexts/HeaderVisibilityContext";
 
 const Header = () => {
   const cartItems = useSelector((state) => state.cart.items);
@@ -23,6 +24,9 @@ const Header = () => {
   const dropdownRef = useRef(null);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [hideLoginCart, setHideLoginCart] = useState(false);
+
+  // Lấy trạng thái ẩn/hiện header từ context
+  const { isHeaderVisible } = useHeaderVisibility();
 
   // Lấy trạng thái kết nối WebSocket
   const wsContext = useUserWebSocketContext();
@@ -87,7 +91,7 @@ const Header = () => {
   }, [dropdownOpen]);
 
   return (
-    <header className="header ">
+    <header className={`header ${isHeaderVisible ? "visible" : "hidden"}`}>
       <div className="header__left">
         <Link to="/" className="header__logo">
           <LazyImage src={logo} alt="Đồng Xanh" width={60} />

@@ -76,7 +76,7 @@ const useNotifications = (storageKey = "notifications", audioKey = "notification
         }
 
         // Hiển thị browser notification nếu được cho phép
-        if (Notification.permission === "granted") {
+        if ("Notification" in window && Notification.permission === "granted") {
           showBrowserNotification(notification);
         }
 
@@ -119,6 +119,9 @@ const useNotifications = (storageKey = "notifications", audioKey = "notification
   // Yêu cầu quyền browser notification
   const requestNotificationPermission = useCallback(async () => {
     try {
+      if (!("Notification" in window)) {
+        return false;
+      }
       const permission = await Notification.requestPermission();
       return permission === "granted";
     } catch (error) {
@@ -141,6 +144,9 @@ const useNotifications = (storageKey = "notifications", audioKey = "notification
   // Hiển thị browser notification
   const showBrowserNotification = useCallback((notification) => {
     try {
+      if (!("Notification" in window)) {
+        return;
+      }
       new Notification(notification.title, {
         body: notification.message,
         icon: "/favicon.webp",

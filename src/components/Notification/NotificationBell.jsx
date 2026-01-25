@@ -213,7 +213,7 @@ const NotificationBell = ({
           </Button>
         </div>
 
-        {Notification.permission !== "granted" && (
+        {"Notification" in window && Notification.permission !== "granted" && (
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Thông báo trình duyệt</span>
             <Button

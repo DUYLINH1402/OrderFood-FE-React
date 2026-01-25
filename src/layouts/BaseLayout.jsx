@@ -13,6 +13,7 @@ import Sidebar from "./Sidebar/Sidebar";
 import MobileMenuToggle from "./Sidebar/MobileMenuToggle";
 import "./Sidebar/Sidebar.css";
 import staff_avatar from "../assets/icons/staff_avatar.png";
+import ScrollToTopOnNavigate from "../components/ScrollToTopOnNavigate";
 
 const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
   const dispatch = useDispatch();
@@ -142,6 +143,7 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
 
   return (
     <div className="min-h-screen w-full max-w-full bg-gray-50 overflow-x-hidden">
+      <ScrollToTopOnNavigate />
       {/* Header */}
       <header className="sticky top-0 z-40 border-b backdrop-blur-sm" style={headerStyle}>
         <div className=" px-4 laptop:px-6 py-4">

@@ -8,7 +8,12 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { loginApi, registerApi, resendVerificationEmailApi } from "../services/auth/authApi";
 import { handleFieldBlur, validateLoginForm, validateRegisterForm } from "../utils/validation";
 import { toast } from "react-toastify";
-import { mapAuthError, mapLoginError, mapRegisterError } from "../utils/authErrorMapper";
+import {
+  mapAuthError,
+  mapLoginError,
+  mapRegisterError,
+  mapFacebookLoginError,
+} from "../utils/authErrorMapper";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../store/slices/authSlice";
@@ -184,6 +189,22 @@ export default function LoginRegisterForm() {
     }
   };
 
+  // Xử lý đăng nhập Google - redirect đến backend OAuth2
+  const handleGoogleLogin = () => {
+    // Lấy URL backend từ biến môi trường
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+    // Redirect toàn bộ trình duyệt đến backend OAuth2 endpoint
+    window.location.href = `${backendUrl}/oauth2/authorization/google`;
+  };
+
+  // Xử lý đăng nhập Facebook - redirect đến backend OAuth2
+  const handleFacebookLogin = () => {
+    // Lấy URL backend từ biến môi trường
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+    // Redirect toàn bộ trình duyệt đến backend OAuth2 endpoint
+    window.location.href = `${backendUrl}/oauth2/authorization/facebook`;
+  };
+
   // ------------------------------------------------------
   return (
     <div className="login-register-wrapper">
@@ -260,12 +281,20 @@ export default function LoginRegisterForm() {
             </LoadingButton>
             <p>hoặc đăng nhập bằng mạng xã hội</p>
             <div className="social-icons">
-              <a href="#">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="social-btn google-btn"
+                title="Đăng nhập với Google">
                 <img src={google} alt="Google" />
-              </a>
-              <a href="#">
+              </button>
+              <button
+                type="button"
+                onClick={handleFacebookLogin}
+                className="social-btn facebook-btn"
+                title="Đăng nhập với Facebook">
                 <img src={facebook} alt="Facebook" />
-              </a>
+              </button>
             </div>
           </form>
         </div>

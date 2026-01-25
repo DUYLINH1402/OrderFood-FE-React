@@ -167,6 +167,64 @@ form {
   }
 }
 
+// Style cho button đăng nhập mạng xã hội (Google, Facebook)
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  margin: 0 8px;
+  transition: all 0.3s ease;
+  min-width: 50px;
+  min-height: 44px;
+
+  img {
+    width: 28px;
+    height: 28px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: #1c8f74;
+    box-shadow: 0 2px 8px rgba(28, 143, 116, 0.2);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  // Loading spinner khi đang xử lý
+  .loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #1c8f74;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Wrapper cho Google Login button
+.google-login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+}
+
 .toggle-box {
   position: absolute;
   width: 100%;

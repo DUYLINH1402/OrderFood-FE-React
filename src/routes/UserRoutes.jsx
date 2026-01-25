@@ -6,6 +6,7 @@ import CustomerOnlyGuard from "../components/auth/CustomerOnlyGuard";
 
 // Pages
 import Home from "../pages/Home";
+import LoginSuccessPage from "../pages/auth/LoginSuccessPage";
 import CartPage from "../pages/Cart/CartPage";
 import Layout from "../components/NavBar/Layout";
 import LoginRegisterForm from "../components/LoginForm";
@@ -32,6 +33,7 @@ export const UserRoutes = [
     // errorElement: <Unauthorized />,
     children: [
       { path: "/gioi-thieu", element: <DongXanhIntro /> },
+      { path: "/login-success", element: <LoginSuccessPage /> },
       {
         path: "/",
         element: (
@@ -82,5 +84,10 @@ export const UserRoutes = [
         <ResetPasswordPage />
       </GuestOnly>
     ),
+  },
+  {
+    // Route xử lý callback từ Backend OAuth2 (Google Login)
+    path: "/login-success",
+    element: <LoginSuccessPage />,
   },
 ];
