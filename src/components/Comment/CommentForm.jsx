@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getToken } from "../../services/auth/authApi";
 
 /**
@@ -30,6 +31,15 @@ const CommentForm = ({
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef(null);
   const token = getToken();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Xử lý chuyển đến trang đăng nhập và ghi nhớ vị trí hiện tại
+  const handleLoginRedirect = () => {
+    const currentPath = location.pathname + location.search;
+    localStorage.setItem("redirectAfterLogin", currentPath);
+    navigate("/dang-nhap");
+  };
 
   // Auto focus khi mount
   useEffect(() => {
@@ -77,10 +87,12 @@ const CommentForm = ({
   if (!token) {
     return (
       <div className="bg-gray-50 rounded-xl p-4 text-center">
-        <div className="flex text-md items-center justify-center gap-2 text-gray-600">
-          <i className="fas fa-sign-in-alt"></i>
-          <span>Vui lòng đăng nhập để bình luận</span>
-        </div>
+        <button
+          onClick={handleLoginRedirect}
+          className="flex text-md items-center justify-center gap-2 text-gray-600 hover:text-green-600 transition-colors duration-200 cursor-pointer w-full group">
+          <i className="fas fa-sign-in-alt group-hover:scale-110 transition-transform duration-200"></i>
+          <span className="group-hover:underline">Vui lòng đăng nhập để bình luận</span>
+        </button>
       </div>
     );
   }

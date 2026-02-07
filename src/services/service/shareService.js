@@ -5,7 +5,7 @@ import { getShareCountApi, recordShareApi } from "../api/shareApi";
 // Định nghĩa các loại target type
 export const TARGET_TYPES = {
   FOOD: "FOOD",
-  POST: "POST",
+  BLOG: "BLOG",
 };
 
 // Định nghĩa các nền tảng chia sẻ được hỗ trợ
@@ -85,6 +85,34 @@ export const generateFoodShareContent = (food) => {
   const title = `${food.name} - Món ngon tại Đông Xanh`;
   const description = food.description || `Khám phá ${food.name} tuyệt vời tại nhà hàng Đông Xanh!`;
   const hashtag = "#DongXanh #MonNgon #AmThucViet";
+
+  return {
+    title,
+    description,
+    hashtag,
+  };
+};
+
+/**
+ * Tạo URL chia sẻ cho bài viết/blog
+ * @param {string} slug - Slug của bài viết
+ * @returns {string} - Full URL để chia sẻ
+ */
+export const generateBlogShareUrl = (slug) => {
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/tin-tuc/${slug}`;
+};
+
+/**
+ * Tạo nội dung chia sẻ cho bài viết/blog
+ * @param {object} blog - Object chứa thông tin bài viết
+ * @returns {{title: string, description: string, hashtag: string}}
+ */
+export const generateBlogShareContent = (blog) => {
+  const title = blog.title || "Tin tức từ Đông Xanh";
+  const description =
+    blog.summary || blog.description || "Khám phá những tin tức mới nhất từ nhà hàng Đông Xanh!";
+  const hashtag = "#DongXanh #TinTuc #AmThuc";
 
   return {
     title,

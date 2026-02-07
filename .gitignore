@@ -3,3 +3,6 @@ node_modules
 .gitignore
 dist
 .firebase/hosting.ZGlzdA.cache
+
+*.DS_Store
+*.md

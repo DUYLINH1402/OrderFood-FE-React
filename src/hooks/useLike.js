@@ -4,7 +4,7 @@ import { getToken } from "../services/auth/authApi";
 
 /**
  * Custom hook để quản lý trạng thái like cho một đối tượng
- * @param {string} targetType - Loại đối tượng (FOOD, POST, ...)
+ * @param {string} targetType - Loại đối tượng (FOOD, BLOG, ...)
  * @param {number} targetId - ID của đối tượng
  * @param {number} initialLikeCount - Số lượt like ban đầu (từ data của object)
  * @returns {{

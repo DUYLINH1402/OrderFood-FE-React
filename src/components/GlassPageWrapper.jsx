@@ -10,7 +10,7 @@ import React from "react";
  */
 function GlassPageWrapper({ children, className = "", boxProps = {} }) {
   return (
-    <div className="wrap-page relative overflow-hidden">
+    <div className="wrap-page relative overflow-x-hidden">
       {/* Hiệu ứng blob nền */}
       <div className="bg-blob bg-blob-1 pointer-events-none select-none"></div>
       <div className="bg-blob bg-blob-2 pointer-events-none select-none"></div>
@@ -20,7 +20,7 @@ function GlassPageWrapper({ children, className = "", boxProps = {} }) {
       <div className="bg-blob bg-blob-6 pointer-events-none select-none"></div>
       <div
         className={
-          `glass-box flex flex-col items-center justify-center min-h-[60vh] px-4 py-8 z-10 relative max-w-lg mx-auto w-full ` +
+          `glass-box flex flex-col items-center justify-center min-h-[60vh] px-4 py-8 z-10 relative  mx-auto w-full ` +
           className
         }
         {...boxProps}>

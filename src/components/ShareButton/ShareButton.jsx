@@ -110,7 +110,7 @@ const ShareButton = ({
   };
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative z-[1000] ${className}`} ref={dropdownRef}>
       {/* Main Share Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -144,7 +144,7 @@ const ShareButton = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-65 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 animate-fadeIn">
+        <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-[999] animate-fadeIn">
           {/* Header */}
           <div className="px-4 py-2 border-b border-gray-100">
             <p className="text-sm font-semibold text-gray-700">Chia sẻ qua</p>
@@ -157,9 +157,11 @@ const ShareButton = ({
                 // Xử lý riêng cho Zalo (custom share)
                 if (isCustom) {
                   return (
-                    <button key={platform} onClick={handleZaloShare} className="w-full">
-                      <div
-                        className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${bgColor}`}>
+                    <button
+                      key={platform}
+                      onClick={handleZaloShare}
+                      className={`w-full text-left ${bgColor}`}>
+                      <div className="flex items-center gap-3 px-4 py-2.5 cursor-pointer">
                         <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-50">
                           {iconSvg ? (
                             <img src={iconSvg} alt={name} className="w-7 h-7" />
@@ -181,9 +183,9 @@ const ShareButton = ({
                     key={platform}
                     {...props}
                     onShareWindowClose={() => handleShareSuccess(platform)}
-                    className="w-full">
-                    <div
-                      className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${bgColor}`}>
+                    className={`w-full block ${bgColor}`}
+                    style={{ display: "block", width: "100%" }}>
+                    <div className="flex items-center gap-3 px-4 py-2.5 cursor-pointer">
                       <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-50">
                         <i className={`${icon} ${color} text-sm`}></i>
                       </div>
@@ -200,8 +202,8 @@ const ShareButton = ({
             <div className="my-1 border-t border-gray-100"></div>
 
             {/* Copy Link Option */}
-            <button onClick={handleCopyLink} className="w-full">
-              <div className="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-gray-100">
+            <button onClick={handleCopyLink} className="w-full text-left hover:bg-gray-100">
+              <div className="flex items-center gap-3 px-4 py-2.5 cursor-pointer">
                 <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-50">
                   <i className="fas fa-link text-gray-600 text-sm"></i>
                 </div>

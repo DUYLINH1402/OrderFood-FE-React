@@ -14,6 +14,7 @@ const AdminMenu = React.lazy(() => import("../pages/admin/AdminMenu"));
 const AdminAnalytics = React.lazy(() => import("../pages/admin/AdminAnalytics"));
 const AdminSettings = React.lazy(() => import("../pages/admin/AdminSettings"));
 const AdminPromotions = React.lazy(() => import("../pages/admin/AdminPromotions"));
+const AdminBlogs = React.lazy(() => import("../pages/admin/AdminBlogs"));
 
 // Trang lỗi chung
 const Unauthorized = () => (
@@ -126,6 +127,14 @@ export const AdminRoutes = [
               <AdminSettings />
             </React.Suspense>
           </PermissionGuard>
+        ),
+      },
+      {
+        path: "blogs",
+        element: (
+          <React.Suspense fallback={<div>Đang tải...</div>}>
+            <AdminBlogs />
+          </React.Suspense>
         ),
       },
     ],

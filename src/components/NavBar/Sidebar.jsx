@@ -56,8 +56,8 @@ const Sidebar = ({ isOpen, onClose }) => {
               TÀI NGUYÊN - KIẾN THỨC
             </Link>
           </li>
-          <li>
-            <Link to="#" onClick={onClose}>
+          <li className={isActive("/tin-tuc") ? "active" : ""}>
+            <Link to="/tin-tuc" onClick={onClose}>
               TIN TỨC
             </Link>
           </li>

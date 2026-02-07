@@ -11,7 +11,7 @@ import { getToken } from "../auth/authApi";
 // Định nghĩa các loại target type
 export const TARGET_TYPES = {
   FOOD: "FOOD",
-  POST: "POST",
+  BLOG: "BLOG",
 };
 
 /**

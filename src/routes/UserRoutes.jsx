@@ -20,6 +20,8 @@ import FavoriteDishes from "../pages/FavoriteDishes/FavoriteDishesPage";
 import CheckoutPage from "../pages/Order/CheckoutPage";
 import PaymentResultPage from "../pages/Order/PaymentResultPage";
 import CustomerFeedbacksPage from "../pages/CustomerFeedbacks/CustomerFeedbacksPage";
+import NewsPage from "../pages/News/NewsPage";
+import NewsDetailPage from "../pages/News/NewsDetailPage";
 import Error404Page from "../pages/Error404Page";
 
 export const UserRoutes = [
@@ -74,6 +76,8 @@ export const UserRoutes = [
       { path: "/thanh-toan", element: <CheckoutPage /> },
       { path: "/thanh-toan/ket-qua", element: <PaymentResultPage /> },
       { path: "/danh-gia-khach-hang", element: <CustomerFeedbacksPage /> },
+      { path: "/tin-tuc", element: <NewsPage /> },
+      { path: "/tin-tuc/:slug", element: <NewsDetailPage /> },
       { path: "*", element: <Error404Page /> },
     ],
   },
