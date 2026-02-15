@@ -49,14 +49,11 @@ apiClient.interceptors.response.use(
   (error) => {
     const { response } = error;
 
-    // Xử lý lỗi authentication (401, 403)
-    if (response?.status === 401 || response?.status === 403) {
+    // Xử lý lỗi 401 Unauthorized - Token hết hạn hoặc không hợp lệ
+    if (response?.status === 401) {
       // Tránh redirect liên tục
       if (!isRedirectingToLogin) {
         isRedirectingToLogin = true;
-
-        const errorCode = response.data?.errorCode;
-        const errorMessage = response.data?.message || "";
 
         console.warn("Authentication failed - redirecting to login");
 
@@ -129,6 +126,12 @@ apiClient.interceptors.response.use(
           }
         }, 3000);
       }
+    }
+    // Xử lý lỗi 403 Forbidden - Không có quyền truy cập (KHÔNG logout)
+    else if (response?.status === 403) {
+      const errorMessage = response.data?.message || "Bạn không có quyền thực hiện hành động này";
+
+      console.warn("Access forbidden:", errorMessage);
     } else if (response?.status >= 500) {
       toast.error("Lỗi server. Vui lòng thử lại sau!");
     }

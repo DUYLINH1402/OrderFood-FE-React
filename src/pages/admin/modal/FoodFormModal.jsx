@@ -242,11 +242,11 @@ const FoodFormModal = ({
       {/* Modal Content */}
       <div className="flex min-h-full items-center justify-center p-2 tablet:p-4 desktop:p-6">
         <div
-          className={`relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden mx-2 tablet:mx-0 transform transition-all duration-300 ease-out ${
+          className={`relative bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[92vh] overflow-hidden mx-2 tablet:mx-0 transform transition-all duration-300 ease-out ${
             isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"
           }`}>
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 tablet:px-6 py-4">
+          <div className="bg-gradient-to-r from-[#3c54c2] to-[#4ba9ce] px-4 tablet:px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -258,7 +258,7 @@ const FoodFormModal = ({
                 </div>
                 <div>
                   <h2 className="text-lg tablet:text-xl font-bold text-white">
-                    {isEditMode ? "Chinh sua mon an" : "Them mon an moi"}
+                    {isEditMode ? "Chỉnh sửa món ăn" : "Thêm món ăn mới"}
                   </h2>
                   <p className="text-sx tablet:text-sm text-white/80">
                     {isEditMode ? "Cập nhật thông tin món ăn" : "Điền thông tin để tạo món ăn mới"}
@@ -281,7 +281,7 @@ const FoodFormModal = ({
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <FiImage className="w-4 h-4 inline mr-1" />
+                    <FiImage className="w-6 h-6 inline mr-1" />
                     Hình ảnh món ăn
                   </label>
                   <div className="relative aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-orange-400 transition-colors">
@@ -316,11 +316,11 @@ const FoodFormModal = ({
 
                 {/* Flags */}
                 <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                  <h4 className="font-medium text-gray-900 mb-3">Đánh dấu đặc biệt</h4>
+                  <h4 className="text-sm text-gray-900 mb-3">Đánh dấu đặc biệt</h4>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <FiTrendingUp className="w-4 h-4 text-red-500" />
+                      <FiTrendingUp className="w-6 h-6 text-red-500" />
                       <span className="text-sm text-gray-700">Món bán chạy</span>
                     </div>
                     <Switch
@@ -331,7 +331,7 @@ const FoodFormModal = ({
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <FiStar className="w-4 h-4 text-yellow-500" />
+                      <FiStar className="w-6 h-6 text-yellow-500" />
                       <span className="text-sm text-gray-700">Món đặc biệt</span>
                     </div>
                     <Switch
@@ -342,7 +342,7 @@ const FoodFormModal = ({
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <FiTag className="w-4 h-4 text-blue-500" />
+                      <FiTag className="w-6 h-6 text-blue-500" />
                       <span className="text-sm text-gray-700">Món mới</span>
                     </div>
                     <Switch
@@ -476,24 +476,24 @@ const FoodFormModal = ({
               <button
                 onClick={handleClose}
                 disabled={loading}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium disabled:opacity-50">
+                className="text-sm px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium disabled:opacity-50">
                 Hủy bỏ
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2">
+                className="text-sm px-6 py-2.5 bg-gradient-to-r from-[#3c54c2] to-[#4ba9ce] text-white rounded-lg hover:from-[#10216e] hover:to-[#82c2db] transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2">
                 {loading ? (
                   <>
-                    <FiLoader className="w-4 h-4 animate-spin" />
+                    <FiLoader className="w-6 h-6 animate-spin" />
                     Đang xử lý...
                   </>
                 ) : (
                   <>
                     {isEditMode ? (
-                      <FiCheckCircle className="w-4 h-4" />
+                      <FiCheckCircle className="w-6 h-6" />
                     ) : (
-                      <FiPlus className="w-4 h-4" />
+                      <FiPlus className="w-6 h-6" />
                     )}
                     {isEditMode ? "Cập nhật" : "Thêm món ăn"}
                   </>

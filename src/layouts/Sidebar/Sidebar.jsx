@@ -6,10 +6,16 @@ import {
   FiUsers,
   FiMenu,
   FiChevronRight,
+  FiChevronDown,
   FiBookOpen,
   FiSettings,
   FiGift,
   FiUser,
+  FiMessageSquare,
+  FiMail,
+  FiCreditCard,
+  FiBell,
+  FiShield,
 } from "react-icons/fi";
 import { MdDashboard, MdRestaurantMenu } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
@@ -29,6 +35,15 @@ const iconMap = {
   analytics: BiLineChart,
   promotions: FiGift,
   settings: FiSettings,
+  comments: FiMessageSquare,
+  contacts: FiMail,
+  // Settings sub-icons
+  settingsGeneral: FiSettings,
+  settingsPayment: FiCreditCard,
+  settingsMail: FiMail,
+  settingsChatbot: FiMessageSquare,
+  settingsNotification: FiBell,
+  settingsSecurity: FiShield,
   // Staff icons
   reports: BiLineChart,
   customers: FiUser,
@@ -41,9 +56,24 @@ const Sidebar = ({ navigation, isOpen, onToggle, isMobile, config }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const sidebarRef = useRef(null);
+  const [expandedMenus, setExpandedMenus] = useState({});
 
   // Tính toán chính xác height của header
   const headerHeight = useHeaderHeight("header");
+
+  // Tự động mở submenu nếu đang ở trang con
+  useEffect(() => {
+    navigation.forEach((item) => {
+      if (item.children && location.pathname.startsWith(item.path)) {
+        setExpandedMenus((prev) => ({ ...prev, [item.path]: true }));
+      }
+    });
+  }, [location.pathname, navigation]);
+
+  // Toggle mở/đóng submenu
+  const toggleSubmenu = (path) => {
+    setExpandedMenus((prev) => ({ ...prev, [path]: !prev[path] }));
+  };
 
   // Đóng sidebar khi click ra ngoài trên mobile
   useEffect(() => {
@@ -152,7 +182,7 @@ const Sidebar = ({ navigation, isOpen, onToggle, isMobile, config }) => {
               className={`w-8 h-8 ${
                 config?.iconColor || "bg-blue-600"
               } rounded-lg flex items-center justify-center`}>
-              <FiHome className="w-4 h-4 text-white" />
+              <FiHome className="w-6 h-6 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
@@ -173,11 +203,16 @@ const Sidebar = ({ navigation, isOpen, onToggle, isMobile, config }) => {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="mt-6 px-4">
+        <nav className="mt-6 px-4 overflow-y-auto" style={{ maxHeight: "calc(100% - 180px)" }}>
           <ul className="space-y-2 sidebar-nav">
             {navigation.map((item, index) => {
               const IconComponent = iconMap[item.icon] || FiMenu;
-              const isActive = location.pathname === item.path;
+              const hasChildren = item.children && item.children.length > 0;
+              const isExpanded = expandedMenus[item.path];
+              // Item active khi pathname trùng chính xác hoặc là trang con (nếu không có children)
+              const isActive = hasChildren
+                ? location.pathname.startsWith(item.path)
+                : location.pathname === item.path;
 
               return (
                 <motion.li
@@ -189,7 +224,17 @@ const Sidebar = ({ navigation, isOpen, onToggle, isMobile, config }) => {
                     transition: { delay: index * 0.1 },
                   }}>
                   <button
-                    onClick={() => handleNavigation(item.path)}
+                    onClick={() => {
+                      if (hasChildren) {
+                        toggleSubmenu(item.path);
+                        // Nếu chưa ở trang settings, navigate đến trang con đầu tiên
+                        if (!location.pathname.startsWith(item.path)) {
+                          handleNavigation(item.children[0].path);
+                        }
+                      } else {
+                        handleNavigation(item.path);
+                      }
+                    }}
                     className={`
                       w-full flex items-center justify-between px-4 py-3 rounded-lg
                       text-left transition-all duration-200 group sidebar-item
@@ -210,12 +255,70 @@ const Sidebar = ({ navigation, isOpen, onToggle, isMobile, config }) => {
                       <span className="font-medium text-md ">{item.label}</span>
                     </div>
 
-                    <FiChevronRight
-                      className={`w-6 h-6 transition-transform opacity-0 group-hover:opacity-100 ${
-                        isActive ? "opacity-100 transform rotate-90" : ""
-                      }`}
-                    />
+                    {hasChildren ? (
+                      <FiChevronDown
+                        className={`w-5 h-5 transition-transform duration-200 ${
+                          isExpanded ? "rotate-180" : ""
+                        } ${
+                          isActive
+                            ? activeStyles.iconColor
+                            : "text-gray-400 group-hover:text-gray-600"
+                        }`}
+                      />
+                    ) : (
+                      <FiChevronRight
+                        className={`w-6 h-6 transition-transform opacity-0 group-hover:opacity-100 ${
+                          isActive ? "opacity-100 transform rotate-90" : ""
+                        }`}
+                      />
+                    )}
                   </button>
+
+                  {/* Submenu children */}
+                  {hasChildren && (
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.ul
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          className="overflow-hidden ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
+                          {item.children.map((child) => {
+                            const ChildIcon = iconMap[child.icon] || FiMenu;
+                            const isChildActive = location.pathname === child.path;
+
+                            return (
+                              <motion.li
+                                key={child.path}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}>
+                                <button
+                                  onClick={() => handleNavigation(child.path)}
+                                  className={`
+                                    w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg
+                                    text-left transition-all duration-200 text-sm
+                                    ${
+                                      isChildActive
+                                        ? `${activeStyles.textColor} bg-opacity-50 ${activeStyles.backgroundColor} font-medium`
+                                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                                    }
+                                  `}>
+                                  <ChildIcon
+                                    className={`w-6 h-6 flex-shrink-0 ${
+                                      isChildActive ? activeStyles.iconColor : "text-gray-400"
+                                    }`}
+                                  />
+                                  <span>{child.label}</span>
+                                </button>
+                              </motion.li>
+                            );
+                          })}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  )}
                 </motion.li>
               );
             })}

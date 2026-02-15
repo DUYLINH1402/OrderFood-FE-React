@@ -1,12 +1,12 @@
-// NewsSection.jsx - Component hiển thị tin tức trên trang chủ
+// MediaPressSection.jsx - Component hiển thị báo chí & truyền thông trên trang chủ
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getBlogsByType } from "../services/service/blogService";
 import { BLOG_TYPES } from "../constants/blogConstants";
-import NewsCard from "./NewsCard";
+import MediaPressCard from "./MediaPressCard";
 import NewsSkeleton from "./Skeleton/NewsSkeleton";
 
-const NewsSection = () => {
+const MediaPressSection = () => {
   const navigate = useNavigate();
   const [featuredBlog, setFeaturedBlog] = useState(null);
   const [secondBlog, setSecondBlog] = useState(null);
@@ -14,10 +14,10 @@ const NewsSection = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchNews = async () => {
+    const fetchMediaPress = async () => {
       try {
-        // Lấy danh sách bài viết theo type NEWS_PROMOTIONS
-        const blogsData = await getBlogsByType(BLOG_TYPES.NEWS_PROMOTIONS, 0, 10);
+        // Lấy danh sách bài viết theo type MEDIA_PRESS
+        const blogsData = await getBlogsByType(BLOG_TYPES.MEDIA_PRESS, 0, 10);
         const blogs = Array.isArray(blogsData?.content) ? blogsData.content : [];
 
         if (blogs.length === 0) {
@@ -38,13 +38,13 @@ const NewsSection = () => {
           setLatestBlogs(remainingBlogs.slice(1, 5));
         }
       } catch (error) {
-        console.error("Lỗi khi tải tin tức:", error);
+        console.error("Lỗi khi tải báo chí & truyền thông:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchNews();
+    fetchMediaPress();
   }, []);
 
   if (loading) {
@@ -56,8 +56,8 @@ const NewsSection = () => {
     return (
       <div className="glass-box p-8 text-center">
         <div className="text-gray-500 text-md">
-          <i className="fa-regular fa-newspaper text-4xl mb-3 text-gray-400"></i>
-          <p>Chưa có tin tức nào.</p>
+          <i className="fa-solid fa-bullhorn text-4xl mb-3 text-gray-400"></i>
+          <p>Chưa có bài báo chí nào.</p>
         </div>
       </div>
     );
@@ -73,14 +73,14 @@ const NewsSection = () => {
             {/* Featured Blog - Bài nổi bật lớn */}
             {featuredBlog && (
               <div className="flex-1">
-                <NewsCard blog={featuredBlog} variant="featured" />
+                <MediaPressCard blog={featuredBlog} variant="featured" />
               </div>
             )}
 
             {/* Second Blog - Bài thứ 2 dạng horizontal */}
             {secondBlog && (
               <div>
-                <NewsCard blog={secondBlog} variant="horizontal" />
+                <MediaPressCard blog={secondBlog} variant="horizontal" />
               </div>
             )}
           </div>
@@ -89,7 +89,7 @@ const NewsSection = () => {
           <div className="lg:col-span-5">
             <div className="flex flex-col gap-3 sm:gap-4">
               {latestBlogs.map((blog) => (
-                <NewsCard key={blog.id} blog={blog} variant="horizontal" />
+                <MediaPressCard key={blog.id} blog={blog} variant="horizontal" />
               ))}
             </div>
           </div>
@@ -98,9 +98,9 @@ const NewsSection = () => {
         {/* Nút xem thêm */}
         <div className="text-center mt-6 sm:mt-8">
           <button
-            onClick={() => navigate("/tin-tuc")}
-            className="px-8 py-3 bg-[#199b7e] text-white text-md font-medium rounded-lg hover:bg-[#148567] transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 inline-flex items-center gap-2">
-            <span>Xem tất cả tin tức</span>
+            onClick={() => navigate("/bao-chi")}
+            className="px-8 py-3 bg-[#3b82f6] text-white text-md font-medium rounded-lg hover:bg-[#2563eb] transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 inline-flex items-center gap-2">
+            <span>Xem tất cả bài báo chí</span>
             <i className="fa-solid fa-arrow-right"></i>
           </button>
         </div>
@@ -109,4 +109,4 @@ const NewsSection = () => {
   );
 };
 
-export default NewsSection;
+export default MediaPressSection;

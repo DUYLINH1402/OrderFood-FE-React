@@ -5,6 +5,8 @@ import NewDishesSection from "./home/NewDishesSection";
 import FeaturedDishesSection from "./home/FeaturedDishesSection";
 import FavoriteDishesSection from "./home/FavoriteDishesSection";
 import NewsSection from "../components/NewsSection";
+import MediaPressSection from "../components/MediaPressSection";
+import CateringServicesSection from "../components/CateringServicesSection";
 import LazyImage from "../components/LazyImage";
 import "../assets/styles/pages/Home.scss";
 import ServiceHighlights from "../components/ServiceHighlights";
@@ -136,7 +138,7 @@ const Home = () => {
             className="scroll-reveal home__highlight"
             ref={(el) => setHighlightRef(el, 6)}
             style={getDelayStyle(6, 0.12)}>
-            Tin tức nội bộ và Khách hàng Đồng Xanh
+            Tin tức và Khách hàng Đồng Xanh
           </h2>
           <NewsSection />
         </div>
@@ -145,7 +147,7 @@ const Home = () => {
             className="scroll-reveal home__highlight"
             ref={(el) => setHighlightRef(el, 7)}
             style={getDelayStyle(7, 0.12)}>
-            Tin tức nội bộ và Khách hàng Đồng Xanh
+            Tin tức và Khách hàng Đồng Xanh
           </h2>
           <NewsSection />
         </div>
@@ -159,6 +161,52 @@ const Home = () => {
             className="scroll-reveal home__highlight"
             ref={(el) => setHighlightRef(el, 8)}
             style={getDelayStyle(8, 0.12)}>
+            Báo chí nói gì về Đồng Xanh
+          </h2>
+          <MediaPressSection />
+        </div>
+        <div className="block sm:hidden">
+          <h2
+            className="scroll-reveal home__highlight"
+            ref={(el) => setHighlightRef(el, 9)}
+            style={getDelayStyle(9, 0.12)}>
+            Báo chí nói gì về Đồng Xanh
+          </h2>
+          <MediaPressSection />
+        </div>
+      </section>
+      <section
+        className="scroll-reveal home__section"
+        ref={(el) => setSectionRef(el, 7)}
+        style={{ ...getDelayStyle(7, 0.08), maxWidth: "100%", width: "100%", margin: "0 auto" }}>
+        <div style={{ maxWidth: "87%", margin: "0 auto" }} className="hidden sm:block">
+          <h2
+            className="scroll-reveal home__highlight"
+            ref={(el) => setHighlightRef(el, 10)}
+            style={getDelayStyle(10, 0.12)}>
+            Dịch vụ Đãi tiệc lưu động
+          </h2>
+          <CateringServicesSection />
+        </div>
+        <div className="block sm:hidden">
+          <h2
+            className="scroll-reveal home__highlight"
+            ref={(el) => setHighlightRef(el, 11)}
+            style={getDelayStyle(11, 0.12)}>
+            Dịch vụ Đãi tiệc lưu động
+          </h2>
+          <CateringServicesSection />
+        </div>
+      </section>
+      <section
+        className="scroll-reveal home__section"
+        ref={(el) => setSectionRef(el, 8)}
+        style={{ ...getDelayStyle(8, 0.08), maxWidth: "100%", width: "100%", margin: "0 auto" }}>
+        <div style={{ maxWidth: "87%", margin: "0 auto" }} className="hidden sm:block">
+          <h2
+            className="scroll-reveal home__highlight"
+            ref={(el) => setHighlightRef(el, 12)}
+            style={getDelayStyle(12, 0.12)}>
             Đánh giá khách hàng
           </h2>
           <FeedbacksGallery
@@ -169,8 +217,8 @@ const Home = () => {
         <div className="block sm:hidden">
           <h2
             className="scroll-reveal home__highlight"
-            ref={(el) => setHighlightRef(el, 9)}
-            style={getDelayStyle(9, 0.12)}>
+            ref={(el) => setHighlightRef(el, 13)}
+            style={getDelayStyle(13, 0.12)}>
             Đánh giá khách hàng
           </h2>
           <FeedbacksGallery

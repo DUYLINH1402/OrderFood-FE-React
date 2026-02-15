@@ -7,12 +7,38 @@ import {
   updateAdminBlogApi,
   getAdminBlogByIdApi,
 } from "../../../services/api/adminBlogApi";
+import { BLOG_TYPES } from "../../../constants/blogConstants";
 
 // Status options
 const STATUS_OPTIONS = [
   { value: "DRAFT", label: "Bản nháp", description: "Chưa xuất bản, chỉ admin thấy" },
   { value: "PUBLISHED", label: "Xuất bản", description: "Công khai cho người dùng" },
   { value: "ARCHIVED", label: "Lưu trữ", description: "Đã lưu trữ, không hiển thị" },
+];
+
+// Blog type options
+const BLOG_TYPE_OPTIONS = [
+  {
+    value: BLOG_TYPES.NEWS_PROMOTIONS,
+    label: "Tin tức & Khuyến mãi",
+    description: "Tin tức, khuyến mãi, sự kiện của nhà hàng",
+    icon: "fa-newspaper",
+    color: "emerald",
+  },
+  {
+    value: BLOG_TYPES.MEDIA_PRESS,
+    label: "Báo chí & Truyền thông",
+    description: "Bài viết từ báo chí nói về nhà hàng",
+    icon: "fa-bullhorn",
+    color: "blue",
+  },
+  {
+    value: BLOG_TYPES.CATERING_SERVICES,
+    label: "Dịch vụ đãi tiệc",
+    description: "Showcase các gói tiệc và dịch vụ",
+    icon: "fa-utensils",
+    color: "amber",
+  },
 ];
 
 // Quill editor modules
@@ -89,12 +115,26 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
     content: "",
     thumbnail: "",
     status: "DRAFT",
+    blogType: BLOG_TYPES.NEWS_PROMOTIONS,
     isFeatured: false,
     tags: "",
     metaTitle: "",
     metaDescription: "",
     publishedAt: "",
     categoryId: "",
+    // MEDIA_PRESS fields
+    sourceUrl: "",
+    sourceName: "",
+    sourceLogo: "",
+    sourcePublishedAt: "",
+    // CATERING_SERVICES fields
+    priceRange: "",
+    serviceAreas: "",
+    menuItems: "",
+    galleryImages: "",
+    minCapacity: "",
+    maxCapacity: "",
+    contactInfo: "",
   });
 
   // Loading states
@@ -123,6 +163,7 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
               content: data.content || "",
               thumbnail: data.thumbnail || "",
               status: data.status || "DRAFT",
+              blogType: data.blogType || BLOG_TYPES.NEWS_PROMOTIONS,
               isFeatured: data.isFeatured || false,
               tags: data.tags || "",
               metaTitle: data.metaTitle || "",
@@ -131,6 +172,26 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
                 ? new Date(data.publishedAt).toISOString().slice(0, 16)
                 : "",
               categoryId: data.category?.id || "",
+              // MEDIA_PRESS fields
+              sourceUrl: data.sourceUrl || "",
+              sourceName: data.sourceName || "",
+              sourceLogo: data.sourceLogo || "",
+              sourcePublishedAt: data.sourcePublishedAt
+                ? new Date(data.sourcePublishedAt).toISOString().slice(0, 16)
+                : "",
+              // CATERING_SERVICES fields
+              priceRange: data.priceRange || "",
+              serviceAreas: data.serviceAreas || "",
+              menuItems:
+                typeof data.menuItems === "string"
+                  ? data.menuItems
+                  : JSON.stringify(data.menuItems || []),
+              galleryImages: Array.isArray(data.galleryImages)
+                ? data.galleryImages.join("\n")
+                : data.galleryImages || "",
+              minCapacity: data.minCapacity || "",
+              maxCapacity: data.maxCapacity || "",
+              contactInfo: data.contactInfo || "",
             });
           }
         } catch (error) {
@@ -160,6 +221,20 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
           metaDescription: "",
           publishedAt: "",
           categoryId: "",
+          blogType: "NEWS_PROMOTIONS",
+          // MEDIA_PRESS fields
+          sourceUrl: "",
+          sourceName: "",
+          sourceLogo: "",
+          sourcePublishedAt: "",
+          // CATERING_SERVICES fields
+          priceRange: "",
+          serviceAreas: "",
+          menuItems: "",
+          galleryImages: "",
+          minCapacity: "",
+          maxCapacity: "",
+          contactInfo: "",
         });
       }
       setErrors({});
@@ -298,7 +373,47 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
           ? new Date(formData.publishedAt).toISOString()
           : undefined,
         categoryId: formData.categoryId ? Number(formData.categoryId) : undefined,
+        blogType: formData.blogType,
       };
+
+      // Add MEDIA_PRESS specific fields
+      if (formData.blogType === "MEDIA_PRESS") {
+        payload.sourceUrl = formData.sourceUrl || undefined;
+        payload.sourceName = formData.sourceName || undefined;
+        payload.sourceLogo = formData.sourceLogo || undefined;
+        payload.sourcePublishedAt = formData.sourcePublishedAt
+          ? new Date(formData.sourcePublishedAt).toISOString()
+          : undefined;
+      }
+
+      // Add CATERING_SERVICES specific fields
+      if (formData.blogType === "CATERING_SERVICES") {
+        payload.priceRange = formData.priceRange || undefined;
+        payload.serviceAreas = formData.serviceAreas
+          ? formData.serviceAreas
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : undefined;
+        payload.minCapacity = formData.minCapacity ? Number(formData.minCapacity) : undefined;
+        payload.maxCapacity = formData.maxCapacity ? Number(formData.maxCapacity) : undefined;
+        payload.contactInfo = formData.contactInfo || undefined;
+        // Parse menuItems JSON
+        if (formData.menuItems) {
+          try {
+            payload.menuItems = JSON.parse(formData.menuItems);
+          } catch (e) {
+            console.warn("Invalid menuItems JSON:", e);
+          }
+        }
+        // Parse galleryImages (newline separated URLs)
+        if (formData.galleryImages) {
+          payload.galleryImages = formData.galleryImages
+            .split("\n")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        }
+      }
 
       let response;
       if (isEditMode) {
@@ -548,6 +663,29 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
                   )}
                 </div>
 
+                {/* Blog Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Loại bài viết <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.blogType}
+                    onChange={(e) => handleChange("blogType", e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    {BLOG_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {formData.blogType === "NEWS_PROMOTIONS" &&
+                      "Tin tức về khuyến mãi, sự kiện nhà hàng"}
+                    {formData.blogType === "MEDIA_PRESS" && "Bài viết từ báo chí, truyền thông"}
+                    {formData.blogType === "CATERING_SERVICES" && "Dịch vụ đãi tiệc lưu động"}
+                  </p>
+                </div>
+
                 {/* Summary */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tóm tắt</label>
@@ -664,6 +802,203 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
                     />
                   </button>
                 </div>
+
+                {/* MEDIA_PRESS specific fields */}
+                {formData.blogType === "MEDIA_PRESS" && (
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-4 flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                        />
+                      </svg>
+                      Thông tin nguồn báo chí
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Tên nguồn
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.sourceName}
+                          onChange={(e) => handleChange("sourceName", e.target.value)}
+                          placeholder="VD: VnExpress, Tuổi Trẻ, Dân Trí..."
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          URL bài gốc
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.sourceUrl}
+                          onChange={(e) => handleChange("sourceUrl", e.target.value)}
+                          placeholder="https://vnexpress.net/bai-viet-goc..."
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Logo nguồn (URL)
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.sourceLogo}
+                          onChange={(e) => handleChange("sourceLogo", e.target.value)}
+                          placeholder="https://example.com/logo.png"
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        {formData.sourceLogo && (
+                          <img
+                            src={formData.sourceLogo}
+                            alt="Logo preview"
+                            className="mt-2 h-8 object-contain"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Ngày đăng gốc
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={formData.sourcePublishedAt}
+                          onChange={(e) => handleChange("sourcePublishedAt", e.target.value)}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* CATERING_SERVICES specific fields */}
+                {formData.blogType === "CATERING_SERVICES" && (
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <h4 className="text-sm font-semibold text-amber-800 mb-4 flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A1.75 1.75 0 014 14.9V4a1 1 0 011-1h14a1 1 0 011 1v11.5a1.75 1.75 0 01-.5.046z"
+                        />
+                      </svg>
+                      Thông tin dịch vụ đãi tiệc
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Sức chứa tối thiểu
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.minCapacity}
+                            onChange={(e) => handleChange("minCapacity", e.target.value)}
+                            placeholder="VD: 50"
+                            min="1"
+                            className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Sức chứa tối đa
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.maxCapacity}
+                            onChange={(e) => handleChange("maxCapacity", e.target.value)}
+                            placeholder="VD: 500"
+                            min="1"
+                            className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Khoảng giá
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.priceRange}
+                          onChange={(e) => handleChange("priceRange", e.target.value)}
+                          placeholder="VD: 500.000đ - 2.000.000đ/người"
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Khu vực phục vụ
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.serviceAreas}
+                          onChange={(e) => handleChange("serviceAreas", e.target.value)}
+                          placeholder="VD: Quận 1, Quận 3, Quận Bình Thạnh (cách nhau bởi dấu phẩy)"
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <p className="mt-1 text-sm text-gray-500">
+                          Nhập các khu vực cách nhau bởi dấu phẩy
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Thông tin liên hệ
+                        </label>
+                        <textarea
+                          value={formData.contactInfo}
+                          onChange={(e) => handleChange("contactInfo", e.target.value)}
+                          placeholder="VD: Hotline: 0901234567&#10;Email: catering@example.com"
+                          rows={2}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Thực đơn mẫu (JSON)
+                        </label>
+                        <textarea
+                          value={formData.menuItems}
+                          onChange={(e) => handleChange("menuItems", e.target.value)}
+                          placeholder='VD: [{"name": "Set menu A", "price": 500000}, {"name": "Set menu B", "price": 800000}]'
+                          rows={3}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono text-xs"
+                        />
+                        <p className="mt-1 text-sm text-gray-500">
+                          Định dạng JSON array với các object chứa name, price, description (tùy
+                          chọn)
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Gallery (URLs)
+                        </label>
+                        <textarea
+                          value={formData.galleryImages}
+                          onChange={(e) => handleChange("galleryImages", e.target.value)}
+                          placeholder="Mỗi URL trên một dòng"
+                          rows={3}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <p className="mt-1 text-sm text-gray-500">Nhập mỗi URL ảnh trên một dòng</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

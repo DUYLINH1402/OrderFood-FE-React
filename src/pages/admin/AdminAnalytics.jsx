@@ -569,7 +569,7 @@ const AdminAnalytics = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="p-8 text-center text-gray-500">
+                  <td colSpan="7" className="p-8 text-sm text-center text-gray-500">
                     Chưa có dữ liệu món ăn
                   </td>
                 </tr>

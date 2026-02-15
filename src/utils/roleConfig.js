@@ -29,6 +29,7 @@ export const PERMISSIONS = {
   // Admin permissions
   MANAGE_USERS: "manage_users",
   MANAGE_STAFF: "manage_staff",
+  MANAGE_COMMENTS: "manage_comments",
   VIEW_ANALYTICS: "view_analytics",
   MANAGE_SYSTEM_SETTINGS: "manage_system_settings",
   MANAGE_PROMOTIONS: "manage_promotions",
@@ -118,6 +119,8 @@ export const ROLE_ROUTES = {
       "/admin/orders",
       "/admin/menu",
       "/admin/blogs",
+      "/admin/comments",
+      "/admin/contacts",
       "/admin/analytics",
       "/admin/settings",
       "/admin/promotions",
@@ -152,9 +155,23 @@ export const ROLE_NAVIGATION = {
     { path: "/admin/orders", label: "Đơn hàng", icon: "orders" },
     { path: "/admin/menu", label: "Thực đơn", icon: "menu" },
     { path: "/admin/blogs", label: "Bài viết", icon: "book" },
+    { path: "/admin/comments", label: "Bình luận", icon: "comments" },
+    { path: "/admin/contacts", label: "Liên hệ", icon: "contacts" },
     { path: "/admin/analytics", label: "Thống kê", icon: "analytics" },
     { path: "/admin/promotions", label: "Khuyến mãi", icon: "promotions" },
-    { path: "/admin/settings", label: "Cài đặt", icon: "settings" },
+    {
+      path: "/admin/settings",
+      label: "Cài đặt",
+      icon: "settings",
+      children: [
+        { path: "/admin/settings/general", label: "Cài đặt chung", icon: "settingsGeneral" },
+        { path: "/admin/settings/payment", label: "Thanh toán", icon: "settingsPayment" },
+        { path: "/admin/settings/mail", label: "Email", icon: "settingsMail" },
+        { path: "/admin/settings/chatbot", label: "Chatbot", icon: "settingsChatbot" },
+        { path: "/admin/settings/notification", label: "Thông báo", icon: "settingsNotification" },
+        { path: "/admin/settings/security", label: "Bảo mật", icon: "settingsSecurity" },
+      ],
+    },
   ],
 };
 

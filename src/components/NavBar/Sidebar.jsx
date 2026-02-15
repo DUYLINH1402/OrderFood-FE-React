@@ -35,9 +35,9 @@ const Sidebar = ({ isOpen, onClose }) => {
               THỰC ĐƠN
             </Link>
           </li>
-          <li className={`has-dropdown ${isActive("/tich-diem") ? "active" : ""}`}>
-            <Link to="/tich-diem" onClick={onClose}>
-              TÍCH ĐIỂM - NHẬN QUÀ
+          <li className={isActive("/dai-tiec") ? "active" : ""}>
+            <Link to="/dai-tiec" onClick={onClose}>
+              ĐÃI TIỆC LƯU ĐỘNG
             </Link>
           </li>
           <li className={isActive("/danh-gia-khach-hang") ? "active" : ""}>
@@ -45,24 +45,24 @@ const Sidebar = ({ isOpen, onClose }) => {
               ĐÁNH GIÁ CỦA KHÁCH HÀNG
             </Link>
           </li>
-
-          <li>
-            <Link to="#" onClick={onClose}>
-              LÀM THIỆN NGUYỆN CÙNG ĐỒNG XANH
-            </Link>
-          </li>
-          <li className="has-dropdown">
-            <Link to="#" onClick={onClose}>
-              TÀI NGUYÊN - KIẾN THỨC
-            </Link>
-          </li>
           <li className={isActive("/tin-tuc") ? "active" : ""}>
             <Link to="/tin-tuc" onClick={onClose}>
               TIN TỨC
             </Link>
           </li>
-          <li>
-            <Link to="#" onClick={onClose}>
+          <li className={isActive("/bao-chi") ? "active" : ""}>
+            <Link to="/bao-chi" onClick={onClose}>
+              BÁO CHÍ & TRUYỀN THÔNG
+            </Link>
+          </li>
+
+          <li className={`has-dropdown ${isActive("/tich-diem") ? "active" : ""}`}>
+            <Link to="/tich-diem" onClick={onClose}>
+              TÍCH ĐIỂM - NHẬN QUÀ
+            </Link>
+          </li>
+          <li className={isActive("/lien-he") ? "active" : ""}>
+            <Link to="/lien-he" onClick={onClose}>
               LIÊN HỆ
             </Link>
           </li>

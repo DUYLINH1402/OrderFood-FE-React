@@ -78,7 +78,7 @@ const DeleteFoodModal = ({ food, isOpen, onClose, onConfirm, loading = false }) 
       {/* Modal Content */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className={`relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all duration-300 ease-out ${
+          className={`relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden transform transition-all duration-300 ease-out ${
             isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"
           }`}>
           {/* Header */}
@@ -138,14 +138,14 @@ const DeleteFoodModal = ({ food, isOpen, onClose, onConfirm, loading = false }) 
             {/* Confirm Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nhập <span className="font-bold text-red-600">"xoá"</span> để xác nhận
+                Nhập <span className="font-bold text-red-600">"xoa"</span> để xác nhận
               </label>
               <input
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
-                placeholder="Nhap 'xoa' de xac nhan..."
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors"
+                placeholder='Nhap "xoa" de xac nhan...'
+                className="text-sx w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors"
                 disabled={loading}
               />
             </div>
@@ -157,21 +157,21 @@ const DeleteFoodModal = ({ food, isOpen, onClose, onConfirm, loading = false }) 
               <button
                 onClick={handleClose}
                 disabled={loading}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium disabled:opacity-50">
+                className="px-6 py-2.5 border border-gray-300 text-sm text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium disabled:opacity-50">
                 Hủy bỏ
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={loading || !canDelete}
-                className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg hover:from-red-600 hover:to-rose-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-sm text-white rounded-lg hover:from-red-600 hover:to-rose-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                 {loading ? (
                   <>
-                    <FiLoader className="w-4 h-4 animate-spin" />
+                    <FiLoader className="w-6 h-6 animate-spin" />
                     Đang xóa...
                   </>
                 ) : (
                   <>
-                    <FiTrash2 className="w-4 h-4" />
+                    <FiTrash2 className="w-6 h-6" />
                     Xóa món ăn
                   </>
                 )}

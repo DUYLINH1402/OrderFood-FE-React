@@ -15,6 +15,9 @@ const AdminAnalytics = React.lazy(() => import("../pages/admin/AdminAnalytics"))
 const AdminSettings = React.lazy(() => import("../pages/admin/AdminSettings"));
 const AdminPromotions = React.lazy(() => import("../pages/admin/AdminPromotions"));
 const AdminBlogs = React.lazy(() => import("../pages/admin/AdminBlogs"));
+const AdminComments = React.lazy(() => import("../pages/admin/AdminComments"));
+const AdminContacts = React.lazy(() => import("../pages/admin/AdminContacts"));
+const AdminProfile = React.lazy(() => import("../pages/admin/AdminProfile"));
 
 // Trang lỗi chung
 const Unauthorized = () => (
@@ -128,12 +131,49 @@ export const AdminRoutes = [
             </React.Suspense>
           </PermissionGuard>
         ),
+        children: [{ index: true, element: <Navigate to="general" replace /> }],
+      },
+      {
+        path: "settings/:tab",
+        element: (
+          <PermissionGuard requiredPermissions={[PERMISSIONS.MANAGE_SYSTEM_SETTINGS]}>
+            <React.Suspense fallback={<div>Đang tải...</div>}>
+              <AdminSettings />
+            </React.Suspense>
+          </PermissionGuard>
+        ),
       },
       {
         path: "blogs",
         element: (
           <React.Suspense fallback={<div>Đang tải...</div>}>
             <AdminBlogs />
+          </React.Suspense>
+        ),
+      },
+      {
+        path: "comments",
+        element: (
+          <PermissionGuard requiredPermissions={[PERMISSIONS.MANAGE_COMMENTS]}>
+            <React.Suspense fallback={<div>Đang tải...</div>}>
+              <AdminComments />
+            </React.Suspense>
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: "contacts",
+        element: (
+          <React.Suspense fallback={<div>Đang tải...</div>}>
+            <AdminContacts />
+          </React.Suspense>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <React.Suspense fallback={<div>Đang tải...</div>}>
+            <AdminProfile />
           </React.Suspense>
         ),
       },

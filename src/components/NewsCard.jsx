@@ -57,7 +57,7 @@ const NewsCard = ({ blog, variant = "vertical" }) => {
 
             {/* Badge nổi bật */}
             {isFeatured && (
-              <span className="absolute top-4 left-4 bg-[#199b7e] text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+              <span className="absolute top-4 left-4 bg-[#be290f] text-[#F1C412] px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                 <i className="fa-solid fa-star mr-1.5"></i>
                 Nổi bật
               </span>
@@ -167,7 +167,7 @@ const NewsCard = ({ blog, variant = "vertical" }) => {
 
           {/* Featured badge */}
           {isFeatured && (
-            <span className="absolute top-3 right-3 bg-[#199b7e] text-white px-2 py-1 rounded-full text-sm shadow">
+            <span className="absolute top-3 right-3 bg-[#be290f] text-[#F1C412] px-2 py-1 rounded-full text-sm shadow">
               <i className="fa-solid fa-star"></i>
             </span>
           )}

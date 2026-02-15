@@ -10,6 +10,8 @@ import BlogFormModal from "./modal/BlogFormModal";
 import BlogDetailModal from "./modal/BlogDetailModal";
 import BlogCategoryModal from "./modal/BlogCategoryModal";
 import { useConfirm } from "../../components/ConfirmModal";
+import { BLOG_TYPES, BLOG_TYPE_INFO } from "../../constants/blogConstants";
+import getStatusBadgeConfig from "./util/getStatusBadgeConfig.JS";
 
 // Status config
 const STATUS_OPTIONS = [
@@ -19,17 +21,25 @@ const STATUS_OPTIONS = [
   { value: "ARCHIVED", label: "Đã lưu trữ" },
 ];
 
-// Hàm lấy màu badge theo trạng thái
-const getStatusBadgeConfig = (status) => {
-  switch (status) {
-    case "PUBLISHED":
-      return { bg: "bg-green-100", text: "text-green-800", label: "Đã xuất bản" };
-    case "DRAFT":
-      return { bg: "bg-yellow-100", text: "text-yellow-800", label: "Bản nháp" };
-    case "ARCHIVED":
-      return { bg: "bg-gray-100", text: "text-gray-800", label: "Đã lưu trữ" };
+// Blog type options
+const BLOG_TYPE_OPTIONS = [
+  { value: "", label: "Tất cả loại" },
+  { value: BLOG_TYPES.NEWS_PROMOTIONS, label: "Tin tức & Khuyến mãi" },
+  { value: BLOG_TYPES.MEDIA_PRESS, label: "Báo chí & Truyền thông" },
+  { value: BLOG_TYPES.CATERING_SERVICES, label: "Dịch vụ đãi tiệc" },
+];
+
+// Hàm lấy màu badge theo loại blog
+const getBlogTypeBadgeConfig = (blogType) => {
+  switch (blogType) {
+    case BLOG_TYPES.NEWS_PROMOTIONS:
+      return { bg: "bg-emerald-100", text: "text-emerald-800", label: "Tin tức" };
+    case BLOG_TYPES.MEDIA_PRESS:
+      return { bg: "bg-blue-100", text: "text-blue-800", label: "Báo chí" };
+    case BLOG_TYPES.CATERING_SERVICES:
+      return { bg: "bg-amber-100", text: "text-amber-800", label: "Đãi tiệc" };
     default:
-      return { bg: "bg-gray-100", text: "text-gray-800", label: status };
+      return { bg: "bg-gray-100", text: "text-gray-800", label: "Khác" };
   }
 };
 
@@ -67,6 +77,7 @@ const AdminBlogs = () => {
     title: "",
     status: "",
     categoryId: "",
+    blogType: "",
     sortBy: "createdAt",
     sortDir: "desc",
   });
@@ -105,6 +116,7 @@ const AdminBlogs = () => {
       if (filters.title) params.title = filters.title;
       if (filters.status) params.status = filters.status;
       if (filters.categoryId) params.categoryId = filters.categoryId;
+      if (filters.blogType) params.blogType = filters.blogType;
 
       const response = await getAdminBlogsApi(params);
 
@@ -390,6 +402,9 @@ const AdminBlogs = () => {
             </div>
           </td>
           <td className="px-6 py-4 whitespace-nowrap">
+            <div className="h-5 bg-gray-200 rounded w-16"></div>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
             <div className="h-4 bg-gray-200 rounded w-24"></div>
           </td>
           <td className="px-6 py-4 whitespace-nowrap">
@@ -412,7 +427,7 @@ const AdminBlogs = () => {
   // Render empty state
   const renderEmptyState = () => (
     <tr>
-      <td colSpan={6} className="px-6 py-12 text-center">
+      <td colSpan={7} className="px-6 py-12 text-center">
         <svg
           className="mx-auto h-12 w-12 text-gray-400"
           fill="none"
@@ -602,7 +617,7 @@ const AdminBlogs = () => {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow mb-6">
         <div className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -627,6 +642,18 @@ const AdminBlogs = () => {
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
+
+            {/* Blog type filter */}
+            <select
+              value={filters.blogType}
+              onChange={(e) => handleFilterChange("blogType", e.target.value)}
+              className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+              {BLOG_TYPE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
 
             {/* Category filter */}
             <select
@@ -682,6 +709,11 @@ const AdminBlogs = () => {
                   scope="col"
                   className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                   Bài viết
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                  Loại
                 </th>
                 <th
                   scope="col"
@@ -746,6 +778,14 @@ const AdminBlogs = () => {
                             </div>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
+                            getBlogTypeBadgeConfig(blog.blogType).bg
+                          } ${getBlogTypeBadgeConfig(blog.blogType).text}`}>
+                          {getBlogTypeBadgeConfig(blog.blogType).label}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">

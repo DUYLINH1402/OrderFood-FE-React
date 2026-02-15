@@ -7,6 +7,9 @@ import {
   getBlogCategoriesFromSQL,
   getBlogCategoryBySlugFromSQL,
   getBlogsByCategoryFromSQL,
+  getBlogsByTypeFromSQL,
+  getFeaturedBlogsByTypeFromSQL,
+  getBlogCategoriesByTypeFromSQL,
 } from "../api/blogApi";
 
 // LẤY DANH SÁCH BÀI VIẾT CÔNG KHAI (có phân trang)
@@ -47,4 +50,23 @@ export const getBlogCategoryBySlug = async (slug) => {
 // LẤY BÀI VIẾT THEO DANH MỤC
 export const getBlogsByCategory = async (categorySlug, page = 0, size = 10) => {
   return await getBlogsByCategoryFromSQL(categorySlug, page, size);
+};
+
+// =====================================================
+// SERVICE CHO CÁC LOẠI NỘI DUNG BLOG
+// =====================================================
+
+// LẤY DANH SÁCH BÀI VIẾT THEO LOẠI NỘI DUNG
+export const getBlogsByType = async (blogType, page = 0, size = 10, sort = "publishedAt,desc") => {
+  return await getBlogsByTypeFromSQL(blogType, page, size, sort);
+};
+
+// LẤY BÀI VIẾT NỔI BẬT THEO LOẠI
+export const getFeaturedBlogsByType = async (blogType, limit = 6) => {
+  return await getFeaturedBlogsByTypeFromSQL(blogType, limit);
+};
+
+// LẤY DANH MỤC THEO LOẠI NỘI DUNG
+export const getBlogCategoriesByType = async (blogType) => {
+  return await getBlogCategoriesByTypeFromSQL(blogType);
 };

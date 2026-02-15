@@ -87,8 +87,10 @@ export const useUserChat = () => {
       console.error("[useUserChat] Lỗi khi load chat history:", err);
 
       // Hiển thị lỗi cụ thể hơn
-      if (err.response?.status === 401 || err.response?.status === 403) {
+      if (err.response?.status === 401) {
         setError("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+      } else if (err.response?.status === 403) {
+        setError("Bạn không có quyền truy cập chat này.");
       } else if (err.response?.status === 404) {
         setError("API chat không tìm thấy. Vui lòng liên hệ hỗ trợ.");
       } else if (err.message?.includes("HTML")) {

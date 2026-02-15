@@ -6,7 +6,6 @@ export const getBlogsFromSQL = async (page = 0, size = 10, sort = "publishedAt,d
     const response = await publicClient.get("/api/blogs", {
       params: { page, size, sort },
     });
-    console.log("Response data:", response.data);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy danh sách bài viết:", error);
@@ -68,7 +67,12 @@ export const getRelatedBlogsFromSQL = async (id, limit = 4) => {
 export const getBlogCategoriesFromSQL = async () => {
   try {
     const response = await publicClient.get("/api/blogs/categories");
-    return response.data;
+    // Đảm bảo trả về mảng, xử lý cả trường hợp API trả về object có key content/data
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.content)) return data.content;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
   } catch (error) {
     console.error("Lỗi khi lấy danh mục bài viết:", error);
     return [];
@@ -96,5 +100,55 @@ export const getBlogsByCategoryFromSQL = async (categorySlug, page = 0, size = 1
   } catch (error) {
     console.error("Lỗi khi lấy bài viết theo danh mục:", error);
     return { content: [], totalElements: 0, totalPages: 0 };
+  }
+};
+
+// =====================================================
+// API CHO CÁC LOẠI NỘI DUNG BLOG (NEWS_PROMOTIONS, MEDIA_PRESS, CATERING_SERVICES)
+// =====================================================
+
+// LẤY DANH SÁCH BÀI VIẾT THEO LOẠI NỘI DUNG
+export const getBlogsByTypeFromSQL = async (
+  blogType,
+  page = 0,
+  size = 10,
+  sort = "publishedAt,desc"
+) => {
+  try {
+    const response = await publicClient.get(`/api/blogs/type/${blogType}`, {
+      params: { page, size, sort },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Lỗi khi lấy bài viết loại ${blogType}:`, error);
+    return { content: [], totalElements: 0, totalPages: 0 };
+  }
+};
+
+// LẤY BÀI VIẾT NỔI BẬT THEO LOẠI
+export const getFeaturedBlogsByTypeFromSQL = async (blogType, limit = 6) => {
+  try {
+    const response = await publicClient.get(`/api/blogs/type/${blogType}/featured`, {
+      params: { limit },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Lỗi khi lấy bài viết nổi bật loại ${blogType}:`, error);
+    return [];
+  }
+};
+
+// LẤY DANH MỤC THEO LOẠI NỘI DUNG
+export const getBlogCategoriesByTypeFromSQL = async (blogType) => {
+  try {
+    const response = await publicClient.get(`/api/blogs/categories/type/${blogType}`);
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.content)) return data.content;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+  } catch (error) {
+    console.error(`Lỗi khi lấy danh mục loại ${blogType}:`, error);
+    return [];
   }
 };

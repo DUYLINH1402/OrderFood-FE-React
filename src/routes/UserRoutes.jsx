@@ -22,6 +22,11 @@ import PaymentResultPage from "../pages/Order/PaymentResultPage";
 import CustomerFeedbacksPage from "../pages/CustomerFeedbacks/CustomerFeedbacksPage";
 import NewsPage from "../pages/News/NewsPage";
 import NewsDetailPage from "../pages/News/NewsDetailPage";
+import MediaPressPage from "../pages/MediaPress/MediaPressPage";
+import MediaPressDetailPage from "../pages/MediaPress/MediaPressDetailPage";
+import CateringServicesPage from "../pages/Catering/CateringServicesPage";
+import CateringDetailPage from "../pages/Catering/CateringDetailPage";
+import ContactPage from "../pages/Contact/ContactPage";
 import Error404Page from "../pages/Error404Page";
 
 export const UserRoutes = [
@@ -78,6 +83,11 @@ export const UserRoutes = [
       { path: "/danh-gia-khach-hang", element: <CustomerFeedbacksPage /> },
       { path: "/tin-tuc", element: <NewsPage /> },
       { path: "/tin-tuc/:slug", element: <NewsDetailPage /> },
+      { path: "/bao-chi", element: <MediaPressPage /> },
+      { path: "/bao-chi/:slug", element: <MediaPressDetailPage /> },
+      { path: "/dai-tiec", element: <CateringServicesPage /> },
+      { path: "/dai-tiec/:slug", element: <CateringDetailPage /> },
+      { path: "/lien-he", element: <ContactPage /> },
       { path: "*", element: <Error404Page /> },
     ],
   },
