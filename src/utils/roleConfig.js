@@ -5,6 +5,7 @@ export const ROLES = {
   CUSTOMER: "ROLE_USER", // DB sử dụng ROLE_USER cho khách hàng
   STAFF: "ROLE_STAFF",
   ADMIN: "ROLE_ADMIN",
+  SUPER_ADMIN: "ROLE_SUPER_ADMIN",
 };
 
 export const PERMISSIONS = {
@@ -63,6 +64,10 @@ export const ROLE_PERMISSIONS = {
   ],
   [ROLES.ADMIN]: [
     // Admin có tất cả permissions
+    ...Object.values(PERMISSIONS),
+  ],
+  [ROLES.SUPER_ADMIN]: [
+    // Super Admin có tất cả permissions
     ...Object.values(PERMISSIONS),
   ],
 };
@@ -128,6 +133,24 @@ export const ROLE_ROUTES = {
       "/admin/profile",
     ],
   },
+  [ROLES.SUPER_ADMIN]: {
+    defaultPath: "/admin/dashboard",
+    allowedPaths: [
+      "/admin/dashboard",
+      "/admin/users",
+      "/admin/staff",
+      "/admin/orders",
+      "/admin/menu",
+      "/admin/blogs",
+      "/admin/comments",
+      "/admin/contacts",
+      "/admin/analytics",
+      "/admin/settings",
+      "/admin/promotions",
+      "/admin/reports",
+      "/admin/profile",
+    ],
+  },
 };
 
 // Sidebar/Navigation config cho từng role
@@ -170,6 +193,33 @@ export const ROLE_NAVIGATION = {
         { path: "/admin/settings/chatbot", label: "Chatbot", icon: "settingsChatbot" },
         { path: "/admin/settings/notification", label: "Thông báo", icon: "settingsNotification" },
         { path: "/admin/settings/security", label: "Bảo mật", icon: "settingsSecurity" },
+        { path: "/admin/settings/data", label: "Quản lý dữ liệu", icon: "settingsData" },
+      ],
+    },
+  ],
+  [ROLES.SUPER_ADMIN]: [
+    { path: "/admin/dashboard", label: "Bảng điều khiển", icon: "dashboard" },
+    { path: "/admin/users", label: "Quản lý người dùng", icon: "users" },
+    { path: "/admin/staff", label: "Quản lý nhân viên", icon: "staff" },
+    { path: "/admin/orders", label: "Đơn hàng", icon: "orders" },
+    { path: "/admin/menu", label: "Thực đơn", icon: "menu" },
+    { path: "/admin/blogs", label: "Bài viết", icon: "book" },
+    { path: "/admin/comments", label: "Bình luận", icon: "comments" },
+    { path: "/admin/contacts", label: "Liên hệ", icon: "contacts" },
+    { path: "/admin/analytics", label: "Thống kê", icon: "analytics" },
+    { path: "/admin/promotions", label: "Khuyến mãi", icon: "promotions" },
+    {
+      path: "/admin/settings",
+      label: "Cài đặt",
+      icon: "settings",
+      children: [
+        { path: "/admin/settings/general", label: "Cài đặt chung", icon: "settingsGeneral" },
+        { path: "/admin/settings/payment", label: "Thanh toán", icon: "settingsPayment" },
+        { path: "/admin/settings/mail", label: "Email", icon: "settingsMail" },
+        { path: "/admin/settings/chatbot", label: "Chatbot", icon: "settingsChatbot" },
+        { path: "/admin/settings/notification", label: "Thông báo", icon: "settingsNotification" },
+        { path: "/admin/settings/security", label: "Bảo mật", icon: "settingsSecurity" },
+        { path: "/admin/settings/data", label: "Quản lý dữ liệu", icon: "settingsData" },
       ],
     },
   ],
@@ -193,6 +243,13 @@ export const ROLE_THEMES = {
   },
   [ROLES.ADMIN]: {
     primaryColor: "#ef4444", // red
+    layout: "dashboard",
+    showHeader: true,
+    showFooter: false,
+    showSidebar: true,
+  },
+  [ROLES.SUPER_ADMIN]: {
+    primaryColor: "#7c3aed", // purple
     layout: "dashboard",
     showHeader: true,
     showFooter: false,

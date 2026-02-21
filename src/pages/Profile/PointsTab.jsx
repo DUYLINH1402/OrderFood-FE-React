@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrophy, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import { getPointsHistory, getUserPoints } from "../../services/service/pointsService";
+import {
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Coins,
+  AlertCircle,
+  Info,
+} from "lucide-react";
+import LoadingIcon from "../../components/Skeleton/LoadingIcon";
 
 const PointsTab = () => {
   // Helper: Loại giao dịch
@@ -16,7 +26,6 @@ const PointsTab = () => {
   function getPointAmountDisplay(item) {
     if (typeof item.amount !== "number") return "0";
     if (item.type === "USE") {
-      // Nếu đã là số âm thì giữ nguyên, nếu là số dương thì thêm dấu trừ
       return item.amount < 0 ? item.amount.toLocaleString() : `-${item.amount.toLocaleString()}`;
     }
     return `+${item.amount.toLocaleString()}`;
@@ -32,20 +41,18 @@ const PointsTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 10; // Số item mỗi trang
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchAllPoints = async () => {
       setLoading(true);
       setError("");
       try {
-        // Lấy điểm hiện tại
         if (user?.id) {
           const pointsRes = await getUserPoints();
           setCurrentPoints(pointsRes?.availablePoints || 0);
         }
 
-        // Lấy lịch sử điểm với phân trang
         const historyRes = await getPointsHistory({
           page: currentPage - 1,
           limit: itemsPerPage,
@@ -53,14 +60,12 @@ const PointsTab = () => {
         console.log("Points history response:", historyRes);
 
         if (historyRes) {
-          // Đảm bảo luôn là mảng, lấy từ content (chuẩn backend)
           const arr = Array.isArray(historyRes.content) ? historyRes.content : [];
           setPointsHistory(arr);
           const pages =
             historyRes.totalPages || Math.ceil((historyRes.totalElements || 0) / itemsPerPage);
           setTotalPages(pages);
           setTotalItems(historyRes.totalElements || 0);
-          // Nếu trang hiện tại trả về rỗng và không phải trang đầu, tự động quay về trang cuối có dữ liệu
           if (arr.length === 0 && currentPage > 1) {
             setCurrentPage(pages);
           }
@@ -76,9 +81,7 @@ const PointsTab = () => {
     if (user) fetchAllPoints();
   }, [user, currentPage]);
 
-  // Pagination handlers
   const handlePageChange = (page) => {
-    // Chỉ cho phép chuyển trang từ 1 đến totalPages
     if (page >= 1 && page <= totalPages && page !== currentPage) {
       setLoading(true);
       setError("");
@@ -104,62 +107,49 @@ const PointsTab = () => {
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
-    const pages = [];
-    const maxVisiblePages = 5;
-
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // Disable nút Next nếu là trang cuối hoặc số bản ghi < itemsPerPage
     const isLastPage = currentPage === totalPages || pointsHistory.length < itemsPerPage;
+
     return (
-      <div className="flex items-center justify-between mt-4 px-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
         <div className="text-sm text-gray-500">
           Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} -{" "}
           {Math.min(currentPage * itemsPerPage, totalItems)} của {totalItems} giao dịch
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Nút Previous */}
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`px-2 py-1 rounded border text-sm ${
+            className={`p-2 rounded-lg border transition-colors duration-200 ${
               currentPage === 1
-                ? "text-gray-400 border-gray-200 cursor-not-allowed"
-                : "text-gray-600 border-gray-300 hover:bg-gray-50"
+                ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                : "text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
             }`}>
-            <FontAwesomeIcon icon={faChevronLeft} className="w-3 h-3" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
 
-          {/* Hiển thị các trang hợp lệ */}
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
               onClick={() => handlePageChange(page)}
-              className={`px-3 py-1 rounded border text-sm ${
+              className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors duration-200 ${
                 page === currentPage
                   ? "bg-green-600 text-white border-green-600"
-                  : "text-gray-600 border-gray-300 hover:bg-gray-50"
+                  : "text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
               }`}>
               {page}
             </button>
           ))}
 
-          {/* Nút Next */}
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={isLastPage}
-            className={`px-2 py-1 rounded border text-sm ${
+            className={`p-2 rounded-lg border transition-colors duration-200 ${
               isLastPage
-                ? "text-gray-400 border-gray-200 cursor-not-allowed"
-                : "text-gray-600 border-gray-300 hover:bg-gray-50"
+                ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                : "text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
             }`}>
-            <FontAwesomeIcon icon={faChevronRight} className="w-3 h-3" />
+            <ChevronRight className="w-6 h-6" />
           </button>
         </div>
       </div>
@@ -167,111 +157,163 @@ const PointsTab = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full text-sm tablet:text-md laptop:text-base">
-      <div className="flex flex-col sm:flex-row items-center gap-4 mb-2 w-full">
-        <div className="bg-yellow-100 rounded-full p-3 border border-yellow-300 flex-shrink-0">
-          <FontAwesomeIcon icon={faTrophy} style={{ color: "#199b7e", width: 32, height: 32 }} />
-        </div>
-        <div className="flex flex-col items-center sm:items-start w-full">
-          <div className="text-xl font-bold text-green-700">
-            {currentPoints.toLocaleString()} điểm
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-green-600 to-green-500 px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-white/20 rounded-lg">
+            <Award className="w-6 h-6 text-white" />
           </div>
-          <div className="text-sm tablet:text-md laptop:text-base text-gray-500">
-            Điểm thưởng hiện có
-          </div>
-          <div className="mt-1">
-            <span className="text-gray-400">* 1.000 điểm = 1.000 VNĐ khi sử dụng thanh toán</span>
-            <br />
-            <span className="text-orange-500">
-              * Mỗi đơn hàng thanh toán thành công sẽ được cộng điểm thưởng bằng 2% giá trị đơn hàng
-            </span>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Điểm thưởng</h2>
+            <p className="text-green-100 text-sm">Quản lý và theo dõi điểm tích lũy của bạn</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 w-full">
-        <div className="flex items-center gap-2 mb-3">
-          <FontAwesomeIcon icon={faTrophy} style={{ color: "#199b7e", width: 20, height: 20 }} />
-          <span className="font-semibold text-gray-800">Lịch sử tích và sử dụng điểm</span>
+      <div className="p-6">
+        {/* Điểm hiện tại */}
+        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-6 mb-6 border border-amber-200">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="p-4 bg-amber-100 rounded-full border-2 border-amber-200">
+              <Coins className="w-8 h-8 text-amber-600" />
+            </div>
+            <div className="text-center sm:text-left flex-1">
+              <div className="text-3xl font-bold text-green-700">
+                {currentPoints.toLocaleString()} điểm
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Điểm thưởng hiện có</div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-amber-200 space-y-2">
+            <div className="flex items-start gap-2 text-sm text-gray-600">
+              <Info className="w-6 h-6 text-amber-500 mt-0.5 flex-shrink-0" />
+              <span>1.000 điểm = 1.000 VNĐ khi sử dụng thanh toán</span>
+            </div>
+            <div className="flex items-start gap-2 text-sm text-amber-600">
+              <Info className="w-6 h-6 text-amber-500 mt-0.5 flex-shrink-0" />
+              <span>
+                Mỗi đơn hàng thanh toán thành công sẽ được cộng điểm thưởng bằng 2% giá trị đơn hàng
+              </span>
+            </div>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="text-gray-500 py-6 text-center animate-pulse">
-            Đang tải lịch sử điểm...
+        {/* Lịch sử điểm */}
+        <div className="bg-gray-50 rounded-xl border border-gray-100 p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-6 h-6 text-green-600" />
+            <span className="text-sm font-medium text-gray-700">Lịch sử tích và sử dụng điểm</span>
           </div>
-        ) : error ? (
-          <div className="text-red-500 py-6 text-center">Lỗi tải lịch sử điểm: {error}</div>
-        ) : !Array.isArray(pointsHistory) || pointsHistory.length === 0 ? (
-          <div className="text-gray-500 py-6 text-center">Chưa có lịch sử điểm thưởng.</div>
-        ) : (
-          <div className="w-full">
-            {/* Responsive table: mobile dùng flex, desktop dùng table */}
-            <div className="block md:hidden">
-              <div className="flex flex-col gap-2">
-                {Array.isArray(pointsHistory) &&
-                  pointsHistory.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-gray-50 rounded-lg border border-gray-200 p-3 flex flex-col gap-1 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-green-700">
-                          {getPointTypeLabel(item.type)}
-                        </span>
-                        <span
-                          className={`font-bold ${
-                            item.type === "EARN" ? "text-green-700" : "text-red-500"
-                          }`}>
-                          {getPointAmountDisplay(item)}
-                        </span>
-                      </div>
-                      <div className="text-sm tablet:text-md laptop:text-base text-gray-500">
-                        {item.createdAt ? new Date(item.createdAt).toLocaleString("vi-VN") : ""}
-                      </div>
-                      {item.description && (
-                        <div className="text-sm tablet:text-md laptop:text-base text-gray-400">
-                          {item.description}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </div>
 
-            <div className="hidden md:block">
-              <table className="min-w-[400px] w-full text-sm tablet:text-md laptop:text-base border rounded-lg overflow-hidden">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="py-2 px-3 text-left">Thời gian</th>
-                    <th className="py-2 px-3 text-left">Loại giao dịch</th>
-                    <th className="py-2 px-3 text-right">Số điểm</th>
-                    <th className="py-2 px-3 text-right">Ghi chú</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.isArray(pointsHistory) &&
-                    pointsHistory.map((item, idx) => (
-                      <tr key={idx} className="border-t">
-                        <td className="py-2 px-3">
+          {loading ? (
+            <div className="flex items-center justify-center py-12 text-gray-500">
+              <LoadingIcon size="24px" />
+              <span className="ml-3">Đang tải lịch sử điểm...</span>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center gap-2 py-12 text-red-500">
+              <AlertCircle className="w-5 h-5" />
+              {error}
+            </div>
+          ) : !Array.isArray(pointsHistory) || pointsHistory.length === 0 ? (
+            <div className="text-center py-12">
+              <Award className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">Chưa có lịch sử điểm thưởng.</p>
+            </div>
+          ) : (
+            <div className="w-full">
+              {/* Mobile view */}
+              <div className="block md:hidden space-y-3">
+                {pointsHistory.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sx font-medium bg-green-100 text-green-700">
+                        {item.type === "EARN" ? (
+                          <TrendingUp className="w-5 h-5" />
+                        ) : (
+                          <TrendingDown className="w-5 h-5" />
+                        )}
+                        {getPointTypeLabel(item.type)}
+                      </span>
+                      <span
+                        className={`font-bold text-sm ${
+                          item.type === "EARN" ? "text-green-600" : "text-red-500"
+                        }`}>
+                        {getPointAmountDisplay(item)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-sx text-gray-500">
+                      <Clock className="w-5 h-5" />
+                      {item.createdAt ? new Date(item.createdAt).toLocaleString("vi-VN") : ""}
+                    </div>
+                    {item.description && (
+                      <div className="text-sx text-gray-400 mt-2 pt-2 border-t border-gray-100">
+                        {item.description}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop view */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-white border-b border-gray-200">
+                      <th className="py-3 px-4 text-left font-medium text-gray-600">Thời gian</th>
+                      <th className="py-3 px-4 text-left font-medium text-gray-600">
+                        Loại giao dịch
+                      </th>
+                      <th className="py-3 px-4 text-right font-medium text-gray-600">Số điểm</th>
+                      <th className="py-3 px-4 text-right font-medium text-gray-600">Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {pointsHistory.map((item, idx) => (
+                      <tr
+                        key={idx}
+                        className="bg-white hover:bg-gray-50 transition-colors duration-150">
+                        <td className="py-3 px-4 text-gray-600">
                           {item.createdAt ? new Date(item.createdAt).toLocaleString("vi-VN") : ""}
                         </td>
-                        <td className="py-2 px-3">{getPointTypeLabel(item.type)}</td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sx font-medium ${
+                              item.type === "EARN"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-600"
+                            }`}>
+                            {item.type === "EARN" ? (
+                              <TrendingUp className="w-5 h-5" />
+                            ) : (
+                              <TrendingDown className="w-5 h-5" />
+                            )}
+                            {getPointTypeLabel(item.type)}
+                          </span>
+                        </td>
                         <td
-                          className={`py-2 px-3 text-right font-semibold ${
-                            item.type === "EARN" ? "text-green-700" : "text-red-500"
+                          className={`py-3 px-4 text-right font-semibold ${
+                            item.type === "EARN" ? "text-green-600" : "text-red-500"
                           }`}>
                           {getPointAmountDisplay(item)}
                         </td>
-                        <td className="py-2 px-3 text-right">{item.description || ""}</td>
+                        <td className="py-3 px-4 text-right text-gray-500">
+                          {item.description || "-"}
+                        </td>
                       </tr>
                     ))}
-                </tbody>
-              </table>
-            </div>
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Pagination */}
-            {renderPagination()}
-          </div>
-        )}
+              {renderPagination()}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

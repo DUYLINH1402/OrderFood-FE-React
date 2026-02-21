@@ -84,13 +84,17 @@ export default function FoodDetailPage() {
     };
 
     dispatch(addToCart(cartItem));
-    try {
-      await addToCartApi(cartItem, token);
-      toast.success("Đã thêm vào giỏ hàng!");
-    } catch (err) {
-      console.error("Lỗi thêm vào giỏ hàng:", err);
-      toast.error("Không thể thêm vào giỏ hàng");
+
+    // Chỉ gọi API đồng bộ với server khi user đã đăng nhập
+    // Guest sẽ lưu giỏ hàng vào Redux (localStorage), đồng bộ khi đăng nhập
+    if (token) {
+      try {
+        await addToCartApi(cartItem, token);
+      } catch (err) {
+        console.error("Lỗi thêm vào giỏ hàng:", err);
+      }
     }
+    toast.success("Đã thêm vào giỏ hàng!");
   };
 
   const handleQuantityChange = (delta) => {

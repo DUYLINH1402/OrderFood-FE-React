@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import { changePassword } from "../../services/service/userService";
 import { validatePassword, validateConfirmPassword, handleFieldBlur } from "../../utils/validation";
 import LoadingIcon from "../../components/Skeleton/LoadingIcon";
 import { mapAuthError } from "../../utils/authErrorMapper";
+import { Lock, Eye, EyeOff, Shield, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function ChangePasswordTab() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,86 +75,160 @@ export default function ChangePasswordTab() {
   };
 
   return (
-    <div className=" w-full min-h-fit flex justify-center px-4 py-10 bg-gray-50">
-      <div className=" w-full relative max-w-[500px] bg-white shadow-md rounded-xl p-16 sm:p-16">
-        {errors.general && (
-          <p className="absolute  text-red-500 text-sm text-center -mt-12">{errors.general}</p>
-        )}
-        <h1 className="md:text-lg text-base font-semibold text-center mb-6">Đổi mật khẩu</h1>
-        <form onSubmit={handleSubmit} noValidate className="space-y-12">
-          {/* Mật khẩu hiện tại */}
-          <div className="relative input-box">
-            <input
-              type={showPwd.current ? "text" : "password"}
-              placeholder="Mật khẩu hiện tại"
-              required
-              value={formData.currentPassword}
-              onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-              onBlur={() => handleBlur("currentPassword")}
-              className="w-full px-4 !text-sm md:!text-base py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <span
-              className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 cursor-pointer"
-              onClick={() => setShowPwd((prev) => ({ ...prev, current: !prev.current }))}>
-              <FontAwesomeIcon icon={showPwd.current ? faEyeSlash : faEye} />
-            </span>
-            {errors.currentPassword && (
-              <p className="absolute text-red-500 text-sm mt-2">{errors.currentPassword}</p>
-            )}
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-green-600 to-green-500 px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-white/20 rounded-lg">
+            <Shield className="w-6 h-6 text-white" />
           </div>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Đổi mật khẩu</h2>
+            <p className="text-green-100 text-sm">Cập nhật mật khẩu để bảo vệ tài khoản</p>
+          </div>
+        </div>
+      </div>
 
-          {/* Mật khẩu mới */}
-          <div className="relative input-box">
-            <input
-              type={showPwd.new ? "text" : "password"}
-              placeholder="Mật khẩu mới"
-              required
-              value={formData.newPassword}
-              onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-              onBlur={() => handleBlur("newPassword")}
-              className="w-full px-4 !text-sm md:!text-base py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <span
-              className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 cursor-pointer"
-              onClick={() => setShowPwd((prev) => ({ ...prev, new: !prev.new }))}>
-              <FontAwesomeIcon icon={showPwd.new ? faEyeSlash : faEye} />
-            </span>
-            {errors.newPassword && (
-              <p className="absolute text-red-500 text-sm mt-2">{errors.newPassword}</p>
-            )}
-          </div>
+      <div className="p-6">
+        <div className="max-w-md mx-auto">
+          {errors.general && (
+            <div className="flex items-center gap-2 p-3 mb-6 bg-red-50 border border-red-200 rounded-lg">
+              <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+              <p className="text-red-600 text-sm">{errors.general}</p>
+            </div>
+          )}
 
-          {/* Xác nhận mật khẩu */}
-          <div className="relative input-box">
-            <input
-              type={showPwd.confirm ? "text" : "password"}
-              placeholder="Xác nhận mật khẩu mới"
-              required
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              onBlur={() => handleBlur("confirmPassword")}
-              className="w-full px-4 !text-sm md:!text-base py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <span
-              className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 cursor-pointer"
-              onClick={() => setShowPwd((prev) => ({ ...prev, confirm: !prev.confirm }))}>
-              <FontAwesomeIcon icon={showPwd.confirm ? faEyeSlash : faEye} />
-            </span>
-            {errors.confirmPassword && (
-              <p className=" absolute text-red-500 text-sm mt-2">{errors.confirmPassword}</p>
-            )}
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            {/* Mật khẩu hiện tại */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <Lock className="w-6 h-6 text-gray-400" />
+                Mật khẩu hiện tại
+              </label>
+              <div className="relative">
+                <input
+                  type={showPwd.current ? "text" : "password"}
+                  placeholder="Nhập mật khẩu hiện tại"
+                  value={formData.currentPassword}
+                  onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                  onBlur={() => handleBlur("currentPassword")}
+                  className={`w-full px-4 py-3 pr-12 border rounded-lg text-sm transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                    errors.currentPassword ? "border-red-400" : "border-gray-200"
+                  }`}
+                />
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-4 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setShowPwd((prev) => ({ ...prev, current: !prev.current }))}>
+                  {showPwd.current ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                </button>
+              </div>
+              {errors.currentPassword && (
+                <p className="flex items-center gap-1 text-red-500 text-sx mt-1.5">
+                  <AlertCircle className="w-5 h-5" />
+                  {errors.currentPassword}
+                </p>
+              )}
+            </div>
+
+            {/* Mật khẩu mới */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <Lock className="w-6 h-6 text-gray-400" />
+                Mật khẩu mới
+              </label>
+              <div className="relative">
+                <input
+                  type={showPwd.new ? "text" : "password"}
+                  placeholder="Nhập mật khẩu mới"
+                  value={formData.newPassword}
+                  onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                  onBlur={() => handleBlur("newPassword")}
+                  className={`w-full px-4 py-3 pr-12 border rounded-lg text-sm transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                    errors.newPassword ? "border-red-400" : "border-gray-200"
+                  }`}
+                />
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-4 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setShowPwd((prev) => ({ ...prev, new: !prev.new }))}>
+                  {showPwd.new ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                </button>
+              </div>
+              {errors.newPassword && (
+                <p className="flex items-center gap-1 text-red-500 text-sx mt-1.5">
+                  <AlertCircle className="w-5 h-5" />
+                  {errors.newPassword}
+                </p>
+              )}
+            </div>
+
+            {/* Xác nhận mật khẩu */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <CheckCircle className="w-6 h-6 text-gray-400" />
+                Xác nhận mật khẩu mới
+              </label>
+              <div className="relative">
+                <input
+                  type={showPwd.confirm ? "text" : "password"}
+                  placeholder="Nhập lại mật khẩu mới"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  onBlur={() => handleBlur("confirmPassword")}
+                  className={`w-full px-4 py-3 pr-12 border rounded-lg text-sm transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                    errors.confirmPassword ? "border-red-400" : "border-gray-200"
+                  }`}
+                />
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-4 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setShowPwd((prev) => ({ ...prev, confirm: !prev.confirm }))}>
+                  {showPwd.confirm ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="flex items-center gap-1 text-red-500 text-sx mt-1.5">
+                  <AlertCircle className="w-5 h-5" />
+                  {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 mt-6">
+              {isSubmitting ? (
+                <LoadingIcon size="20px" />
+              ) : (
+                <>
+                  <Shield className="w-6 h-6" />
+                  Xác nhận đổi mật khẩu
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Tips */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Lưu ý về mật khẩu:</h4>
+            <ul className="text-sx text-gray-500 space-y-1.5">
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">•</span>
+                Mật khẩu phải có ít nhất 8 ký tự
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">•</span>
+                Bao gồm chữ hoa, chữ thường và số
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">•</span>
+                Không sử dụng mật khẩu dễ đoán
+              </li>
+            </ul>
           </div>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full min-h-[39px] bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
-            {isSubmitting ? (
-              <LoadingIcon className="w-5 h-5 animate-spin" />
-            ) : (
-              "Xác nhận đổi mật khẩu"
-            )}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );

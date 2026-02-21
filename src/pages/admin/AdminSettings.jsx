@@ -8,6 +8,7 @@ import {
   FiBell,
   FiShield,
   FiTool,
+  FiDatabase,
 } from "react-icons/fi";
 import GeneralSettings from "./settings/GeneralSettings";
 import PaymentSettings from "./settings/PaymentSettings";
@@ -15,6 +16,7 @@ import MailSettings from "./settings/MailSettings";
 import ChatbotSettings from "./settings/ChatbotSettings";
 import NotificationSettings from "./settings/NotificationSettings";
 import SecuritySettings from "./settings/SecuritySettings";
+import DataManagementSettings from "./settings/DataManagementSettings";
 
 // Mapping tab key -> component và thông tin hiển thị
 const SETTING_TABS = {
@@ -53,6 +55,12 @@ const SETTING_TABS = {
     icon: FiShield,
     component: SecuritySettings,
     description: "Mật khẩu, đăng nhập, bảo mật API",
+  },
+  data: {
+    label: "Quản lý dữ liệu",
+    icon: FiDatabase,
+    component: DataManagementSettings,
+    description: "Reindex, đồng bộ dữ liệu tìm kiếm, xóa cache",
   },
 };
 

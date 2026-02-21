@@ -11,7 +11,6 @@ import BlogDetailModal from "./modal/BlogDetailModal";
 import BlogCategoryModal from "./modal/BlogCategoryModal";
 import { useConfirm } from "../../components/ConfirmModal";
 import { BLOG_TYPES, BLOG_TYPE_INFO } from "../../constants/blogConstants";
-import getStatusBadgeConfig from "./util/getStatusBadgeConfig.JS";
 
 // Status config
 const STATUS_OPTIONS = [
@@ -40,6 +39,20 @@ const getBlogTypeBadgeConfig = (blogType) => {
       return { bg: "bg-amber-100", text: "text-amber-800", label: "Đãi tiệc" };
     default:
       return { bg: "bg-gray-100", text: "text-gray-800", label: "Khác" };
+  }
+};
+
+// Hàm lấy màu badge theo trạng thái
+export const getStatusBadgeConfig = (status) => {
+  switch (status) {
+    case "PUBLISHED":
+      return { bg: "bg-green-100", text: "text-green-800", label: "Đã xuất bản" };
+    case "DRAFT":
+      return { bg: "bg-yellow-100", text: "text-yellow-800", label: "Bản nháp" };
+    case "ARCHIVED":
+      return { bg: "bg-gray-100", text: "text-gray-800", label: "Đã lưu trữ" };
+    default:
+      return { bg: "bg-gray-100", text: "text-gray-800", label: status };
   }
 };
 

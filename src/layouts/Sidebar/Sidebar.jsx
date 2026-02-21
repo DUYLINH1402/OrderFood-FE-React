@@ -16,6 +16,7 @@ import {
   FiCreditCard,
   FiBell,
   FiShield,
+  FiDatabase,
 } from "react-icons/fi";
 import { MdDashboard, MdRestaurantMenu } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
@@ -44,6 +45,7 @@ const iconMap = {
   settingsChatbot: FiMessageSquare,
   settingsNotification: FiBell,
   settingsSecurity: FiShield,
+  settingsData: FiDatabase,
   // Staff icons
   reports: BiLineChart,
   customers: FiUser,

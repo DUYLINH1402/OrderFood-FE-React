@@ -82,10 +82,15 @@ const DishCard = ({
     };
 
     dispatch(addToCart(cartItem));
-    try {
-      await addToCartApi(cartItem, token);
-    } catch (err) {
-      console.error("Lỗi thêm vào giỏ hàng:", err);
+
+    // Chỉ gọi API đồng bộ với server khi user đã đăng nhập
+    // Guest sẽ lưu giỏ hàng vào Redux (localStorage), đồng bộ khi đăng nhập
+    if (token) {
+      try {
+        await addToCartApi(cartItem, token);
+      } catch (err) {
+        console.error("Lỗi thêm vào giỏ hàng:", err);
+      }
     }
   };
 

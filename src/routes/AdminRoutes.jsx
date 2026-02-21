@@ -47,7 +47,7 @@ export const AdminRoutes = [
   {
     path: "/admin",
     element: (
-      <AuthGuard allowedRoles={[ROLES.ADMIN]}>
+      <AuthGuard allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
         <AdminLayoutWrapper />
       </AuthGuard>
     ),
