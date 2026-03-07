@@ -81,16 +81,20 @@ export const updateOrderStatus = async (orderId, statusData) => {
 };
 
 // HỦY ĐƠN HÀNG
-export const cancelOrder = async (orderId, cancelReason) => {
+export const cancelOrder = async (orderCode, cancelReason) => {
   try {
     if (useFirebase) {
-      return await cancelOrderFromFirebase(orderId, cancelReason);
+      return await cancelOrderFromFirebase(orderCode, cancelReason);
     } else {
-      return await cancelOrderApi(orderId, cancelReason);
+      return await cancelOrderApi(orderCode, cancelReason);
     }
   } catch (error) {
     console.error("Error in cancelOrder service:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      errorCode: error.errorCode || null,
+    };
   }
 };
 

@@ -216,7 +216,7 @@ const MediaPressCard = ({ blog, variant = "vertical" }) => {
     <div className="block group h-full">
       <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden h-full flex flex-col transform hover:-translate-y-2">
         {/* Thumbnail */}
-        <Link to={`/bao-chi/${slug}`} className="relative h-44 sm:h-48 overflow-hidden block">
+        <Link to={`/bao-chi/${slug}`} className="relative h-64 sm:h-68 overflow-hidden block">
           <LazyImage
             src={thumbnail || "/placeholder-news.jpg"}
             alt={title}

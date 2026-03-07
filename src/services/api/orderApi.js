@@ -119,9 +119,9 @@ export const updateOrderStatusApi = async (orderId, statusData) => {
 };
 
 // HỦY ĐƠN HÀNG
-export const cancelOrderApi = async (orderId, cancelReason) => {
+export const cancelOrderApi = async (orderCode, cancelReason) => {
   try {
-    const response = await publicClient.put(`/api/orders/${orderId}/cancel`, {
+    const response = await apiClient.put(`/api/orders/${orderCode}/cancel`, {
       cancelReason: cancelReason,
     });
     return {
@@ -133,6 +133,7 @@ export const cancelOrderApi = async (orderId, cancelReason) => {
     return {
       success: false,
       message: error.response?.data?.message || "Không thể hủy đơn hàng",
+      errorCode: error.response?.data?.errorCode || null,
     };
   }
 };

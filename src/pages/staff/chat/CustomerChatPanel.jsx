@@ -5,6 +5,7 @@ import {
   ChatBubbleLeftRightIcon,
   MinusIcon,
   ArrowPathIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 import { chatApi } from "../../../services/api/chatApi";
@@ -34,6 +35,10 @@ const CustomerChatPanel = ({
   const [loading, setLoading] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
+  // Mobile view state - "list" hiển thị danh sách, "chat" hiển thị nội dung chat
+  const [mobileView, setMobileView] = useState("list");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
   // State cho reply functionality
   const [replyToMessage, setReplyToMessage] = useState(null); // Tin nhắn đang được reply
   const [isReplyMode, setIsReplyMode] = useState(false);
@@ -59,6 +64,13 @@ const CustomerChatPanel = ({
   const lastMarkReadTimeRef = useRef({}); // Map: userId -> timestamp cuối cùng đánh dấu đã đọc
   const isLoadingMoreRef = useRef(false); // Flag để biết đang load thêm tin cũ (không scroll)
   const isInitialScrollRef = useRef(false); // Flag để ngăn load more khi đang scroll xuống bottom lần đầu
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Sync trạng thái kết nối từ parent và handle khi vừa reconnect
   useEffect(() => {
@@ -316,7 +328,7 @@ const CustomerChatPanel = ({
       );
 
       const data = await chatApi.getUserMessages(userId, currentPage, MESSAGES_PER_PAGE);
-
+      console.log(`API response for user ${userId} messages:`, data);
       if (data.messages && data.messages.length > 0) {
         // Format messages cho display
         const formattedMessages = data.messages.map((msg) => chatApi.formatMessageForDisplay(msg));
@@ -688,7 +700,6 @@ const CustomerChatPanel = ({
   const syncUserReadStatus = async (userId) => {
     try {
       const readStatus = await chatApi.getUserReadStatus(userId);
-      console.log(`📊 Read status user ${userId}:`, readStatus);
 
       // Cập nhật conversation cụ thể - LUÔN dùng unreadCount từ server
       setConversations((prev) => {
@@ -738,28 +749,16 @@ const CustomerChatPanel = ({
 
       // Lấy tổng unread count chính xác từ server
       const totalUnreadFromServer = await chatApi.getStaffUnreadCount();
-      console.log("🔄 [ForceRefresh] Server total unread count:", totalUnreadFromServer);
 
       // Lấy danh sách conversations MỚI từ API (đã bao gồm unread count chính xác)
       const data = await chatApi.getStaffConversations();
       const newConversations = data.conversations || [];
-
-      // Log chi tiết từng conversation để debug
-      console.log(
-        "🔄 [ForceRefresh] Conversations từ API:",
-        newConversations.map((c) => ({
-          userId: c.userId,
-          userName: c.user?.name,
-          unreadCount: c.unreadCount,
-        }))
-      );
 
       // Tính tổng unread từ conversations
       const totalFromConversations = newConversations.reduce(
         (sum, conv) => sum + (conv.unreadCount || 0),
         0
       );
-      console.log("🔄 [ForceRefresh] Tổng unread từ conversations:", totalFromConversations);
 
       // FORCE REPLACE - không merge, luôn ưu tiên API data khi force refresh
       setConversations(
@@ -1183,6 +1182,11 @@ const CustomerChatPanel = ({
     setIsReplyMode(false);
   };
 
+  // Quay lại danh sách khách hàng trên mobile
+  const handleBackToList = () => {
+    setMobileView("list");
+  };
+
   const handleCustomerSelect = async (customerId) => {
     console.log("Staff click vào customer:", customerId);
 
@@ -1190,6 +1194,11 @@ const CustomerChatPanel = ({
     isInitialScrollRef.current = true;
 
     setActiveCustomerId(customerId);
+
+    // Chuyển sang chat view trên mobile
+    if (isMobile) {
+      setMobileView("chat");
+    }
 
     // Load tin nhắn cho user này nếu chưa có
     const existingChat = customerChats.get(customerId);
@@ -1349,13 +1358,36 @@ const CustomerChatPanel = ({
   }
 
   return (
-    <div ref={chatPanelRef} className={`customer-chat-panel ${!isOpen ? "chat-panel-exit" : ""}`}>
+    <div
+      ref={chatPanelRef}
+      className={`customer-chat-panel ${!isOpen ? "chat-panel-exit" : ""} ${
+        isMobile ? "mobile-mode" : ""
+      } ${isMobile && mobileView === "chat" ? "mobile-chat-active" : ""}`}>
       {/* Header */}
       <div className="customer-chat-header">
         <div className="header-left">
-          <ChatBubbleLeftRightIcon className="w-7 h-7" />
+          {isMobile && mobileView === "chat" ? (
+            <button className="mobile-back-btn" onClick={handleBackToList}>
+              <ArrowLeftIcon className="w-5 h-5" />
+            </button>
+          ) : (
+            <ChatBubbleLeftRightIcon className="w-7 h-7" />
+          )}
           <div className="header-info">
-            <span className="title">Tin nhắn Khách hàng</span>
+            <span className="title">
+              {isMobile && mobileView === "chat" && activeCustomerId
+                ? (() => {
+                    const conv = conversations.find((c) => c.userId === activeCustomerId);
+                    return (
+                      conv?.user?.name ||
+                      conv?.customerName ||
+                      activeChat?.user?.name ||
+                      activeChat?.customerName ||
+                      `Khách hàng ${activeCustomerId}`
+                    );
+                  })()
+                : "Tin nhắn Khách hàng"}
+            </span>
             <span className={`status ${isConnected ? "online" : "offline"}`}>
               {isConnected ? "Trực tuyến" : "Ngoại tuyến"}
             </span>
@@ -1410,6 +1442,10 @@ const CustomerChatPanel = ({
                   item.messages?.[item.messages.length - 1]?.text ||
                   "Nhấn để xem tin nhắn";
 
+                // Lấy avatar từ data - ưu tiên user.avatar, fallback các field khác
+                const customerAvatar =
+                  item.user?.avatarUrl || item.senderAvatar || item.avatar || null;
+
                 return (
                   <div
                     key={`customer-${customerId}`}
@@ -1418,7 +1454,21 @@ const CustomerChatPanel = ({
                     }`}
                     onClick={() => handleCustomerSelect(customerId)}>
                     <div className="customer-avatar">
-                      <UserIcon className="w-6 h-6" />
+                      {customerAvatar ? (
+                        <img
+                          src={customerAvatar}
+                          alt={customerName}
+                          className="w-12 h-12 rounded-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "block";
+                          }}
+                        />
+                      ) : null}
+                      <UserIcon
+                        className="w-6 h-6"
+                        style={{ display: customerAvatar ? "none" : "block" }}
+                      />
                     </div>
                     <div className="customer-info">
                       <div className="customer-name">

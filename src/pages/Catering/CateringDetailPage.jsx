@@ -152,7 +152,7 @@ const CateringDetailPage = () => {
   if (loading) {
     return (
       <GlassPageWrapper>
-        <div className="min-h-screen pt-32 pb-16">
+        <div className="min-h-screen pb-16">
           <NewsDetailSkeleton />
         </div>
       </GlassPageWrapper>
@@ -162,7 +162,7 @@ const CateringDetailPage = () => {
   if (error || !blog) {
     return (
       <GlassPageWrapper>
-        <div className="min-h-screen pt-32 pb-16 flex items-center justify-center">
+        <div className="min-h-screen pb-16 flex items-center justify-center">
           <div className="text-center">
             <i className="fa-solid fa-utensils text-6xl text-gray-300 mb-4"></i>
             <h2 className="text-lg font-medium text-gray-700 mb-3">
@@ -182,7 +182,7 @@ const CateringDetailPage = () => {
 
   return (
     <GlassPageWrapper>
-      <div className="min-h-screen pt-32 pb-16">
+      <div className="min-h-screen pb-16">
         <article className="max-w-[1000px] mx-auto px-4">
           {/* Breadcrumb */}
           <nav

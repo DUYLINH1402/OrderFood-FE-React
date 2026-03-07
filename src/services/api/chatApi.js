@@ -153,6 +153,7 @@ export const chatApi = {
       const response = await apiClient.get("/api/chat/staff/all-messages", {
         params: { page, size },
       });
+      console.log("Tin nhắn từ user gửi cho staff:", response.data);
       return response.data;
     } catch (error) {
       console.error("Lỗi khi lấy tin nhắn từ user:", error);
@@ -186,6 +187,7 @@ export const chatApi = {
   getUsersChatWithStaff: async () => {
     try {
       const response = await apiClient.get("/api/chat/staff/users");
+      console.log("Danh sách user đã chat với staff:", response.data);
       return response.data;
     } catch (error) {
       console.error("Lỗi khi lấy danh sách user đã chat:", error);
@@ -445,8 +447,12 @@ export const chatApi = {
         email: message.senderEmail || message.userEmail,
         phone: message.senderPhone || message.userPhone,
         type: senderType,
+        avatar: message.avatarUrl || message.senderAvatar || message.userAvatar || null,
       },
       customerName: message.senderName || message.userName, // Để tương thích
+      // Lấy avatar từ API response (avatarUrl là field chính từ getUserMessages)
+      senderAvatar: message.avatarUrl || message.senderAvatar || message.userAvatar || null,
+      userAvatar: message.avatarUrl || message.senderAvatar || message.userAvatar || null,
       receiverInfo: {
         id: message.receiverId,
         name: message.receiverName,
@@ -482,11 +488,15 @@ export const chatApi = {
             email: user.email,
             phone: user.phone,
             type: "user",
+            // Lấy avatar từ API response
+            avatarUrl: user.avatarUrl || user.avatar || null,
           },
           messages: [],
           unreadCount: unreadCount,
           lastMessage: null,
           lastMessageTime: user.lastMessageTime || new Date().toISOString(),
+          // Lưu avatar ở level conversation để dễ truy cập
+          senderAvatar: user.avatarUrl || user.avatar || null,
         };
       });
 

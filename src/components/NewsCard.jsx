@@ -151,7 +151,7 @@ const NewsCard = ({ blog, variant = "vertical" }) => {
     <Link to={`/tin-tuc/${slug}`} className="block group h-full">
       <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden h-full flex flex-col transform hover:-translate-y-2">
         {/* Thumbnail */}
-        <div className="relative h-44 sm:h-48 overflow-hidden">
+        <div className="relative h-64 sm:h-68 overflow-hidden">
           <LazyImage
             src={thumbnail || "/placeholder-news.jpg"}
             alt={title}

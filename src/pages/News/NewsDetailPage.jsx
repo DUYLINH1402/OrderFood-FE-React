@@ -111,7 +111,7 @@ const NewsDetailPage = () => {
   if (loading) {
     return (
       <GlassPageWrapper>
-        <div className="min-h-screen pt-32 pb-16">
+        <div className="min-h-screen  pb-16">
           <NewsDetailSkeleton />
         </div>
       </GlassPageWrapper>
@@ -121,7 +121,7 @@ const NewsDetailPage = () => {
   if (error || !blog) {
     return (
       <GlassPageWrapper>
-        <div className="min-h-screen pt-32 pb-16 flex items-center justify-center">
+        <div className="min-h-screen  pb-16 flex items-center justify-center">
           <div className="text-center">
             <i className="fa-regular fa-newspaper text-6xl text-gray-300 mb-4"></i>
             <h2 className="text-lg font-medium text-gray-700 mb-3">
@@ -141,7 +141,7 @@ const NewsDetailPage = () => {
 
   return (
     <GlassPageWrapper>
-      <div className="min-h-screen pt-32 pb-16">
+      <div className="min-h-screen  pb-16">
         <article className="max-w-[900px] mx-auto px-4">
           {/* Breadcrumb */}
           <nav

@@ -113,7 +113,7 @@ const GuideModal = ({ autoOpen = false }) => {
                   <strong className="italic text-[#199b7e] text-md md:text-base">
                     Ngày hết hạn:
                   </strong>{" "}
-                  01/26
+                  01/27
                 </div>
 
                 <div>

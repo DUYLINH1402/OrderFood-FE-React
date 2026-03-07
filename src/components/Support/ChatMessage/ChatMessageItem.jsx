@@ -186,11 +186,13 @@ const ChatMessageItem = ({
     } else if (message.sender === "user" || message.sender === "customer") {
       senderType = "customer";
       senderName = message.customerName || message.userName || "Khách hàng";
-      avatar = message.userAvatar;
+      // Lấy avatar từ nhiều field có thể có trong data
+      avatar = message.senderAvatar || message.userAvatar || message.avatar || null;
     } else {
       // Fallback logic
       senderType = userType === "staff" ? "customer" : "staff";
       senderName = userType === "staff" ? "Khách hàng" : "Nhân viên hỗ trợ";
+      avatar = message.senderAvatar || message.userAvatar || message.avatar || null;
     }
 
     return { senderType, senderName, avatar };

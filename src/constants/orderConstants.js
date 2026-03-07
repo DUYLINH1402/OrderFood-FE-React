@@ -112,12 +112,9 @@ export const STATUS_TRANSITIONS = {
   [ORDER_STATUS.CANCELLED]: [], // Final state
 };
 
-// Status that allow cancellation
-export const CANCELLABLE_STATUSES = [
-  ORDER_STATUS.PENDING,
-  ORDER_STATUS.PROCESSING,
-  ORDER_STATUS.CONFIRMED,
-];
+// Status that allow cancellation - Chỉ cho phép hủy khi PENDING hoặc PROCESSING
+// Khi Staff đã xác nhận (CONFIRMED trở đi) → Không thể hủy
+export const CANCELLABLE_STATUSES = [ORDER_STATUS.PENDING, ORDER_STATUS.PROCESSING];
 
 // Common validation constants
 export const ORDER_CONSTRAINTS = {

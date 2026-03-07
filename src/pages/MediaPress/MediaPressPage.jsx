@@ -116,7 +116,7 @@ const MediaPressPage = () => {
 
   return (
     <GlassPageWrapper>
-      <div className="pt-32 pb-16">
+      <div className=" pb-16">
         <div className="max-w-[1200px] mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-8">

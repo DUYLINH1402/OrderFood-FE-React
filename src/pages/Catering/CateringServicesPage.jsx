@@ -118,7 +118,7 @@ const CateringServicesPage = () => {
 
   return (
     <GlassPageWrapper>
-      <div className="pt-32 pb-16">
+      <div className=" pb-16">
         <div className="max-w-[1200px] mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-8">
@@ -328,7 +328,7 @@ const CateringServicesPage = () => {
                 href="tel:19001234"
                 className="text-sm px-6 py-3 bg-white text-amber-600 rounded-lg font-medium hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2">
                 <i className="fa-solid fa-phone"></i>
-                Hotline: 1900.1234
+                Hotline: 0988 62 66 00
               </a>
               <a
                 href="/lien-he"

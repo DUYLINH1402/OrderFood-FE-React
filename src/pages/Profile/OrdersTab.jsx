@@ -15,6 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { ShoppingBag, AlertCircle, RefreshCw } from "lucide-react";
 import LoadingIcon from "../../components/Skeleton/LoadingIcon";
+import CancelOrderModal from "./CancelOrderModal";
 import { getOrders, cancelOrder } from "../../services/service/orderService";
 import {
   ORDER_STATUS,
@@ -30,6 +31,11 @@ const OrdersTab = () => {
   const [cancellingOrder, setCancellingOrder] = useState(null);
   const [error, setError] = useState(null);
 
+  // State cho CancelOrderModal
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelOrderData, setCancelOrderData] = useState({ id: null, orderCode: null });
+  const [cancelError, setCancelError] = useState(null);
+
   // Fetch all orders from API only once
   useEffect(() => {
     const fetchOrders = async () => {
@@ -40,7 +46,6 @@ const OrdersTab = () => {
           // page: 0,
           // size: 100,
         });
-        console.log("Fetch orders result:", result);
         if (result.success) {
           setOrders(result.data || []);
         } else {
@@ -59,32 +64,60 @@ const OrdersTab = () => {
     fetchOrders();
   }, []);
 
-  // Handle cancel order
-  const handleCancelOrder = async (orderId) => {
-    const cancelReason = prompt("Vui lòng nhập lý do hủy đơn hàng:");
-    if (!cancelReason || !cancelReason.trim()) {
-      alert("Vui lòng nhập lý do hủy đơn hàng");
-      return;
-    }
+  // Mở modal hủy đơn hàng
+  const openCancelModal = (order) => {
+    setCancelOrderData({
+      id: order.id,
+      orderCode: order.orderCode || order.id,
+    });
+    setCancelError(null);
+    setShowCancelModal(true);
+  };
 
-    setCancellingOrder(orderId);
+  // Đóng modal hủy đơn hàng
+  const closeCancelModal = () => {
+    if (cancellingOrder) return; // Không cho đóng khi đang xử lý
+    setShowCancelModal(false);
+    setCancelOrderData({ id: null, orderCode: null });
+    setCancelError(null);
+  };
+
+  // Handle cancel order
+  const handleCancelOrder = async (cancelReason) => {
+    const orderCode = cancelOrderData.orderCode || cancelOrderData.id;
+
+    setCancellingOrder(orderCode);
+    setCancelError(null);
+
     try {
-      const result = await cancelOrder(orderId, cancelReason.trim());
+      const result = await cancelOrder(orderCode, cancelReason);
+
       if (result.success) {
-        // Refresh orders list
+        // Cập nhật danh sách đơn hàng
         const updatedOrders = orders.map((order) =>
-          order.id === orderId || order.orderCode === orderId
-            ? { ...order, status: ORDER_STATUS.CANCELLED, cancelReason: cancelReason.trim() }
+          order.orderCode === orderCode || order.id === cancelOrderData.id
+            ? {
+                ...order,
+                status: ORDER_STATUS.CANCELLED,
+                cancelReason: cancelReason,
+                cancelledAt: new Date().toISOString(),
+              }
             : order
         );
         setOrders(updatedOrders);
-        alert("Đơn hàng đã được hủy thành công");
+        setShowCancelModal(false);
+        setCancelOrderData({ id: null, orderCode: null });
       } else {
-        alert("Không thể hủy đơn hàng: " + result.message);
+        // Xử lý errorCode từ backend
+        if (result.errorCode === "ORDER_CANCEL_NOT_ALLOWED") {
+          setCancelError("Đơn hàng đã được xác nhận, không thể hủy. Vui lòng liên hệ nhà hàng.");
+        } else {
+          setCancelError(result.message || "Không thể hủy đơn hàng");
+        }
       }
     } catch (error) {
       console.error("Error cancelling order:", error);
-      alert("Có lỗi xảy ra khi hủy đơn hàng");
+      setCancelError("Có lỗi xảy ra khi hủy đơn hàng. Vui lòng thử lại.");
     } finally {
       setCancellingOrder(null);
     }
@@ -705,29 +738,44 @@ const OrdersTab = () => {
 
                         {/* Action buttons */}
                         {canCancelOrder(order) && (
-                          <div className="flex justify-center mt-6 pt-4 border-t border-gray-200">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCancelOrder(order.id || order.orderCode);
-                              }}
-                              disabled={cancellingOrder === (order.id || order.orderCode)}
-                              className="flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-                              {cancellingOrder === (order.id || order.orderCode) ? (
-                                <>
-                                  <FontAwesomeIcon
-                                    icon={faSpinner}
-                                    className="w-5 h-5 animate-spin"
-                                  />
-                                  Đang hủy...
-                                </>
-                              ) : (
-                                <>
-                                  <FontAwesomeIcon icon={faTimesCircle} className="w-5 h-5" />
-                                  Hủy đơn hàng
-                                </>
-                              )}
-                            </button>
+                          <div className="mt-6 pt-4 border-t border-gray-200">
+                            {/* Thông báo trạng thái có thể hủy */}
+                            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                              <p className="text-sm text-blue-700 text-center">
+                                <FontAwesomeIcon icon={faClock} className="mr-2" />
+                                {order.status?.toUpperCase() === ORDER_STATUS.PENDING
+                                  ? "Đơn hàng đang chờ thanh toán. Bạn có thể hủy đơn hàng này."
+                                  : "Đơn hàng đang chờ xác nhận. Bạn vẫn có thể hủy trước khi nhà hàng xác nhận."}
+                              </p>
+                            </div>
+                            <div className="flex justify-center">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openCancelModal(order);
+                                }}
+                                className="flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium shadow-md hover:shadow-lg">
+                                <FontAwesomeIcon icon={faTimesCircle} className="w-5 h-5" />
+                                Hủy đơn hàng
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Thông báo không thể hủy khi đã xác nhận */}
+                        {(order.status?.toUpperCase() === ORDER_STATUS.CONFIRMED ||
+                          order.status?.toUpperCase() === ORDER_STATUS.DELIVERING) && (
+                          <div className="mt-6 pt-4 border-t border-gray-200">
+                            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              <p className="text-sm text-gray-600 text-center">
+                                <FontAwesomeIcon
+                                  icon={faExclamationTriangle}
+                                  className="mr-2 text-yellow-500"
+                                />
+                                Đơn hàng đã được xác nhận và không thể hủy. Vui lòng liên hệ nhà
+                                hàng nếu cần hỗ trợ.
+                              </p>
+                            </div>
                           </div>
                         )}
                       </>
@@ -739,6 +787,16 @@ const OrdersTab = () => {
           )}
         </div>
       </div>
+
+      {/* Cancel Order Modal */}
+      <CancelOrderModal
+        isOpen={showCancelModal}
+        onClose={closeCancelModal}
+        onConfirm={handleCancelOrder}
+        orderCode={cancelOrderData.orderCode}
+        loading={cancellingOrder !== null}
+        error={cancelError}
+      />
     </div>
   );
 };

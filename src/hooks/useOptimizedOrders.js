@@ -214,37 +214,24 @@ export const useOptimizedOrders = (initialTab = "processing") => {
       // Cập nhật UI ngay lập tức thay vì gọi refreshData()
       if (data && data.order) {
         const { order, oldStatus, newStatus } = data;
+        const orderId = order.orderId || order.id;
 
         setOrders((prevOrders) => {
           const newOrders = { ...prevOrders };
 
           // Nếu status thay đổi, di chuyển order giữa các tab
           if (oldStatus && oldStatus !== newStatus) {
-            // Xóa khỏi tab cũ
-            const oldStatusKey = oldStatus.toLowerCase();
-            if (newOrders[oldStatusKey]) {
-              const oldLength = newOrders[oldStatusKey].length;
-              newOrders[oldStatusKey] = newOrders[oldStatusKey].filter(
-                (o) => (o.orderId || o.id) !== (order.orderId || order.id)
+            // Xóa từ TẤT CẢ các tab để tránh duplicate
+            Object.keys(newOrders).forEach((statusKey) => {
+              newOrders[statusKey] = newOrders[statusKey].filter(
+                (o) => (o.orderId || o.id) !== orderId
               );
-            }
+            });
 
-            // Thêm vào tab mới
+            // Thêm vào tab mới (đã đảm bảo không trùng lặp)
             const newStatusKey = newStatus.toLowerCase();
             if (newOrders[newStatusKey]) {
-              // Kiểm tra xem order đã tồn tại chưa
-              const existingIndex = newOrders[newStatusKey].findIndex(
-                (o) => (o.orderId || o.id) === (order.orderId || order.id)
-              );
-
-              if (existingIndex !== -1) {
-                // Cập nhật order hiện có
-                newOrders[newStatusKey][existingIndex] = order;
-              } else {
-                // Thêm order mới vào đầu danh sách
-                const oldLength = newOrders[newStatusKey].length;
-                newOrders[newStatusKey] = [order, ...newOrders[newStatusKey]];
-              }
+              newOrders[newStatusKey] = [order, ...newOrders[newStatusKey]];
             }
           } else {
             // Chỉ cập nhật thông tin order trong cùng tab
@@ -307,20 +294,20 @@ export const useOptimizedOrders = (initialTab = "processing") => {
       setLoading(false);
       setError("Vui lòng đăng nhập để tiếp tục");
       setWebSocketConnected(false);
-      
+
       // Cleanup WebSocket và cache listeners
       wsUnsubscribers.current.forEach((unsubscribe) => unsubscribe?.());
       cacheUnsubscribers.current.forEach((unsubscribe) => unsubscribe?.());
-      
+
       if (USE_WEBSOCKET) {
         orderWebSocketClient.disconnect();
       }
-      
+
       wsUnsubscribers.current = [];
       cacheUnsubscribers.current = [];
     }
   }, [isAuthenticated]);
-  
+
   // Lắng nghe auth-logout event
   useEffect(() => {
     const handleAuthLogout = () => {
@@ -342,9 +329,9 @@ export const useOptimizedOrders = (initialTab = "processing") => {
       setLoading(false);
       setWebSocketConnected(false);
     };
-    
-    window.addEventListener('auth-logout', handleAuthLogout);
-    return () => window.removeEventListener('auth-logout', handleAuthLogout);
+
+    window.addEventListener("auth-logout", handleAuthLogout);
+    return () => window.removeEventListener("auth-logout", handleAuthLogout);
   }, []);
 
   // Initialize
@@ -412,19 +399,18 @@ export const useOptimizedOrders = (initialTab = "processing") => {
           // Cập nhật UI ngay lập tức (optimistic update)
           setOrders((prevOrders) => {
             const newOrders = { ...prevOrders };
-            // Xóa từ status cũ
-            if (currentStatus) {
-              const oldStatusKey = currentStatus.toLowerCase();
-              const oldLength = newOrders[oldStatusKey]?.length || 0;
-              newOrders[oldStatusKey] = newOrders[oldStatusKey].filter(
-                (o) => (o.orderId || o.id) !== (orderToUpdate.orderId || orderToUpdate.id)
-              );
-            }
+            const orderId = orderToUpdate.orderId || orderToUpdate.id;
 
-            // Thêm vào status mới
+            // Xóa từ TẤT CẢ các tab để tránh duplicate
+            Object.keys(newOrders).forEach((statusKey) => {
+              newOrders[statusKey] = newOrders[statusKey].filter(
+                (o) => (o.orderId || o.id) !== orderId
+              );
+            });
+
+            // Thêm vào status mới (đã đảm bảo không trùng lặp)
             const newStatusKey = newStatus.toLowerCase();
             if (newOrders[newStatusKey]) {
-              const oldLength = newOrders[newStatusKey]?.length || 0;
               newOrders[newStatusKey] = [updatedOrder, ...newOrders[newStatusKey]];
             }
             return newOrders;

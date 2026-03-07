@@ -8,7 +8,6 @@ export const getToken = () => {
 // API Get Profile - Cần token
 export const getProfileApi = async () => {
   const response = await apiClient.get("/api/users/profile");
-  console.log("getProfileApi response:", response.data); // Kiểm tra dữ liệu trả về
   return response.data; // trả về UserResponse
 };
 

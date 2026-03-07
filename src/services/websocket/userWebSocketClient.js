@@ -471,12 +471,8 @@ class UserWebSocketClient {
     }
 
     const existingHandlers = this.messageHandlers.get(messageType);
-
-    // Nếu đã có handler, xóa handler cũ trước khi thêm mới
-    // Điều này giúp tránh duplicate handlers khi component re-render
-    if (existingHandlers.size > 0) {
-      existingHandlers.clear();
-    }
+    // Cho phép nhiều handler cùng messageType (ví dụ: SupportFloating + StaffChat đều dùng useUserChat)
+    // Mỗi handler tự quản lý lifecycle qua unsubscribe function trả về
     existingHandlers.add(handler);
 
     // Xử lý các messages đã queue cho messageType này
