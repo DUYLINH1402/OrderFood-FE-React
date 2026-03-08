@@ -672,17 +672,26 @@ export default function CheckoutPage() {
                     <p className="text-sm text-gray-500 mb-2">Chọn mã có sẵn:</p>
                     <div className="flex flex-wrap gap-2">
                       {userCoupons.map((coupon) => (
-                        <button
-                          key={coupon.id}
-                          type="button"
-                          className={`border px-3 py-1 rounded-lg text-sm font-semibold transition-all duration-150 ${
-                            selectedCouponId === coupon.id
-                              ? "bg-green-600 text-white border-green-600"
-                              : "bg-white text-green-700 border-green-600 hover:bg-green-50"
-                          }`}
-                          onClick={() => handleSelectCoupon(coupon)}>
-                          {coupon.code}
-                        </button>
+                        <div key={coupon.id} className="relative group">
+                          <button
+                            type="button"
+                            className={`border px-3 py-1 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                              selectedCouponId === coupon.id
+                                ? "bg-green-600 text-white border-green-600"
+                                : "bg-white text-green-700 border-green-600 hover:bg-green-50"
+                            }`}
+                            onClick={() => handleSelectCoupon(coupon)}>
+                            {coupon.code}
+                          </button>
+                          {/* Tooltip hiển thị description khi hover */}
+                          {coupon.description && (
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 whitespace-nowrap  text-center">
+                              <span className="block">{coupon.description}</span>
+                              {/* Mũi tên tooltip */}
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800"></div>
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>
