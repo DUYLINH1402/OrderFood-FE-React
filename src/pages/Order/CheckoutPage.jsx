@@ -8,6 +8,7 @@ import { getUserCoupons } from "../../services/service/couponService";
 import { validateCoupon } from "../../services/service/couponService";
 import shopping_cart from "../../assets/icons/shopping_cart.png";
 import PaymentMethodModal from "./PaymentMethodModal";
+import ClosedHoursModal from "./ClosedHoursModal";
 import { LoadingButton } from "../../components/Skeleton/LoadingButton";
 import PointsUsageSection from "./PointsUsageSection";
 import { validateName, validatePhoneNumber, validateEmail } from "../../utils/validation";
@@ -30,6 +31,7 @@ import {
   isOrderInfoValid as checkOrderInfoValid,
   handleDistrictChange,
   handleUserInfoChange,
+  isWithinOperatingHours,
 } from "./orderUtils";
 import LoadingIcon from "../../components/Skeleton/LoadingIcon";
 
@@ -90,6 +92,9 @@ export default function CheckoutPage() {
 
   // State cho validation errors
   const [errors, setErrors] = useState({ name: "", phone: "", email: "" });
+
+  // State cho modal thông báo ngoài giờ phục vụ
+  const [showClosedHoursModal, setShowClosedHoursModal] = useState(false);
 
   // State cho điểm thưởng
   const [usePoints, setUsePoints] = useState(false);
@@ -299,6 +304,12 @@ export default function CheckoutPage() {
 
   // Validate trước khi đặt hàng
   const handlePlaceOrder = async () => {
+    // Kiểm tra giờ hoạt động trước khi cho phép đặt hàng
+    if (!isWithinOperatingHours()) {
+      setShowClosedHoursModal(true);
+      return;
+    }
+
     const orderInfo = {
       receiverName,
       receiverPhone,
@@ -825,6 +836,11 @@ export default function CheckoutPage() {
                 onConfirm={submitOrder}
                 isPlacingOrder={isPlacingOrder}
                 user={user}
+              />
+
+              <ClosedHoursModal
+                isOpen={showClosedHoursModal}
+                onClose={() => setShowClosedHoursModal(false)}
               />
             </div>
           </div>

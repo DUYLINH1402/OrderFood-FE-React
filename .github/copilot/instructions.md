@@ -33,7 +33,9 @@ Luôn phản hồi cho người dùng bằng Tiếng Việt trong mọi tình hu
 - Kiến trúc chuẩn React: Tách rõ các component, page, service, store, utils, hooks. Component chia nhỏ, dễ tái sử dụng, ưu tiên functional component và hooks.
 - Quản lý state với Redux: Sử dụng Redux Toolkit, chia slice cho từng nghiệp vụ (cart, auth, favorite, points...). Kết hợp redux-persist để lưu state vào localStorage.
 - Sử dụng React Router cho điều hướng: Tách page cho từng màn hình, sử dụng useNavigate, useLocation.
+- Xem trong package.json xem đã sử dụng công nghệ nào thì dùng cho đồng bộ
 - Sử dụng TailwindCSS cho style: Ưu tiên class utility, tách style riêng cho từng component.
+  (tuyệt đối fontzise chữ không dùng text-xs vì quá nhỏ tối thiểu là text-sx thôi, các icon có kích thước w-6 h-6 cho đồng bộ)
 - Quản lý API/service: Tách riêng các hàm gọi API, chia theo nghiệp vụ (foodService, cartService, orderService, userService...).
 - Sử dụng apiClient và publicClient cho các request:
   - apiClient dùng cho API cần xác thực, tự động thêm token vào header.

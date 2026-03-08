@@ -6,6 +6,7 @@ import {
   MinusIcon,
   ArrowPathIcon,
   ArrowLeftIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 import { chatApi } from "../../../services/api/chatApi";
@@ -113,8 +114,10 @@ const CustomerChatPanel = ({
     }
   }, [activeCustomerId]);
 
-  // Xử lý click outside để minimize chat panel
+  // Xử lý click outside để minimize chat panel (CHỈ trên desktop)
   useEffect(() => {
+    if (isMobile) return; // Trên mobile panel chiếm full screen, không cần click outside
+
     const handleClickOutside = (event) => {
       if (
         chatPanelRef.current &&
@@ -133,7 +136,7 @@ const CustomerChatPanel = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, isMinimized]);
+  }, [isOpen, isMinimized, isMobile]);
 
   // Load danh sách conversation khi component mount hoặc khi reconnect
   useEffect(() => {
@@ -1395,9 +1398,15 @@ const CustomerChatPanel = ({
         </div>
 
         <div className="header-actions">
-          <button onClick={onMinimize} title="Thu nhỏ">
-            <MinusIcon className="w-4 h-4" />
-          </button>
+          {isMobile ? (
+            <button onClick={onMinimize} title="Đóng" className="mobile-close-btn">
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          ) : (
+            <button onClick={onMinimize} title="Thu nhỏ">
+              <MinusIcon className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 

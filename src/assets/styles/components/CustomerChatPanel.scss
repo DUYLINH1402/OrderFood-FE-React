@@ -145,9 +145,13 @@
 
   @media (max-width: 768px) {
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
+    height: 100vh; // fallback cho browser cũ
+    height: 100dvh;
     bottom: 0;
     right: 0;
+    left: 0;
+    top: 0;
     border-radius: 0;
   }
 }
@@ -1010,32 +1014,51 @@
 // Trên mobile: hiển thị danh sách HOẶC chat (không đồng thời cả 2)
 .customer-chat-panel.mobile-mode {
   width: 100vw !important;
-  height: 100vh !important;
-  bottom: 0 !important;
-  right: 0 !important;
+  height: 100dvh !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: auto !important;
+  right: auto !important;
   border-radius: 0 !important;
 
-  // Nút back trên header
-  .mobile-back-btn {
-    width: 32px;
-    height: 32px;
+  // Nút đóng chat trên mobile
+  .mobile-close-btn {
+    width: 36px;
+    height: 36px;
     border: none;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.25);
-    }
+    -webkit-tap-highlight-color: transparent;
 
     &:active {
-      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.35);
+      transform: scale(0.92);
+    }
+  }
+
+  // Nút back trên header
+  .mobile-back-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+
+    &:active {
+      background: rgba(255, 255, 255, 0.35);
+      transform: scale(0.92);
     }
   }
 

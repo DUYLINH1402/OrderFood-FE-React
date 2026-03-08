@@ -388,3 +388,19 @@ export const handleUserInfoChange = (useSavedInfo, user, setters) => {
     setDeliveryAddress("");
   }
 };
+
+/**
+ * Giờ mở cửa và đóng cửa nhận đơn
+ */
+const OPENING_HOUR = 7;
+const CLOSING_HOUR = 22;
+
+/**
+ * Kiểm tra có đang trong giờ nhận đơn không
+ * @returns {boolean} true nếu đang trong giờ phục vụ (07:00 - 22:00)
+ */
+export const isWithinOperatingHours = () => {
+  const now = new Date();
+  const currentHour = now.getHours();
+  return currentHour >= OPENING_HOUR && currentHour < CLOSING_HOUR;
+};
