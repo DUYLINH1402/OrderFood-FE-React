@@ -1,7 +1,7 @@
 import apiClient from "../apiClient";
 
 // Base URL theo Backend API mới
-const BASE_URL = "/api/admin/coupons";
+const BASE_URL = "/api/v1/admin/coupons";
 
 // ============ QUẢN LÝ COUPON CƠ BẢN (CRUD) ============
 

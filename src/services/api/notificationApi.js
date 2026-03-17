@@ -3,7 +3,7 @@ import apiClient from "../apiClient";
 // API lấy tất cả thông báo của user
 export const getUserNotificationsApi = async () => {
   try {
-    const response = await apiClient.get("/api/notifications/user");
+    const response = await apiClient.get("/api/v1/client/notifications");
     return {
       success: true,
       data: response.data,
@@ -21,7 +21,7 @@ export const getUserNotificationsApi = async () => {
 // API lấy thông báo chưa đọc của user
 export const getUnreadNotificationsApi = async () => {
   try {
-    const response = await apiClient.get("/api/notifications/user/unread");
+    const response = await apiClient.get("/api/v1/client/notifications/unread");
     return {
       success: true,
       data: response.data,
@@ -39,7 +39,7 @@ export const getUnreadNotificationsApi = async () => {
 // API lấy số lượng thông báo chưa đọc
 export const getUnreadCountApi = async () => {
   try {
-    const response = await apiClient.get("/api/notifications/user/unread/count");
+    const response = await apiClient.get("/api/v1/client/notifications/unread/count");
     return {
       success: true,
       count: response.data,
@@ -57,7 +57,7 @@ export const getUnreadCountApi = async () => {
 // API đánh dấu thông báo đã đọc
 export const markNotificationAsReadApi = async (notificationId) => {
   try {
-    const response = await apiClient.put(`/api/notifications/user/${notificationId}/read`);
+    const response = await apiClient.put(`/api/v1/client/notifications/${notificationId}/read`);
     return {
       success: true,
       message: "Đã đánh dấu thông báo là đã đọc",
@@ -75,7 +75,7 @@ export const markNotificationAsReadApi = async (notificationId) => {
 // API đánh dấu tất cả thông báo đã đọc
 export const markAllNotificationsAsReadApi = async () => {
   try {
-    const response = await apiClient.put("/api/notifications/user/read-all");
+    const response = await apiClient.put("/api/v1/client/notifications/read-all");
     return {
       success: true,
       message: "Đã đánh dấu tất cả thông báo là đã đọc",
@@ -93,7 +93,7 @@ export const markAllNotificationsAsReadApi = async () => {
 // API xóa thông báo
 export const deleteNotificationApi = async (notificationId) => {
   try {
-    const response = await apiClient.delete(`/api/notifications/user/${notificationId}`);
+    const response = await apiClient.delete(`/api/v1/client/notifications/${notificationId}`);
     return {
       success: true,
       message: "Đã xóa thông báo",
@@ -111,7 +111,7 @@ export const deleteNotificationApi = async (notificationId) => {
 // API xóa tất cả thông báo
 export const deleteAllNotificationsApi = async () => {
   try {
-    const response = await apiClient.delete("/api/notifications/user/all");
+    const response = await apiClient.delete("/api/v1/client/notifications/all");
     return {
       success: true,
       message: "Đã xóa tất cả thông báo",
@@ -131,7 +131,7 @@ export const deleteAllNotificationsApi = async () => {
 // API lấy tất cả thông báo của staff
 export const getStaffNotificationsApi = async () => {
   try {
-    const response = await apiClient.get("/api/notifications/staff");
+    const response = await apiClient.get("/api/v1/staff/notifications");
     return {
       success: true,
       data: response.data,
@@ -149,7 +149,7 @@ export const getStaffNotificationsApi = async () => {
 // API lấy thông báo chưa đọc của staff - Cần token
 export const getStaffUnreadNotificationsApi = async () => {
   try {
-    const response = await apiClient.get("/api/notifications/staff/unread");
+    const response = await apiClient.get("/api/v1/staff/notifications/unread");
     return {
       success: true,
       data: response.data,
@@ -167,7 +167,7 @@ export const getStaffUnreadNotificationsApi = async () => {
 // API lấy số lượng thông báo chưa đọc của staff - Cần token
 export const getStaffUnreadCountApi = async () => {
   try {
-    const response = await apiClient.get("/api/notifications/staff/unread/count");
+    const response = await apiClient.get("/api/v1/staff/notifications/unread/count");
     return {
       success: true,
       count: response.data,
@@ -185,7 +185,7 @@ export const getStaffUnreadCountApi = async () => {
 // API đánh dấu thông báo staff đã đọc - Cần token
 export const markStaffNotificationAsReadApi = async (notificationId) => {
   try {
-    const response = await apiClient.put(`/api/notifications/staff/${notificationId}/read`);
+    const response = await apiClient.put(`/api/v1/staff/notifications/${notificationId}/read`);
     return {
       success: true,
       message: "Đã đánh dấu thông báo là đã đọc",
@@ -203,7 +203,7 @@ export const markStaffNotificationAsReadApi = async (notificationId) => {
 // API đánh dấu tất cả thông báo staff đã đọc - Cần token
 export const markAllStaffNotificationsAsReadApi = async () => {
   try {
-    const response = await apiClient.put("/api/notifications/staff/read-all");
+    const response = await apiClient.put("/api/v1/staff/notifications/read-all");
     return {
       success: true,
       message: "Đã đánh dấu tất cả thông báo là đã đọc",
@@ -221,7 +221,7 @@ export const markAllStaffNotificationsAsReadApi = async () => {
 // API xóa thông báo staff - Cần token (nếu BE có hỗ trợ)
 export const deleteStaffNotificationApi = async (notificationId) => {
   try {
-    const response = await apiClient.delete(`/api/notifications/staff/${notificationId}`);
+    const response = await apiClient.delete(`/api/v1/staff/notifications/${notificationId}`);
     return {
       success: true,
       message: "Đã xóa thông báo",
@@ -239,7 +239,7 @@ export const deleteStaffNotificationApi = async (notificationId) => {
 // API xóa tất cả thông báo staff - Cần token (nếu BE có hỗ trợ)
 export const deleteAllStaffNotificationsApi = async () => {
   try {
-    const response = await apiClient.delete("/api/notifications/staff/all");
+    const response = await apiClient.delete("/api/v1/staff/notifications/all");
     return {
       success: true,
       message: "Đã xóa tất cả thông báo",

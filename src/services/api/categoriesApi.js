@@ -3,7 +3,7 @@ import { publicClient } from "../apiClient";
 // LẤY DANH SÁCH CATEGORIES CHA
 export const getRootCategoriesFromSQL = async () => {
   try {
-    const res = await publicClient.get("/api/categories/roots");
+    const res = await publicClient.get("/api/v1/public/categories/roots");
     return res.data;
   } catch (error) {
     console.error("Lỗi khi fetch categories:", error);
@@ -13,7 +13,7 @@ export const getRootCategoriesFromSQL = async () => {
 
 // LẤY DANH SÁCH CATEGORIES CON
 export const getCategoriesByParentFromSQL = async (parentId) => {
-  const res = await publicClient.get(`/api/categories/by-parent/${parentId}`);
+  const res = await publicClient.get(`/api/v1/public/categories/by-parent/${parentId}`);
   return res.data;
 };
 
@@ -48,7 +48,7 @@ export const getAllCategoriesWithChildrenFromSQL = async () => {
 // LẤY DANH MỤC THEO ID
 export const getCategoryByIdFromSQL = async (categoryId) => {
   try {
-    const res = await publicClient.get(`/api/categories/${categoryId}`);
+    const res = await publicClient.get(`/api/v1/public/categories/${categoryId}`);
     return res.data;
   } catch (error) {
     console.error(`Lỗi khi fetch category với ID (${categoryId}):`, error);
@@ -59,7 +59,7 @@ export const getCategoryByIdFromSQL = async (categoryId) => {
 // LẤY DANH MỤC THEO SLUG
 export const getCategoryBySlugFromSQL = async (slug) => {
   try {
-    const res = await publicClient.get(`/api/categories/slug/${slug}`);
+    const res = await publicClient.get(`/api/v1/public/categories/slug/${slug}`);
     return res.data;
   } catch (error) {
     console.error(`Lỗi khi fetch category với slug (${slug}):`, error);
@@ -70,7 +70,7 @@ export const getCategoryBySlugFromSQL = async (slug) => {
 // LẤY DANH SÁCH DANH MỤC CON THEO SLUG CHA
 export const getCategoriesByParentSlugFromSQL = async (slug) => {
   try {
-    const res = await publicClient.get(`/api/categories/by-parent-slug/${slug}`);
+    const res = await publicClient.get(`/api/v1/public/categories/by-parent-slug/${slug}`);
     return res.data;
   } catch (error) {
     console.error(`Lỗi khi fetch child categories với slug (${slug}):`, error);

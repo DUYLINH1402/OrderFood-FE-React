@@ -9,7 +9,7 @@ export const getAllStaffOrdersApi = async (page, size) => {
   try {
     let response;
     try {
-      response = await apiClient.get("/api/staff/orders/recent", {
+      response = await apiClient.get("/api/v1/staff/orders/recent", {
         params: { page: page || 0, size: size || 7 },
       });
     } catch (error) {
@@ -44,7 +44,7 @@ export const getAllStaffOrdersApi = async (page, size) => {
 // Lấy danh sách đơn hàng đang chờ xử lý (PROCESSING - chờ xác nhận)
 export const getPendingOrdersApi = async (page = 0, size = 20) => {
   try {
-    const response = await apiClient.get("/api/staff/orders/need-confirmation", {
+    const response = await apiClient.get("/api/v1/staff/orders/need-confirmation", {
       params: { page, size },
     });
     return {
@@ -70,7 +70,7 @@ export const getPendingOrdersApi = async (page = 0, size = 20) => {
 // Lấy danh sách đơn hàng đang xử lý (PROCESSING)
 export const getProcessingOrdersApi = async (page = 0, size = 20) => {
   try {
-    const response = await apiClient.get("/api/staff/orders/processing", {
+    const response = await apiClient.get("/api/v1/staff/orders/processing", {
       params: { page, size },
     });
     return {
@@ -96,7 +96,7 @@ export const getProcessingOrdersApi = async (page = 0, size = 20) => {
 // Cập nhật trạng thái đơn hàng (dành cho staff)
 export const updateOrderStatusByStaffApi = async (orderId, statusRequest) => {
   try {
-    const response = await apiClient.put(`/api/staff/orders/${orderId}/status`, statusRequest);
+    const response = await apiClient.put(`/api/v1/staff/orders/${orderId}/status`, statusRequest);
     return {
       success: true,
       data: response.data.data,
@@ -114,7 +114,7 @@ export const updateOrderStatusByStaffApi = async (orderId, statusRequest) => {
 // Tìm kiếm đơn hàng theo mã đơn hàng
 export const searchOrderByCodeApi = async (orderCode) => {
   try {
-    const response = await apiClient.get(`/api/staff/orders/${orderCode}`);
+    const response = await apiClient.get(`/api/v1/staff/orders/${orderCode}`);
     return {
       success: true,
       data: response.data.data,
@@ -133,7 +133,7 @@ export const searchOrderByCodeApi = async (orderCode) => {
 // Lấy chi tiết đơn hàng (staff)
 export const getOrderByIdForStaffApi = async (orderId) => {
   try {
-    const response = await apiClient.get(`/api/staff/orders/${orderId}`);
+    const response = await apiClient.get(`/api/v1/staff/orders/${orderId}`);
     return {
       success: true,
       data: response.data.data,

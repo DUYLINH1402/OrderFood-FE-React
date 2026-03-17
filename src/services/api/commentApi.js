@@ -16,7 +16,7 @@ import apiClient, { publicClient } from "../apiClient";
  * @returns {Promise} - Response chứa CommentPageResponse
  */
 export const getCommentsApi = (targetType, targetId, page = 0, size = 10) => {
-  return publicClient.get(`/api/comments/${targetType}/${targetId}`, {
+  return publicClient.get(`/api/v1/public/comments/${targetType}/${targetId}`, {
     params: { page, size },
   });
 };
@@ -27,7 +27,7 @@ export const getCommentsApi = (targetType, targetId, page = 0, size = 10) => {
  * @returns {Promise} - Response chứa CommentResponse
  */
 export const getCommentDetailApi = (commentId) => {
-  return publicClient.get(`/api/comments/detail/${commentId}`);
+  return publicClient.get(`/api/v1/public/comments/detail/${commentId}`);
 };
 
 /**
@@ -38,7 +38,7 @@ export const getCommentDetailApi = (commentId) => {
  * @returns {Promise} - Response chứa CommentPageResponse
  */
 export const getRepliesApi = (commentId, page = 0, size = 20) => {
-  return publicClient.get(`/api/comments/${commentId}/replies`, {
+  return publicClient.get(`/api/v1/public/comments/${commentId}/replies`, {
     params: { page, size },
   });
 };
@@ -50,7 +50,7 @@ export const getRepliesApi = (commentId, page = 0, size = 20) => {
  * @returns {Promise} - Response chứa số lượng comment
  */
 export const countCommentsApi = (targetType, targetId) => {
-  return publicClient.get(`/api/comments/count/${targetType}/${targetId}`);
+  return publicClient.get(`/api/v1/public/comments/count/${targetType}/${targetId}`);
 };
 
 // ==================== PRIVATE APIs (cần đăng nhập) ====================
@@ -65,7 +65,7 @@ export const countCommentsApi = (targetType, targetId) => {
  * @returns {Promise} - Response chứa CommentResponse
  */
 export const createCommentApi = (data) => {
-  return apiClient.post("/api/comments", data);
+  return apiClient.post("/api/v1/client/comments", data);
 };
 
 /**
@@ -76,7 +76,7 @@ export const createCommentApi = (data) => {
  * @returns {Promise} - Response chứa CommentResponse
  */
 export const updateCommentApi = (commentId, data) => {
-  return apiClient.put(`/api/comments/${commentId}`, data);
+  return apiClient.put(`/api/v1/client/comments/${commentId}`, data);
 };
 
 /**
@@ -85,7 +85,7 @@ export const updateCommentApi = (commentId, data) => {
  * @returns {Promise}
  */
 export const deleteCommentApi = (commentId) => {
-  return apiClient.delete(`/api/comments/${commentId}`);
+  return apiClient.delete(`/api/v1/client/comments/${commentId}`);
 };
 
 /**
@@ -95,7 +95,7 @@ export const deleteCommentApi = (commentId) => {
  * @returns {Promise} - Response chứa CommentPageResponse
  */
 export const getMyCommentsApi = (page = 0, size = 10) => {
-  return apiClient.get("/api/comments/my-comments", {
+  return apiClient.get("/api/v1/client/comments/my-comments", {
     params: { page, size },
   });
 };

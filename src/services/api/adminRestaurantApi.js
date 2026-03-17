@@ -1,6 +1,6 @@
 import { apiClient } from "../apiClient";
 
-// BASE URL: /api/admin/restaurant
+// BASE URL: /api/v1/admin/restaurant
 
 /**
  * Lấy thông tin nhà hàng cho Admin
@@ -8,7 +8,7 @@ import { apiClient } from "../apiClient";
  */
 export const getAdminRestaurantInfoFromSQL = async () => {
   try {
-    const response = await apiClient.get("/api/admin/restaurant");
+    const response = await apiClient.get("/api/v1/admin/restaurant");
     return response.data;
   } catch (error) {
     console.error("Loi khi lay thong tin nha hang (admin):", error.message);
@@ -30,7 +30,7 @@ export const getAdminRestaurantInfoFromSQL = async () => {
  */
 export const updateRestaurantInfoFromSQL = async (data) => {
   try {
-    const response = await apiClient.put("/api/admin/restaurant", data);
+    const response = await apiClient.put("/api/v1/admin/restaurant", data);
     return response.data;
   } catch (error) {
     console.error("Loi khi cap nhat thong tin nha hang:", error.message);
@@ -47,7 +47,7 @@ export const updateRestaurantInfoFromSQL = async (data) => {
  */
 export const addGalleryImageFromSQL = async (data) => {
   try {
-    const response = await apiClient.post("/api/admin/restaurant/gallery", data);
+    const response = await apiClient.post("/api/v1/admin/restaurant/gallery", data);
     return response.data;
   } catch (error) {
     console.error("Loi khi them hinh anh gallery:", error.message);
@@ -65,7 +65,7 @@ export const addGalleryImageFromSQL = async (data) => {
  */
 export const updateGalleryImageFromSQL = async (galleryId, data) => {
   try {
-    const response = await apiClient.put(`/api/admin/restaurant/gallery/${galleryId}`, data);
+    const response = await apiClient.put(`/api/v1/admin/restaurant/gallery/${galleryId}`, data);
     return response.data;
   } catch (error) {
     console.error(`Loi khi cap nhat hinh anh gallery (${galleryId}):`, error.message);
@@ -80,7 +80,7 @@ export const updateGalleryImageFromSQL = async (galleryId, data) => {
  */
 export const deleteGalleryImageFromSQL = async (galleryId) => {
   try {
-    await apiClient.delete(`/api/admin/restaurant/gallery/${galleryId}`);
+    await apiClient.delete(`/api/v1/admin/restaurant/gallery/${galleryId}`);
   } catch (error) {
     console.error(`Loi khi xoa hinh anh gallery (${galleryId}):`, error.message);
     throw error;
@@ -94,7 +94,7 @@ export const deleteGalleryImageFromSQL = async (galleryId) => {
  */
 export const reorderGalleryFromSQL = async (galleryIds) => {
   try {
-    const response = await apiClient.put("/api/admin/restaurant/gallery/reorder", galleryIds);
+    const response = await apiClient.put("/api/v1/admin/restaurant/gallery/reorder", galleryIds);
     return response.data;
   } catch (error) {
     console.error("Loi khi sap xep lai gallery:", error.message);

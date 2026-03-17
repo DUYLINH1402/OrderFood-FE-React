@@ -15,7 +15,7 @@ import apiClient from "../apiClient";
  * @returns {Promise} - Response chứa CommentPageResponse
  */
 export const getAdminCommentsApi = (params = {}) => {
-  return apiClient.get("/api/admin/comments", { params });
+  return apiClient.get("/api/v1/admin/comments", { params });
 };
 
 /**
@@ -25,7 +25,7 @@ export const getAdminCommentsApi = (params = {}) => {
  * @returns {Promise} - Response chứa CommentPageResponse
  */
 export const getAdminCommentsByStatusApi = (status, params = {}) => {
-  return apiClient.get(`/api/admin/comments/status/${status}`, { params });
+  return apiClient.get(`/api/v1/admin/comments/status/${status}`, { params });
 };
 
 /**
@@ -35,7 +35,7 @@ export const getAdminCommentsByStatusApi = (status, params = {}) => {
  * @returns {Promise} - Response chứa CommentPageResponse
  */
 export const searchAdminCommentsApi = (keyword, params = {}) => {
-  return apiClient.get("/api/admin/comments/search", {
+  return apiClient.get("/api/v1/admin/comments/search", {
     params: { keyword, ...params },
   });
 };
@@ -46,7 +46,7 @@ export const searchAdminCommentsApi = (keyword, params = {}) => {
  * @returns {Promise} - Response chứa CommentResponse
  */
 export const getAdminCommentDetailApi = (commentId) => {
-  return apiClient.get(`/api/admin/comments/${commentId}`);
+  return apiClient.get(`/api/v1/admin/comments/${commentId}`);
 };
 
 /**
@@ -56,7 +56,7 @@ export const getAdminCommentDetailApi = (commentId) => {
  * @returns {Promise} - Response chứa CommentPageResponse
  */
 export const getAdminCommentsByUserApi = (userId, params = {}) => {
-  return apiClient.get(`/api/admin/comments/user/${userId}`, { params });
+  return apiClient.get(`/api/v1/admin/comments/user/${userId}`, { params });
 };
 
 /**
@@ -67,7 +67,7 @@ export const getAdminCommentsByUserApi = (userId, params = {}) => {
  * @returns {Promise} - Response chứa CommentPageResponse
  */
 export const getAdminCommentsByTargetApi = (targetType, targetId, params = {}) => {
-  return apiClient.get(`/api/admin/comments/target/${targetType}/${targetId}`, { params });
+  return apiClient.get(`/api/v1/admin/comments/target/${targetType}/${targetId}`, { params });
 };
 
 /**
@@ -75,7 +75,7 @@ export const getAdminCommentsByTargetApi = (targetType, targetId, params = {}) =
  * @returns {Promise} - Response chứa CommentStatisticsResponse
  */
 export const getAdminCommentStatisticsApi = () => {
-  return apiClient.get("/api/admin/comments/statistics");
+  return apiClient.get("/api/v1/admin/comments/statistics");
 };
 
 /**
@@ -86,7 +86,7 @@ export const getAdminCommentStatisticsApi = () => {
  * @returns {Promise} - Response chứa CommentResponse
  */
 export const updateAdminCommentStatusApi = (commentId, data) => {
-  return apiClient.put(`/api/admin/comments/${commentId}/status`, data);
+  return apiClient.put(`/api/v1/admin/comments/${commentId}/status`, data);
 };
 
 /**
@@ -97,7 +97,7 @@ export const updateAdminCommentStatusApi = (commentId, data) => {
  * @returns {Promise} - Response chứa BatchOperationResponse
  */
 export const batchUpdateAdminCommentStatusApi = (data) => {
-  return apiClient.put("/api/admin/comments/batch/status", data);
+  return apiClient.put("/api/v1/admin/comments/batch/status", data);
 };
 
 /**
@@ -106,7 +106,7 @@ export const batchUpdateAdminCommentStatusApi = (data) => {
  * @returns {Promise}
  */
 export const hardDeleteAdminCommentApi = (commentId) => {
-  return apiClient.delete(`/api/admin/comments/${commentId}/hard-delete`);
+  return apiClient.delete(`/api/v1/admin/comments/${commentId}/hard-delete`);
 };
 
 /**
@@ -116,5 +116,5 @@ export const hardDeleteAdminCommentApi = (commentId) => {
  * @returns {Promise} - Response chứa BatchOperationResponse
  */
 export const batchHardDeleteAdminCommentsApi = (data) => {
-  return apiClient.delete("/api/admin/comments/batch/hard-delete", { data });
+  return apiClient.delete("/api/v1/admin/comments/batch/hard-delete", { data });
 };

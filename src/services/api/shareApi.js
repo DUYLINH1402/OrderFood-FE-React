@@ -7,7 +7,7 @@ import apiClient, { publicClient } from "../apiClient";
  * @returns {Promise} - Response chứa shareCount
  */
 export const getShareCountApi = (targetType, targetId) => {
-  return publicClient.get(`/api/shares/${targetType}/${targetId}/count`);
+  return publicClient.get(`/api/v1/public/shares/${targetType}/${targetId}/count`);
 };
 
 /**
@@ -18,7 +18,7 @@ export const getShareCountApi = (targetType, targetId) => {
  * @returns {Promise} - Response xác nhận đã ghi nhận
  */
 export const recordShareApi = (targetType, targetId, platform) => {
-  return publicClient.post("/api/shares", {
+  return publicClient.post("/api/v1/public/shares", {
     targetType,
     targetId,
     platform,

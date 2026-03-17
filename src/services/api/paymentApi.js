@@ -3,7 +3,7 @@ import { publicClient } from "../apiClient";
 // API để tạo payment - Hỗ trợ cả khách vãng lai
 export const createPaymentApi = async (paymentData) => {
   try {
-    const response = await publicClient.post("/api/payments", paymentData);
+    const response = await publicClient.post("/api/v1/public/payments", paymentData);
     return response.data;
   } catch (error) {
     console.error("Error creating payment:", error);
@@ -14,7 +14,7 @@ export const createPaymentApi = async (paymentData) => {
 // API để update payment status từ frontend - Không cần token
 export const updatePaymentStatusApi = async (statusData) => {
   try {
-    const response = await publicClient.post("/api/payments/update-status", statusData);
+    const response = await publicClient.post("/api/v1/public/payments/update-status", statusData);
     return response.data;
   } catch (error) {
     console.error("Error updating payment status:", error);
@@ -25,7 +25,7 @@ export const updatePaymentStatusApi = async (statusData) => {
 // API để check payment status - Không cần token
 export const checkPaymentStatusApi = async (appTransId) => {
   try {
-    const response = await publicClient.get(`/api/payments/zalopay/check-status/${appTransId}`);
+    const response = await publicClient.get(`/api/v1/public/payments/zalopay/check-status/${appTransId}`);
     return response.data;
   } catch (error) {
     console.error("Error checking payment status:", error);

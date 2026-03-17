@@ -8,7 +8,7 @@ import apiClient, { publicClient } from "../apiClient";
  * @returns {Promise} - Response chứa likeCount và hasLiked
  */
 export const getLikeInfoApi = (targetType, targetId) => {
-  return apiClient.get(`/api/likes/${targetType}/${targetId}`);
+  return apiClient.get(`/api/v1/public/likes/${targetType}/${targetId}`);
 };
 
 /**
@@ -18,7 +18,7 @@ export const getLikeInfoApi = (targetType, targetId) => {
  * @returns {Promise} - Response chứa likeCount
  */
 export const getLikeCountPublicApi = (targetType, targetId) => {
-  return publicClient.get(`/api/likes/${targetType}/${targetId}`);
+  return publicClient.get(`/api/v1/public/likes/${targetType}/${targetId}`);
 };
 
 /**
@@ -28,7 +28,7 @@ export const getLikeCountPublicApi = (targetType, targetId) => {
  * @returns {Promise} - Response chứa hasLiked (boolean)
  */
 export const checkLikeStatusApi = (targetType, targetId) => {
-  return apiClient.get(`/api/likes/check/${targetType}/${targetId}`);
+  return apiClient.get(`/api/v1/client/likes/check/${targetType}/${targetId}`);
 };
 
 /**
@@ -38,7 +38,7 @@ export const checkLikeStatusApi = (targetType, targetId) => {
  * @returns {Promise} - Response chứa trạng thái mới
  */
 export const toggleLikeApi = (targetType, targetId) => {
-  return apiClient.post("/api/likes/toggle", {
+  return apiClient.post("/api/v1/client/likes/toggle", {
     targetType,
     targetId,
   });

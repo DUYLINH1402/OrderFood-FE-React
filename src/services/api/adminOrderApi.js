@@ -7,7 +7,7 @@ import apiClient from "../apiClient";
 
 /**
  * Lấy tất cả đơn hàng với bộ lọc đa dạng
- * GET /api/admin/orders/all
+ * GET /api/v1/admin/orders/all
  */
 export const getAllAdminOrdersApi = async (params = {}) => {
   try {
@@ -23,7 +23,7 @@ export const getAllAdminOrdersApi = async (params = {}) => {
       endDate,
     } = params;
 
-    const response = await apiClient.get("/api/admin/orders/all", {
+    const response = await apiClient.get("/api/v1/admin/orders/all", {
       params: {
         status,
         page,
@@ -51,13 +51,13 @@ export const getAllAdminOrdersApi = async (params = {}) => {
 
 /**
  * Lấy thống kê đơn hàng tổng quan
- * GET /api/admin/orders/statistics
+ * GET /api/v1/admin/orders/statistics
  */
 export const getOrderStatisticsApi = async (params = {}) => {
   try {
     const { startDate, endDate, period } = params;
 
-    const response = await apiClient.get("/api/admin/orders/statistics", {
+    const response = await apiClient.get("/api/v1/admin/orders/statistics", {
       params: { startDate, endDate, period },
     });
 
@@ -74,11 +74,11 @@ export const getOrderStatisticsApi = async (params = {}) => {
 
 /**
  * Cập nhật trạng thái đơn hàng với quyền cao nhất (Admin)
- * PUT /api/admin/orders/{orderId}/status
+ * PUT /api/v1/admin/orders/{orderId}/status
  */
 export const updateOrderStatusByAdminApi = async (orderId, statusRequest) => {
   try {
-    const response = await apiClient.put(`/api/admin/orders/${orderId}/status`, statusRequest);
+    const response = await apiClient.put(`/api/v1/admin/orders/${orderId}/status`, statusRequest);
 
     return {
       success: true,
@@ -93,11 +93,11 @@ export const updateOrderStatusByAdminApi = async (orderId, statusRequest) => {
 
 /**
  * Xóa đơn hàng (soft delete)
- * DELETE /api/admin/orders/{orderId}
+ * DELETE /api/v1/admin/orders/{orderId}
  */
 export const deleteOrderApi = async (orderId) => {
   try {
-    const response = await apiClient.delete(`/api/admin/orders/${orderId}`);
+    const response = await apiClient.delete(`/api/v1/admin/orders/${orderId}`);
 
     return {
       success: true,
@@ -111,11 +111,11 @@ export const deleteOrderApi = async (orderId) => {
 
 /**
  * Khôi phục đơn hàng đã hủy
- * POST /api/admin/orders/{orderId}/restore
+ * POST /api/v1/admin/orders/{orderId}/restore
  */
 export const restoreOrderApi = async (orderId) => {
   try {
-    const response = await apiClient.post(`/api/admin/orders/${orderId}/restore`);
+    const response = await apiClient.post(`/api/v1/admin/orders/${orderId}/restore`);
 
     return {
       success: true,
@@ -130,11 +130,11 @@ export const restoreOrderApi = async (orderId) => {
 
 /**
  * Lấy chi tiết đơn hàng với thông tin đầy đủ
- * GET /api/admin/orders/{orderId}/details
+ * GET /api/v1/admin/orders/{orderId}/details
  */
 export const getOrderFullDetailsApi = async (orderId) => {
   try {
-    const response = await apiClient.get(`/api/admin/orders/${orderId}/details`);
+    const response = await apiClient.get(`/api/v1/admin/orders/${orderId}/details`);
     console.log("getOrderFullDetailsApi response:", response);
     return {
       success: true,
@@ -149,7 +149,7 @@ export const getOrderFullDetailsApi = async (orderId) => {
 
 /**
  * Tìm kiếm đơn hàng nâng cao
- * GET /api/admin/orders/advanced-search
+ * GET /api/v1/admin/orders/advanced-search
  */
 export const advancedSearchOrdersApi = async (params = {}) => {
   try {
@@ -164,7 +164,7 @@ export const advancedSearchOrdersApi = async (params = {}) => {
       size = 10,
     } = params;
 
-    const response = await apiClient.get("/api/admin/orders/advanced-search", {
+    const response = await apiClient.get("/api/v1/admin/orders/advanced-search", {
       params: {
         keyword,
         status,
@@ -190,11 +190,14 @@ export const advancedSearchOrdersApi = async (params = {}) => {
 
 /**
  * Cập nhật ghi chú nội bộ (internal_note)
- * PUT /api/admin/orders/{orderId}/internal-note
+ * PUT /api/v1/admin/orders/{orderId}/internal-note
  */
 export const updateInternalNoteApi = async (orderId, noteRequest) => {
   try {
-    const response = await apiClient.put(`/api/admin/orders/${orderId}/internal-note`, noteRequest);
+    const response = await apiClient.put(
+      `/api/v1/admin/orders/${orderId}/internal-note`,
+      noteRequest
+    );
 
     return {
       success: true,
@@ -209,11 +212,11 @@ export const updateInternalNoteApi = async (orderId, noteRequest) => {
 
 /**
  * Hủy đơn hàng kèm lý do chi tiết
- * POST /api/admin/orders/{orderId}/cancel
+ * POST /api/v1/admin/orders/{orderId}/cancel
  */
 export const cancelOrderWithReasonApi = async (orderId, cancelRequest) => {
   try {
-    const response = await apiClient.post(`/api/admin/orders/${orderId}/cancel`, cancelRequest);
+    const response = await apiClient.post(`/api/v1/admin/orders/${orderId}/cancel`, cancelRequest);
 
     return {
       success: true,
@@ -228,11 +231,11 @@ export const cancelOrderWithReasonApi = async (orderId, cancelRequest) => {
 
 /**
  * Thống kê chuyên sâu cho Dashboard Admin
- * GET /api/admin/orders/dashboard-stats
+ * GET /api/v1/admin/orders/dashboard-stats
  */
 export const getDashboardStatsApi = async () => {
   try {
-    const response = await apiClient.get("/api/admin/orders/dashboard-stats");
+    const response = await apiClient.get("/api/v1/admin/orders/dashboard-stats");
 
     console.log("getDashboardStatsApi response:", response);
     return {

@@ -29,7 +29,9 @@ export const getStaffMenuFromSQL = async (params = {}) => {
     }
 
     // Gọi API management dành cho Staff (cần xác thực)
-    const response = await apiClient.get(`/api/foods/management?${queryParams.toString()}`);
+    const response = await apiClient.get(
+      `/api/v1/staff/foods/management?${queryParams.toString()}`
+    );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy danh sách món ăn cho staff:", error.message);
@@ -43,9 +45,9 @@ export const getFoodStatsFromSQL = async () => {
   try {
     // Gọi 3 API song song với size=1, chỉ cần lấy totalElements
     const [allResponse, availableResponse, unavailableResponse] = await Promise.all([
-      apiClient.get("/api/foods/management?page=0&size=1"),
-      apiClient.get("/api/foods/management?page=0&size=1&status=AVAILABLE"),
-      apiClient.get("/api/foods/management?page=0&size=1&status=UNAVAILABLE"),
+      apiClient.get("/api/v1/staff/foods/management?page=0&size=1"),
+      apiClient.get("/api/v1/staff/foods/management?page=0&size=1&status=AVAILABLE"),
+      apiClient.get("/api/v1/staff/foods/management?page=0&size=1&status=UNAVAILABLE"),
     ]);
 
     return {
@@ -62,7 +64,7 @@ export const getFoodStatsFromSQL = async () => {
 // LẤY CHI TIẾT MÓN ĂN THEO ID
 export const getFoodDetailByIdFromSQL = async (foodId) => {
   try {
-    const response = await apiClient.get(`/api/foods/${foodId}`);
+    const response = await apiClient.get(`/api/v1/staff/foods/${foodId}`);
     return response.data;
   } catch (error) {
     console.error(`Lỗi khi lấy chi tiết món ăn (${foodId}):`, error.message);
@@ -75,7 +77,7 @@ export const getFoodDetailByIdFromSQL = async (foodId) => {
 // Body: FoodStatusUpdateRequest { status, isActive, statusNote }
 export const updateFoodStatusWithNoteFromSQL = async (foodId, status, statusNote = "") => {
   try {
-    const response = await apiClient.patch(`/api/foods/${foodId}/status`, {
+    const response = await apiClient.patch(`/api/v1/staff/foods/${foodId}/status`, {
       status: status,
       statusNote: statusNote,
     });
@@ -89,7 +91,7 @@ export const updateFoodStatusWithNoteFromSQL = async (foodId, status, statusNote
 // LẤY DANH SÁCH MÓN BÁN CHẠY
 export const getBestSellerFoodsFromSQL = async (limit = 10) => {
   try {
-    const response = await publicClient.get(`/api/foods/bestsellers?size=${limit}`);
+    const response = await publicClient.get(`/api/v1/public/foods/bestsellers?size=${limit}`);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy món bán chạy:", error.message);
@@ -100,7 +102,7 @@ export const getBestSellerFoodsFromSQL = async (limit = 10) => {
 // LẤY DANH SÁCH MÓN ĐẶC BIỆT
 export const getFeaturedFoodsFromSQL = async (limit = 10) => {
   try {
-    const response = await publicClient.get(`/api/foods/featured?size=${limit}`);
+    const response = await publicClient.get(`/api/v1/public/foods/featured?size=${limit}`);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy món đặc biệt:", error.message);
@@ -111,7 +113,7 @@ export const getFeaturedFoodsFromSQL = async (limit = 10) => {
 // LẤY DANH SÁCH COMBO/PROMOTION ĐANG CÓ
 export const getActivePromotionsFromSQL = async () => {
   try {
-    const response = await publicClient.get("/api/coupons/active");
+    const response = await publicClient.get("/api/v1/public/coupons/active");
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy khuyến mãi:", error.message);
@@ -122,7 +124,7 @@ export const getActivePromotionsFromSQL = async () => {
 // LẤY LỊCH SỬ THAY ĐỔI TRẠNG THÁI CỦA STAFF
 export const getStaffMenuHistoryFromSQL = async (page = 0, size = 20) => {
   try {
-    const response = await apiClient.get(`/api/staff/foods/history?page=${page}&size=${size}`);
+    const response = await apiClient.get(`/api/v1/staff/foods/history?page=${page}&size=${size}`);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy lịch sử thay đổi:", error.message);
@@ -134,7 +136,7 @@ export const getStaffMenuHistoryFromSQL = async (page = 0, size = 20) => {
 export const searchFoodsFromSQL = async (keyword, page = 0, size = 50) => {
   try {
     const response = await publicClient.get(
-      `/api/foods/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`
+      `/api/v1/public/foods/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`
     );
     return response.data;
   } catch (error) {
@@ -146,7 +148,7 @@ export const searchFoodsFromSQL = async (keyword, page = 0, size = 50) => {
 // LẤY DANH SÁCH DANH MỤC
 export const getCategoriesFromSQL = async () => {
   try {
-    const response = await publicClient.get("/api/categories");
+    const response = await publicClient.get("/api/v1/public/categories");
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy danh mục:", error.message);

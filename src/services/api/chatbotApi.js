@@ -11,7 +11,7 @@ import { publicClient } from "../apiClient";
  */
 export const sendMessageToChatbotApi = async (chatData) => {
   try {
-    const response = await publicClient.post("/api/chatbot/chat", chatData);
+    const response = await publicClient.post("/api/v1/public/chatbot/chat", chatData);
 
     return {
       success: true,
@@ -36,7 +36,7 @@ export const sendMessageToChatbotApi = async (chatData) => {
  */
 export const getChatHistoryApi = async (sessionId) => {
   try {
-    const response = await publicClient.get(`/api/chatbot/history/${sessionId}`);
+    const response = await publicClient.get(`/api/v1/public/chatbot/history/${sessionId}`);
 
     return {
       success: true,

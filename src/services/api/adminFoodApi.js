@@ -30,7 +30,9 @@ export const getAdminFoodsFromSQL = async (params = {}) => {
       queryParams.append("isActive", isActive);
     }
 
-    const response = await apiClient.get(`/api/foods/management?${queryParams.toString()}`);
+    const response = await apiClient.get(
+      `/api/v1/staff/foods/management?${queryParams.toString()}`
+    );
     return response.data;
   } catch (error) {
     console.error("Loi khi lay danh sach mon an cho admin:", error.message);
@@ -41,7 +43,7 @@ export const getAdminFoodsFromSQL = async (params = {}) => {
 // LẤY CHI TIẾT MÓN ĂN THEO ID
 export const getFoodByIdFromSQL = async (foodId) => {
   try {
-    const response = await apiClient.get(`/api/admin/foods/${foodId}`);
+    const response = await apiClient.get(`/api/v1/admin/foods/${foodId}`);
     return response.data;
   } catch (error) {
     console.error(`Loi khi lay chi tiet mon an (${foodId}):`, error.message);
@@ -85,7 +87,7 @@ export const createFoodFromSQL = async (foodData) => {
       formData.append("image", foodData.image);
     }
 
-    const response = await apiClient.post("/api/admin/foods", formData, {
+    const response = await apiClient.post("/api/v1/admin/foods", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -132,7 +134,7 @@ export const updateFoodFromSQL = async (foodId, foodData) => {
       formData.append("image", foodData.image);
     }
 
-    const response = await apiClient.put(`/api/admin/foods/${foodId}`, formData, {
+    const response = await apiClient.put(`/api/v1/admin/foods/${foodId}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -149,7 +151,7 @@ export const updateFoodFromSQL = async (foodId, foodData) => {
 // Body: FoodStatusUpdateRequest
 export const updateFoodStatusFromSQL = async (foodId, statusData) => {
   try {
-    const response = await apiClient.patch(`/api/admin/foods/${foodId}/status`, statusData);
+    const response = await apiClient.patch(`/api/v1/admin/foods/${foodId}/status`, statusData);
     return response.data;
   } catch (error) {
     console.error(`Loi khi cap nhat trang thai mon an (${foodId}):`, error.message);
@@ -161,7 +163,7 @@ export const updateFoodStatusFromSQL = async (foodId, statusData) => {
 // API: DELETE /api/admin/foods/{id}
 export const deleteFoodFromSQL = async (foodId) => {
   try {
-    const response = await apiClient.delete(`/api/admin/foods/${foodId}`);
+    const response = await apiClient.delete(`/api/v1/admin/foods/${foodId}`);
     return response.data;
   } catch (error) {
     console.error(`Loi khi xoa mon an (${foodId}):`, error.message);
@@ -176,7 +178,7 @@ export const uploadFoodImageFromSQL = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await apiClient.post("/api/admin/foods/upload", formData, {
+    const response = await apiClient.post("/api/v1/admin/foods/upload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

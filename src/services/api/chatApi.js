@@ -15,7 +15,7 @@ export const chatApi = {
       // Kiểm tra token trước khi gọi API
       const token = localStorage.getItem("accessToken");
 
-      const response = await apiClient.get("/api/chat/history", {
+      const response = await apiClient.get("/api/v1/client/chat/history", {
         params: { page, size },
       });
       return response.data;
@@ -31,7 +31,7 @@ export const chatApi = {
    */
   getUnreadMessages: async () => {
     try {
-      const response = await apiClient.get("/api/chat/unread");
+      const response = await apiClient.get("/api/v1/client/chat/unread");
       return response.data;
     } catch (error) {
       console.error("Lỗi khi lấy tin nhắn chưa đọc:", error);
@@ -46,7 +46,7 @@ export const chatApi = {
    */
   markMessageAsRead: async (messageId) => {
     try {
-      const response = await apiClient.put(`/api/chat/mark-read/${messageId}`);
+      const response = await apiClient.put(`/api/v1/client/chat/mark-read/${messageId}`);
       return response.data;
     } catch (error) {
       console.error(`Lỗi khi đánh dấu tin nhắn ${messageId} đã đọc:`, error);
@@ -150,7 +150,7 @@ export const chatApi = {
    */
   getAllUserToStaffMessages: async (page = 0, size = 20) => {
     try {
-      const response = await apiClient.get("/api/chat/staff/all-messages", {
+      const response = await apiClient.get("/api/v1/staff/chat/all-messages", {
         params: { page, size },
       });
       console.log("Tin nhắn từ user gửi cho staff:", response.data);
@@ -170,7 +170,7 @@ export const chatApi = {
    */
   getUserMessages: async (userId, page = 0, size = 20) => {
     try {
-      const response = await apiClient.get(`/api/chat/staff/user/${userId}/messages`, {
+      const response = await apiClient.get(`/api/v1/staff/chat/user/${userId}/messages`, {
         params: { page, size },
       });
       return response.data;
@@ -186,7 +186,7 @@ export const chatApi = {
    */
   getUsersChatWithStaff: async () => {
     try {
-      const response = await apiClient.get("/api/chat/staff/users");
+      const response = await apiClient.get("/api/v1/staff/chat/users");
       console.log("Danh sách user đã chat với staff:", response.data);
       return response.data;
     } catch (error) {
@@ -201,7 +201,7 @@ export const chatApi = {
    */
   getStaffUnreadCount: async () => {
     try {
-      const response = await apiClient.get("/api/chat/staff/unread-count");
+      const response = await apiClient.get("/api/v1/staff/chat/unread-count");
       const unreadCount = response.data.unreadCount || 0;
       return unreadCount;
     } catch (error) {
@@ -217,7 +217,7 @@ export const chatApi = {
    */
   getUserReadStatus: async (userId) => {
     try {
-      const response = await apiClient.get(`/api/chat/staff/user/${userId}/read-status`);
+      const response = await apiClient.get(`/api/v1/staff/chat/user/${userId}/read-status`);
       // Xử lý dữ liệu từ backend
       const data = response.data;
       return {
@@ -288,7 +288,7 @@ export const chatApi = {
    */
   getChatStatistics: async (startDate, endDate) => {
     try {
-      const response = await apiClient.get("/api/chat/admin/statistics", {
+      const response = await apiClient.get("/api/v1/admin/chat/statistics", {
         params: {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),

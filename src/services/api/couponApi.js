@@ -2,7 +2,7 @@ import apiClient from "../apiClient";
 
 // Gọi API lấy danh sách mã giảm giá
 export const getUserCouponsApi = async () => {
-  const res = await apiClient.get("/api/coupons/available");
+  const res = await apiClient.get("/api/v1/client/coupons/available");
   return res.data || [];
 };
 
@@ -16,6 +16,6 @@ export const redeemCouponApi = async (code) => {
 // Gọi API validate coupon cho đơn hàng (BE sẽ kiểm tra và trả về thông tin giảm giá)
 export const validateCouponApi = async ({ couponCode, orderAmount, foodIds }) => {
   const payload = { couponCode, orderAmount, foodIds };
-  const res = await apiClient.post("/api/coupons/validate", payload);
+  const res = await apiClient.post("/api/v1/client/coupons/validate", payload);
   return res.data;
 };

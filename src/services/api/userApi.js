@@ -7,13 +7,13 @@ export const getToken = () => {
 
 // API Get Profile - Cần token
 export const getProfileApi = async () => {
-  const response = await apiClient.get("/api/users/profile");
+  const response = await apiClient.get("/api/v1/client/users/profile");
   return response.data; // trả về UserResponse
 };
 
 // API Update Profile - Cần token (chỉ cập nhật thông tin cơ bản, không bao gồm avatar)
 export const updateProfileApi = async (data) => {
-  const response = await apiClient.put("/api/users/update-profile", data);
+  const response = await apiClient.put("/api/v1/client/users/update-profile", data);
   return response.data;
 };
 
@@ -21,7 +21,7 @@ export const updateProfileApi = async (data) => {
 export const uploadAvatarApi = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await apiClient.post("/api/users/avatar", formData, {
+  const response = await apiClient.post("/api/v1/client/users/avatar", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -32,6 +32,6 @@ export const uploadAvatarApi = async (file) => {
 
 // API Change Password - Cần token
 export const changePasswordApi = async (data) => {
-  const response = await apiClient.post("/api/users/change-password", data);
+  const response = await apiClient.post("/api/v1/client/users/change-password", data);
   return response.data;
 };

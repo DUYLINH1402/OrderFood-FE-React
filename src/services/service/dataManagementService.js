@@ -6,7 +6,7 @@ import { apiClient } from "../apiClient";
  * @returns {Promise<string>} Message thông báo
  */
 export const reindexSearchData = async () => {
-  const response = await apiClient.post("/api/v1/search/reindex");
+  const response = await apiClient.post("/api/v1/admin/search/reindex");
   return response.data;
 };
 
@@ -16,7 +16,7 @@ export const reindexSearchData = async () => {
  * @returns {Promise<{success: boolean, message: string, syncedFoods: number}>}
  */
 export const initAlgoliaData = async () => {
-  const response = await apiClient.post("/api/v1/search/init");
+  const response = await apiClient.post("/api/v1/admin/search/init");
   return response.data;
 };
 

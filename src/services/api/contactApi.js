@@ -16,7 +16,7 @@ import apiClient, { publicClient } from "../apiClient";
  */
 export const sendContactMessageApi = async (data) => {
   try {
-    const response = await publicClient.post("/api/contact", data);
+    const response = await publicClient.post("/api/v1/public/contact", data);
     return {
       success: true,
       message: response.data?.message || "Gửi tin nhắn thành công!",
@@ -63,7 +63,7 @@ export const sendContactMessageApi = async (data) => {
  */
 export const getAdminContactsApi = async (params = {}) => {
   try {
-    const response = await apiClient.get("/api/admin/contacts", { params });
+    const response = await apiClient.get("/api/v1/staff/contacts", { params });
     return {
       success: true,
       data: response.data,
@@ -85,7 +85,7 @@ export const getAdminContactsApi = async (params = {}) => {
  */
 export const getContactsByStatusApi = async (status, params = {}) => {
   try {
-    const response = await apiClient.get(`/api/admin/contacts/status/${status}`, { params });
+    const response = await apiClient.get(`/api/v1/staff/contacts/status/${status}`, { params });
     return {
       success: true,
       data: response.data,
@@ -107,7 +107,7 @@ export const getContactsByStatusApi = async (status, params = {}) => {
  */
 export const getContactsByStatusesApi = async (statuses = [], params = {}) => {
   try {
-    const response = await apiClient.get("/api/admin/contacts/statuses", {
+    const response = await apiClient.get("/api/v1/staff/contacts/statuses", {
       params: { ...params, statuses: statuses.join(",") },
     });
     return {
@@ -134,7 +134,7 @@ export const getContactsByStatusesApi = async (statuses = [], params = {}) => {
  */
 export const searchContactsApi = async (keyword, params = {}) => {
   try {
-    const response = await apiClient.get("/api/admin/contacts/search", {
+    const response = await apiClient.get("/api/v1/staff/contacts/search", {
       params: { ...params, keyword },
     });
     return {
@@ -157,7 +157,7 @@ export const searchContactsApi = async (keyword, params = {}) => {
  */
 export const getContactDetailApi = async (id) => {
   try {
-    const response = await apiClient.get(`/api/admin/contacts/${id}`);
+    const response = await apiClient.get(`/api/v1/staff/contacts/${id}`);
     return {
       success: true,
       data: response.data,
@@ -181,7 +181,7 @@ export const getContactDetailApi = async (id) => {
  */
 export const updateContactStatusApi = async (id, data) => {
   try {
-    const response = await apiClient.patch(`/api/admin/contacts/${id}/status`, data);
+    const response = await apiClient.patch(`/api/v1/staff/contacts/${id}/status`, data);
     return {
       success: true,
       data: response.data,
@@ -209,7 +209,7 @@ export const updateContactStatusApi = async (id, data) => {
  */
 export const replyContactApi = async (id, data) => {
   try {
-    const response = await apiClient.post(`/api/admin/contacts/${id}/reply`, data);
+    const response = await apiClient.post(`/api/v1/staff/contacts/${id}/reply`, data);
     return {
       success: true,
       data: response.data,
@@ -231,7 +231,7 @@ export const replyContactApi = async (id, data) => {
  */
 export const deleteContactApi = async (id) => {
   try {
-    await apiClient.delete(`/api/admin/contacts/${id}`);
+    await apiClient.delete(`/api/v1/staff/contacts/${id}`);
     return {
       success: true,
       message: "Xóa tin nhắn thành công",
@@ -261,7 +261,7 @@ export const deleteContactApi = async (id) => {
  */
 export const getPendingContactsCountApi = async () => {
   try {
-    const response = await apiClient.get("/api/admin/contacts/pending/count");
+    const response = await apiClient.get("/api/v1/staff/contacts/pending/count");
     return {
       success: true,
       count: response.data?.pendingCount || 0,
@@ -283,7 +283,7 @@ export const getPendingContactsCountApi = async () => {
  */
 export const getContactStatisticsApi = async (startDate, endDate) => {
   try {
-    const response = await apiClient.get("/api/admin/contacts/statistics", {
+    const response = await apiClient.get("/api/v1/staff/contacts/statistics", {
       params: { startDate, endDate },
     });
     return {
@@ -306,7 +306,7 @@ export const getContactStatisticsApi = async (startDate, endDate) => {
  */
 export const getRecentContactsApi = async (limit = 5) => {
   try {
-    const response = await apiClient.get("/api/admin/contacts/recent", {
+    const response = await apiClient.get("/api/v1/staff/contacts/recent", {
       params: { limit },
     });
     return {

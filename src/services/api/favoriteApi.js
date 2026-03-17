@@ -7,18 +7,18 @@ export const getToken = () => {
 
 // API to get favorites
 export const getFavoritesApi = () => {
-  return apiClient.get("/api/favorites");
+  return apiClient.get("/api/v1/client/favorites");
 };
 
 export const addToFavoritesApi = (foodId, variantId) => {
-  return apiClient.post("/api/favorites", {
+  return apiClient.post("/api/v1/client/favorites", {
     foodId,
     variantId: variantId ?? null,
   });
 };
 
 export const removeFromFavoritesApi = (foodId, variantId) => {
-  return apiClient.delete("/api/favorites", {
+  return apiClient.delete("/api/v1/client/favorites", {
     data: {
       foodId,
       variantId: variantId ?? null,

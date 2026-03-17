@@ -7,7 +7,7 @@ import { apiClient } from "../apiClient";
 // Lấy thống kê đơn hàng trong khoảng thời gian
 export const getOrderStatsByDateRangeApi = async (startDate, endDate) => {
   try {
-    const response = await apiClient.get("/api/staff/orders/recent", {
+    const response = await apiClient.get("/api/v1/staff/orders/recent", {
       params: {
         page: 0,
         size: 1000, // Lấy nhiều để thống kê
@@ -34,7 +34,7 @@ export const getOrderStatsByDateRangeApi = async (startDate, endDate) => {
 // Lấy tất cả đơn hàng gần đây để phân tích
 export const getAllRecentOrdersApi = async (size = 500) => {
   try {
-    const response = await apiClient.get("/api/staff/orders/recent", {
+    const response = await apiClient.get("/api/v1/staff/orders/recent", {
       params: { page: 0, size },
     });
 

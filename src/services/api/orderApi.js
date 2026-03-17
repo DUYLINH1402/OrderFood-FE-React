@@ -3,7 +3,7 @@ import { publicClient, apiClient } from "../apiClient";
 // TẠO ĐƠN HÀNG - Hỗ trợ cả khách vãng lai và user đăng nhập
 export const createOrderApi = async (payload) => {
   try {
-    const response = await publicClient.post("/api/orders", payload);
+    const response = await publicClient.post("/api/v1/public/orders", payload);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi tạo đơn hàng:", {
@@ -31,7 +31,7 @@ export const createOrderApi = async (payload) => {
 // LẤY DANH SÁCH ĐƠN HÀNG CHO USER
 export const getOrdersApi = async () => {
   try {
-    const response = await apiClient.get("/api/orders");
+    const response = await apiClient.get("/api/v1/client/orders");
 
     // Validate response
     if (!response || !response.data) {
@@ -87,7 +87,7 @@ export const getOrdersApi = async () => {
 // LẤY CHI TIẾT ĐƠN HÀNG
 export const getOrderByIdApi = async (orderId) => {
   try {
-    const response = await publicClient.get(`/api/orders/${orderId}`);
+    const response = await apiClient.get(`/api/v1/client/orders/${orderId}`);
     return {
       success: true,
       data: response.data,
@@ -104,7 +104,7 @@ export const getOrderByIdApi = async (orderId) => {
 // CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG
 export const updateOrderStatusApi = async (orderId, statusData) => {
   try {
-    const response = await publicClient.put(`/api/orders/${orderId}/status`, statusData);
+    const response = await apiClient.put(`/api/v1/client/orders/${orderId}/status`, statusData);
     return {
       success: true,
       message: response.data.message || "Cập nhật trạng thái thành công",
@@ -121,7 +121,7 @@ export const updateOrderStatusApi = async (orderId, statusData) => {
 // HỦY ĐƠN HÀNG
 export const cancelOrderApi = async (orderCode, cancelReason) => {
   try {
-    const response = await apiClient.put(`/api/orders/${orderCode}/cancel`, {
+    const response = await apiClient.put(`/api/v1/client/orders/${orderCode}/cancel`, {
       cancelReason: cancelReason,
     });
     return {
@@ -141,7 +141,7 @@ export const cancelOrderApi = async (orderCode, cancelReason) => {
 // LẤY THỐNG KÊ ĐƠN HÀNG
 export const getOrderStatisticsApi = async () => {
   try {
-    const response = await publicClient.get("/api/orders/statistics");
+    const response = await apiClient.get("/api/v1/client/orders/statistics");
     return {
       success: true,
       data: response.data,

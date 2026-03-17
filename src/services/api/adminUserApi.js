@@ -2,7 +2,7 @@ import { apiClient } from "../apiClient";
 
 /**
  * Admin User API - Dành cho admin quản lý người dùng
- * Base URL: /api/admin/users
+ * Base URL: /api/v1/admin/users
  */
 
 /**
@@ -18,7 +18,7 @@ import { apiClient } from "../apiClient";
  */
 export const getAdminUsersApi = async (params = {}) => {
   try {
-    const response = await apiClient.get("/api/admin/users", { params });
+    const response = await apiClient.get("/api/v1/admin/users", { params });
     return {
       success: true,
       data: response.data,
@@ -39,7 +39,7 @@ export const getAdminUsersApi = async (params = {}) => {
  */
 export const getAdminUserByIdApi = async (id) => {
   try {
-    const response = await apiClient.get(`/api/admin/users/${id}`);
+    const response = await apiClient.get(`/api/v1/admin/users/${id}`);
     return {
       success: true,
       data: response.data,
@@ -70,7 +70,7 @@ export const getAdminUserByIdApi = async (id) => {
  */
 export const createAdminUserApi = async (data) => {
   try {
-    const response = await apiClient.post("/api/admin/users", data);
+    const response = await apiClient.post("/api/v1/admin/users", data);
     return {
       success: true,
       data: response.data,
@@ -92,7 +92,7 @@ export const createAdminUserApi = async (data) => {
  */
 export const updateAdminUserApi = async (id, data) => {
   try {
-    const response = await apiClient.put(`/api/admin/users/${id}`, data);
+    const response = await apiClient.put(`/api/v1/admin/users/${id}`, data);
     return {
       success: true,
       data: response.data,
@@ -113,7 +113,7 @@ export const updateAdminUserApi = async (id, data) => {
  */
 export const deleteAdminUserApi = async (id) => {
   try {
-    await apiClient.delete(`/api/admin/users/${id}`);
+    await apiClient.delete(`/api/v1/admin/users/${id}`);
     return {
       success: true,
       message: "Xóa người dùng thành công",
@@ -136,7 +136,7 @@ export const deleteAdminUserApi = async (id) => {
  */
 export const updateAdminUserStatusApi = async (id, data) => {
   try {
-    const response = await apiClient.put(`/api/admin/users/${id}/status`, data);
+    const response = await apiClient.put(`/api/v1/admin/users/${id}/status`, data);
     return {
       success: true,
       data: response.data,
@@ -157,7 +157,7 @@ export const updateAdminUserStatusApi = async (id, data) => {
  */
 export const resetAdminUserPasswordApi = async (userId) => {
   try {
-    const response = await apiClient.post(`/api/admin/users/${userId}/reset-password`);
+    const response = await apiClient.post(`/api/v1/admin/users/${userId}/reset-password`);
     return {
       success: true,
       data: response.data,

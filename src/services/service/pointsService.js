@@ -7,7 +7,7 @@ import apiClient from "../apiClient";
 export const getUserPoints = async () => {
   try {
     // Truyền token qua header (apiClient đã tự động thêm nếu có)
-    const response = await apiClient.get("/api/points/current");
+    const response = await apiClient.get("/api/v1/client/points/current");
     return response.data;
   } catch (error) {
     console.error("Error fetching user points:", error);
@@ -43,7 +43,7 @@ export const usePointsForOrder = async (pointsData) => {
  */
 export const getPointsHistory = async (params = {}) => {
   try {
-    const response = await apiClient.get("/api/points/history", { params });
+    const response = await apiClient.get("/api/v1/client/points/history", { params });
     // Đảm bảo luôn trả về object có items là mảng
     if (Array.isArray(response.data)) {
       return { items: response.data, totalItems: response.data.length, totalPages: 1 };

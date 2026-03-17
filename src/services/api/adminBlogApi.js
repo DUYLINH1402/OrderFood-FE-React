@@ -5,7 +5,7 @@ import apiClient, { publicClient } from "../apiClient";
 // LẤY DANH SÁCH BÀI VIẾT (ADMIN)
 export const getAdminBlogsApi = async (params = {}) => {
   try {
-    const response = await apiClient.get("/api/admin/blogs", { params });
+    const response = await apiClient.get("/api/v1/admin/blogs", { params });
     return {
       success: true,
       data: response.data,
@@ -22,7 +22,7 @@ export const getAdminBlogsApi = async (params = {}) => {
 // LẤY CHI TIẾT BÀI VIẾT THEO ID (ADMIN)
 export const getAdminBlogByIdApi = async (id) => {
   try {
-    const response = await apiClient.get(`/api/admin/blogs/${id}`);
+    const response = await apiClient.get(`/api/v1/admin/blogs/${id}`);
     return {
       success: true,
       data: response.data,
@@ -39,7 +39,7 @@ export const getAdminBlogByIdApi = async (id) => {
 // TẠO BÀI VIẾT MỚI
 export const createAdminBlogApi = async (blogData) => {
   try {
-    const response = await apiClient.post("/api/admin/blogs", blogData);
+    const response = await apiClient.post("/api/v1/admin/blogs", blogData);
     return {
       success: true,
       data: response.data,
@@ -57,7 +57,7 @@ export const createAdminBlogApi = async (blogData) => {
 // CẬP NHẬT BÀI VIẾT
 export const updateAdminBlogApi = async (id, blogData) => {
   try {
-    const response = await apiClient.put(`/api/admin/blogs/${id}`, blogData);
+    const response = await apiClient.put(`/api/v1/admin/blogs/${id}`, blogData);
     return {
       success: true,
       data: response.data,
@@ -75,7 +75,7 @@ export const updateAdminBlogApi = async (id, blogData) => {
 // XÓA BÀI VIẾT
 export const deleteAdminBlogApi = async (id) => {
   try {
-    await apiClient.delete(`/api/admin/blogs/${id}`);
+    await apiClient.delete(`/api/v1/admin/blogs/${id}`);
     return {
       success: true,
     };
@@ -91,7 +91,7 @@ export const deleteAdminBlogApi = async (id) => {
 // CẬP NHẬT TRẠNG THÁI BÀI VIẾT
 export const updateBlogStatusApi = async (id, status) => {
   try {
-    const response = await apiClient.patch(`/api/admin/blogs/${id}/status`, null, {
+    const response = await apiClient.patch(`/api/v1/admin/blogs/${id}/status`, null, {
       params: { status },
     });
     return {
@@ -112,7 +112,7 @@ export const updateBlogStatusApi = async (id, status) => {
 // LẤY DANH SÁCH DANH MỤC (ADMIN - bao gồm cả inactive)
 export const getAdminCategoriesApi = async () => {
   try {
-    const response = await apiClient.get("/api/admin/blogs/categories");
+    const response = await apiClient.get("/api/v1/admin/blogs/categories");
     return {
       success: true,
       data: response.data,
@@ -129,7 +129,7 @@ export const getAdminCategoriesApi = async () => {
 // LẤY DANH SÁCH DANH MỤC (PUBLIC - chỉ active)
 export const getPublicCategoriesApi = async () => {
   try {
-    const response = await publicClient.get("/api/blogs/categories");
+    const response = await publicClient.get("/api/v1/public/blogs/categories");
     return {
       success: true,
       data: response.data,
@@ -146,7 +146,7 @@ export const getPublicCategoriesApi = async () => {
 // LẤY CHI TIẾT DANH MỤC THEO ID
 export const getAdminCategoryByIdApi = async (id) => {
   try {
-    const response = await apiClient.get(`/api/admin/blogs/categories/${id}`);
+    const response = await apiClient.get(`/api/v1/admin/blogs/categories/${id}`);
     return {
       success: true,
       data: response.data,
@@ -163,7 +163,7 @@ export const getAdminCategoryByIdApi = async (id) => {
 // TẠO DANH MỤC MỚI
 export const createAdminCategoryApi = async (categoryData) => {
   try {
-    const response = await apiClient.post("/api/admin/blogs/categories", categoryData);
+    const response = await apiClient.post("/api/v1/admin/blogs/categories", categoryData);
     return {
       success: true,
       data: response.data,
@@ -181,7 +181,7 @@ export const createAdminCategoryApi = async (categoryData) => {
 // CẬP NHẬT DANH MỤC
 export const updateAdminCategoryApi = async (id, categoryData) => {
   try {
-    const response = await apiClient.put(`/api/admin/blogs/categories/${id}`, categoryData);
+    const response = await apiClient.put(`/api/v1/admin/blogs/categories/${id}`, categoryData);
     return {
       success: true,
       data: response.data,
@@ -199,7 +199,7 @@ export const updateAdminCategoryApi = async (id, categoryData) => {
 // XÓA DANH MỤC
 export const deleteAdminCategoryApi = async (id) => {
   try {
-    await apiClient.delete(`/api/admin/blogs/categories/${id}`);
+    await apiClient.delete(`/api/v1/admin/blogs/categories/${id}`);
     return {
       success: true,
     };

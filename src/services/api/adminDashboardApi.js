@@ -7,7 +7,7 @@ import { apiClient } from "../apiClient";
 // Lấy thống kê tổng quan dashboard
 export const getDashboardStatisticsApi = async () => {
   try {
-    const response = await apiClient.get("/api/admin/dashboard/statistics");
+    const response = await apiClient.get("/api/v1/staff/dashboard/statistics");
     return {
       success: true,
       data: response.data,
@@ -25,7 +25,7 @@ export const getDashboardStatisticsApi = async () => {
 // Lấy doanh thu theo số ngày
 export const getDashboardRevenueApi = async (days = 7) => {
   try {
-    const response = await apiClient.get("/api/admin/dashboard/revenue", {
+    const response = await apiClient.get("/api/v1/staff/dashboard/revenue", {
       params: { days },
     });
     return {
@@ -45,7 +45,7 @@ export const getDashboardRevenueApi = async (days = 7) => {
 // Lấy hoạt động gần đây
 export const getDashboardActivitiesApi = async (limit = 10) => {
   try {
-    const response = await apiClient.get("/api/admin/dashboard/activities", {
+    const response = await apiClient.get("/api/v1/staff/dashboard/activities", {
       params: { limit },
     });
     return {
@@ -65,7 +65,7 @@ export const getDashboardActivitiesApi = async (limit = 10) => {
 // Lấy thống kê nâng cao (AOV, tỷ lệ hủy, khách mới, điểm thưởng...)
 export const getAdvancedStatisticsApi = async (period = 7) => {
   try {
-    const response = await apiClient.get("/api/admin/dashboard/advanced-statistics", {
+    const response = await apiClient.get("/api/v1/staff/dashboard/advanced-statistics", {
       params: { period },
     });
     return {
@@ -85,7 +85,7 @@ export const getAdvancedStatisticsApi = async (period = 7) => {
 // Lấy doanh thu theo danh mục món ăn
 export const getRevenueByCategoryApi = async (period = 7) => {
   try {
-    const response = await apiClient.get("/api/admin/dashboard/revenue-by-category", {
+    const response = await apiClient.get("/api/v1/staff/dashboard/revenue-by-category", {
       params: { period },
     });
     return {
@@ -105,7 +105,7 @@ export const getRevenueByCategoryApi = async (period = 7) => {
 // Lấy chi tiết hiệu quả món ăn (có phân trang)
 export const getFoodPerformanceApi = async (period = 90, page = 0, size = 10) => {
   try {
-    const response = await apiClient.get("/api/admin/dashboard/food-performance", {
+    const response = await apiClient.get("/api/v1/staff/dashboard/food-performance", {
       params: { period, page, size },
     });
     return {
@@ -125,7 +125,7 @@ export const getFoodPerformanceApi = async (period = 90, page = 0, size = 10) =>
 // Lấy top món ăn bán chạy
 export const getTopSellingFoodsApi = async (period = 90) => {
   try {
-    const response = await apiClient.get("/api/admin/dashboard/top-selling-foods", {
+    const response = await apiClient.get("/api/v1/staff/dashboard/top-selling-foods", {
       params: { period },
     });
     return {

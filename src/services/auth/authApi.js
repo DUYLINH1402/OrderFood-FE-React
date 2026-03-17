@@ -8,7 +8,7 @@ export const getToken = () => {
 // API Login - dùng publicClient vì chưa có token
 export const loginApi = async (loginData) => {
   try {
-    const response = await publicClient.post("/api/auth/login", loginData);
+    const response = await publicClient.post("/api/v1/public/auth/login", loginData);
     return response.data;
   } catch (error) {
     const errorCode =
@@ -26,7 +26,7 @@ export const loginApi = async (loginData) => {
 export const loginWithGoogleApi = async (idToken) => {
   try {
     // Gửi id_token về Backend để xác thực
-    const response = await publicClient.post("/api/auth/google", {
+    const response = await publicClient.post("/api/v1/public/auth/google", {
       idToken: idToken,
     });
     return response.data;
@@ -41,7 +41,7 @@ export const loginWithGoogleApi = async (idToken) => {
 // API Register - dùng publicClient vì chưa có token
 export const registerApi = async (registerData) => {
   try {
-    const response = await publicClient.post("/api/auth/register", registerData);
+    const response = await publicClient.post("/api/v1/public/auth/register", registerData);
     return response.data;
   } catch (error) {
     toast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
@@ -53,13 +53,13 @@ export const registerApi = async (registerData) => {
 
 // API ForgotPassword Password - dùng publicClient vì chưa cần đăng nhập
 export const sendForgotPasswordEmailApi = async (email) => {
-  const res = await publicClient.post("/api/auth/forgot-password", { email });
+  const res = await publicClient.post("/api/v1/public/auth/forgot-password", { email });
   return res.data;
 };
 
 // API Đặt lại mật khẩu mới - dùng publicClient vì reset bằng token trong email
 export const resetPasswordApi = async ({ token, newPassword }) => {
-  const res = await publicClient.post("/api/auth/reset-password", {
+  const res = await publicClient.post("/api/v1/public/auth/reset-password", {
     token,
     newPassword,
   });
@@ -68,6 +68,6 @@ export const resetPasswordApi = async ({ token, newPassword }) => {
 
 // API Resend verification email - dùng publicClient
 export const resendVerificationEmailApi = async (email) => {
-  const res = await publicClient.post("/api/auth/resend-verification", { email });
+  const res = await publicClient.post("/api/v1/public/auth/resend-verification", { email });
   return res.data;
 };
