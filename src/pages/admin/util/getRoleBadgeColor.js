@@ -1,6 +1,8 @@
 // Hàm lấy màu badge theo role
 export const getRoleBadgeColor = (roleCode) => {
   switch (roleCode) {
+    case "ROLE_SUPER_ADMIN":
+      return "bg-red-100 text-red-800";
     case "ROLE_ADMIN":
       return "bg-purple-100 text-purple-800";
     case "ROLE_STAFF":

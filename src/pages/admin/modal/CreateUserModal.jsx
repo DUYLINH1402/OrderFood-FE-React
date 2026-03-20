@@ -16,6 +16,9 @@ import {
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import { createAdminUserApi } from "../../../services/api/adminUserApi";
+import { createSuperAdminUserApi } from "../../../services/api/superAdminApi";
+import { useAuth } from "../../../hooks/auth/useAuth";
+import { ROLES } from "../../../utils/roleConfig";
 import { createAdminEmployeeApi } from "../../../services/api/adminEmployeeApi";
 
 const { Option } = Select;
@@ -24,6 +27,9 @@ const CreateUserModal = ({ open, onClose, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState("ROLE_USER");
+  const { userRole } = useAuth();
+  const createUserApiCall =
+    userRole === ROLES.SUPER_ADMIN ? createSuperAdminUserApi : createAdminUserApi;
 
   const handleClose = () => {
     form.resetFields();
@@ -90,7 +96,7 @@ const CreateUserModal = ({ open, onClose, onSuccess }) => {
       // 2. PHÂN LUỒNG VÀ TRUYỀN ROLE ĐÚNG ĐỊNH DẠNG BE CẦN
       if (values.roleCode === "ROLE_USER") {
         // Đối với User thông thường, gửi kèm roleCode
-        response = await createAdminUserApi({
+        response = await createUserApiCall({
           ...payload,
           roleCode: values.roleCode,
         });

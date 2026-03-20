@@ -17,8 +17,8 @@ const CustomerOnlyGuard = ({ children }) => {
     return children;
   }
 
-  // Nếu là STAFF hoặc ADMIN, chuyển về dashboard của họ
-  if (userRole === ROLES.STAFF || userRole === ROLES.ADMIN) {
+  // Nếu là STAFF, ADMIN hoặc SUPER_ADMIN, chuyển về dashboard của họ
+  if (userRole === ROLES.STAFF || userRole === ROLES.ADMIN || userRole === ROLES.SUPER_ADMIN) {
     const roleConfig = ROLE_ROUTES[userRole];
     console.log(
       `${userRole} trying to access customer page, redirecting to ${roleConfig?.defaultPath}`

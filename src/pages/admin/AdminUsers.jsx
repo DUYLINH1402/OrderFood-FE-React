@@ -5,6 +5,14 @@ import {
   deleteAdminUserApi,
   updateAdminUserStatusApi,
 } from "../../services/api/adminUserApi";
+import {
+  getSuperAdminUsersApi,
+  deleteSuperAdminUserApi,
+  updateSuperAdminUserStatusApi,
+} from "../../services/api/superAdminApi";
+import { toggleUserProtected } from "../../services/service/superAdminService";
+import { useAuth } from "../../hooks/auth/useAuth";
+import { ROLES } from "../../utils/roleConfig";
 import UserDetailModal from "./modal/UserDetailModal";
 import CreateUserModal from "./modal/CreateUserModal";
 import EditUserModal from "./modal/EditUserModal";
@@ -24,6 +32,15 @@ const getStatusBadgeColor = (isActive) => {
 
 const AdminUsers = () => {
   const confirm = useConfirm();
+  const { userRole } = useAuth();
+  const isSuperAdmin = userRole === ROLES.SUPER_ADMIN;
+
+  // API functions dựa trên role
+  const getUsersApi = isSuperAdmin ? getSuperAdminUsersApi : getAdminUsersApi;
+  const deleteUserApi = isSuperAdmin ? deleteSuperAdminUserApi : deleteAdminUserApi;
+  const updateUserStatusApi = isSuperAdmin
+    ? updateSuperAdminUserStatusApi
+    : updateAdminUserStatusApi;
 
   // State cho danh sách users
   const [users, setUsers] = useState([]);
@@ -71,7 +88,7 @@ const AdminUsers = () => {
       if (filters.keyword) params.keyword = filters.keyword;
       if (filters.isActive !== "") params.isActive = filters.isActive === "true";
 
-      const response = await getAdminUsersApi(params);
+      const response = await getUsersApi(params);
 
       if (response.success && response.data) {
         setUsers(response.data.content || []);
@@ -164,7 +181,7 @@ const AdminUsers = () => {
       ),
       onOk: async () => {
         try {
-          const response = await deleteAdminUserApi(user.id);
+          const response = await deleteUserApi(user.id);
           if (response.success) {
             toast.success("Xóa khách hàng thành công");
             fetchUsers();
@@ -185,7 +202,7 @@ const AdminUsers = () => {
     const action = newStatus ? "mở khóa" : "khóa";
 
     try {
-      const response = await updateAdminUserStatusApi(user.id, {
+      const response = await updateUserStatusApi(user.id, {
         isActive: newStatus,
       });
 
@@ -198,6 +215,29 @@ const AdminUsers = () => {
     } catch (error) {
       console.error(`Lỗi khi ${action} tài khoản:`, error);
       toast.error(`Đã xảy ra lỗi khi ${action} tài khoản`);
+    }
+  };
+
+  // Toggle trạng thái bảo vệ (chỉ SUPER_ADMIN)
+  const handleToggleProtected = async (user) => {
+    if (!isSuperAdmin) return;
+    const newProtected = !user.isProtected;
+    try {
+      const result = await toggleUserProtected(user.id, newProtected);
+      if (result.success) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === user.id ? { ...u, isProtected: newProtected } : u))
+        );
+        toast.success(
+          newProtected
+            ? `Đã bật bảo vệ cho "${user.fullName || user.username}"`
+            : `Đã tắt bảo vệ cho "${user.fullName || user.username}"`
+        );
+      } else {
+        toast.error(result.message);
+      }
+    } catch (err) {
+      toast.error("Không thể cập nhật trạng thái bảo vệ");
     }
   };
 
@@ -545,6 +585,13 @@ const AdminUsers = () => {
                           </svg>
                         </span>
                       )}
+                      {user.isProtected && (
+                        <span
+                          className="ml-2 inline-flex items-center px-2 py-0.5 text-sm font-semibold rounded-full bg-purple-100 text-purple-800"
+                          title="Dữ liệu được bảo vệ">
+                          Bảo vệ
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
@@ -648,6 +695,31 @@ const AdminUsers = () => {
                             />
                           </svg>
                         </button>
+
+                        {/* Toggle bảo vệ - chỉ SUPER_ADMIN */}
+                        {isSuperAdmin && (
+                          <button
+                            onClick={() => handleToggleProtected(user)}
+                            className={`p-1 ${
+                              user.isProtected
+                                ? "text-purple-600 hover:text-purple-900"
+                                : "text-gray-400 hover:text-gray-600"
+                            }`}
+                            title={user.isProtected ? "Tắt bảo vệ" : "Bật bảo vệ"}>
+                            <svg
+                              className="w-6 h-6"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                              />
+                            </svg>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

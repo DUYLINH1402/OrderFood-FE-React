@@ -114,14 +114,21 @@ const GuideModal = ({ autoOpen = false }) => {
                     Ngày hết hạn:
                   </strong>{" "}
                   01/27
+                  <Button
+                    size="small"
+                    startIcon={<ContentCopyIcon />}
+                    className="!p-0 !text-md !ml-2 !mb-1 !normal-case !text-[#199b7e] hover:!bg-green-50"
+                    onClick={() => handleCopy("01/27")}>
+                    Copy
+                  </Button>
                 </div>
 
                 <div>
                   <strong className="italic text-[#199b7e] text-md md:text-base">CVV:</strong> 123
                 </div>
                 <div>
-                  <span className="text-red-600 text-sm md:text-md">
-                    Lưu ý: Đây là thông tin thẻ demo để test thanh toán
+                  <span className="text-red-600 text-base md:text-base">
+                    Lưu ý: Đây là thông tin thẻ Demo dùng để test chức năng thanh toán
                   </span>
                 </div>
               </div>
@@ -157,7 +164,13 @@ const GuideModal = ({ autoOpen = false }) => {
                   to="mailto:support@foodorder.com"
                   className="text-[#199b7e] text-md hover:underline font-medium transition-all duration-200">
                   support@foodorder.com
-                </Link>
+                </Link>{" "}
+                <span>hoặc</span>{" "}
+                <Link
+                  to="mailto:support@foodorder.com"
+                  className="text-[#199b7e] text-md hover:underline font-medium transition-all duration-200">
+                  duylinh63b5@gmail.com
+                </Link>{" "}
               </div>
             </div>
           </DialogContent>

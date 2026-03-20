@@ -7,3 +7,4 @@ dist
 *.DS_Store
 *.md
 .github/copilot/instructions.md
+.firebase/hosting.ZGlzdA.cache

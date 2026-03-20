@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "antd";
 import { getAdminUserByIdApi } from "../../../services/api/adminUserApi";
+import { getSuperAdminUserByIdApi } from "../../../services/api/superAdminApi";
+import { useAuth } from "../../../hooks/auth/useAuth";
+import { ROLES } from "../../../utils/roleConfig";
 import { formatRelativeTime } from "../../../utils/formatRelativeTime";
 import { getRoleBadgeColor } from "../util/getRoleBadgeColor";
 
 const UserDetailModal = ({ open, userId, onClose }) => {
+  const { userRole } = useAuth();
+  const getUserByIdApiCall =
+    userRole === ROLES.SUPER_ADMIN ? getSuperAdminUserByIdApi : getAdminUserByIdApi;
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +21,7 @@ const UserDetailModal = ({ open, userId, onClose }) => {
 
       setLoading(true);
       try {
-        const response = await getAdminUserByIdApi(userId);
+        const response = await getUserByIdApiCall(userId);
         if (response.success && response.data) {
           setUser(response.data);
         }

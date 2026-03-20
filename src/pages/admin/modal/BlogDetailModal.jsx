@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { getAdminBlogByIdApi } from "../../../services/api/adminBlogApi";
+import { getSuperAdminBlogByIdApi } from "../../../services/api/superAdminApi";
+import { useAuth } from "../../../hooks/auth/useAuth";
+import { ROLES } from "../../../utils/roleConfig";
 
 // Status config
 const getStatusBadgeConfig = (status) => {
@@ -29,6 +32,9 @@ const formatDate = (dateString) => {
 };
 
 const BlogDetailModal = ({ isOpen, blogId, onClose, onEdit }) => {
+  const { userRole } = useAuth();
+  const getBlogByIdApiCall =
+    userRole === ROLES.SUPER_ADMIN ? getSuperAdminBlogByIdApi : getAdminBlogByIdApi;
   // Animation states
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -46,7 +52,7 @@ const BlogDetailModal = ({ isOpen, blogId, onClose, onEdit }) => {
 
     setLoading(true);
     try {
-      const response = await getAdminBlogByIdApi(blogId);
+      const response = await getBlogByIdApiCall(blogId);
       if (response.success && response.data) {
         setBlog(response.data);
       }

@@ -88,7 +88,16 @@ export const getDefaultRoute = (userRole) => {
  * @returns {boolean}
  */
 export const isAdmin = (userRole) => {
-  return userRole === ROLES.ADMIN;
+  return userRole === ROLES.ADMIN || userRole === ROLES.SUPER_ADMIN;
+};
+
+/**
+ * Kiểm tra có phải super admin hay không
+ * @param {string} userRole - Role của user
+ * @returns {boolean}
+ */
+export const isSuperAdmin = (userRole) => {
+  return userRole === ROLES.SUPER_ADMIN;
 };
 
 /**
@@ -125,6 +134,7 @@ export const isGuest = (userRole) => {
  */
 export const isManagementRole = (userRole) => {
   return isStaff(userRole) || isAdmin(userRole);
+  // isAdmin đã bao gồm SUPER_ADMIN
 };
 
 /**
@@ -138,6 +148,7 @@ export const getRoleLevel = (userRole) => {
     [ROLES.CUSTOMER]: 1,
     [ROLES.STAFF]: 2,
     [ROLES.ADMIN]: 3,
+    [ROLES.SUPER_ADMIN]: 4,
   };
 
   return levels[userRole] || 0;

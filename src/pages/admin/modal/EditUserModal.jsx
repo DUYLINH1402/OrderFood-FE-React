@@ -9,6 +9,12 @@ import {
   MailOutlined,
 } from "@ant-design/icons";
 import { updateAdminUserApi, resetAdminUserPasswordApi } from "../../../services/api/adminUserApi";
+import {
+  updateSuperAdminUserApi,
+  resetSuperAdminUserPasswordApi,
+} from "../../../services/api/superAdminApi";
+import { useAuth } from "../../../hooks/auth/useAuth";
+import { ROLES } from "../../../utils/roleConfig";
 import { toast } from "react-toastify";
 
 const { Option } = Select;
@@ -24,6 +30,12 @@ const EditUserModal = ({ open, user, onClose, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
+  const { userRole } = useAuth();
+  const isSuperAdmin = userRole === ROLES.SUPER_ADMIN;
+  const updateUserApiCall = isSuperAdmin ? updateSuperAdminUserApi : updateAdminUserApi;
+  const resetPasswordApiCall = isSuperAdmin
+    ? resetSuperAdminUserPasswordApi
+    : resetAdminUserPasswordApi;
 
   // Cập nhật form khi user thay đổi
   useEffect(() => {
@@ -66,7 +78,7 @@ const EditUserModal = ({ open, user, onClose, onSuccess }) => {
         isVerified: values.isVerified,
       };
 
-      const response = await updateAdminUserApi(user.id, updateData);
+      const response = await updateUserApiCall(user.id, updateData);
 
       if (response.success) {
         toast.success("Cập nhật thông tin thành công");
@@ -169,7 +181,7 @@ const EditUserModal = ({ open, user, onClose, onSuccess }) => {
                 if (!user?.id) return;
                 setResettingPassword(true);
                 try {
-                  const response = await resetAdminUserPasswordApi(user.id);
+                  const response = await resetPasswordApiCall(user.id);
                   if (response.success) {
                     toast.success("Đã gửi email reset mật khẩu đến người dùng");
                   } else {

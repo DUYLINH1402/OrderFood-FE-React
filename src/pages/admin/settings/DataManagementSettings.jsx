@@ -16,8 +16,16 @@ import {
   initAlgoliaData,
   clearCache,
 } from "../../../services/service/dataManagementService";
+import {
+  superAdminReindexSearchApi,
+  superAdminInitAlgoliaApi,
+} from "../../../services/api/superAdminApi";
+import { useAuth } from "../../../hooks/auth/useAuth";
+import { ROLES } from "../../../utils/roleConfig";
 
 const DataManagementSettings = () => {
+  const { userRole } = useAuth();
+  const isSuperAdmin = userRole === ROLES.SUPER_ADMIN;
   // State cho các action
   const [loadingStates, setLoadingStates] = useState({
     reindex: false,
@@ -46,7 +54,7 @@ const DataManagementSettings = () => {
     setLoading("reindex", true);
     setResult("reindex", null);
     try {
-      const response = await reindexSearchData();
+      const response = await (isSuperAdmin ? superAdminReindexSearchApi() : reindexSearchData());
       setResult("reindex", { success: true, message: response });
       toast.success("Đã bắt đầu reindex dữ liệu tìm kiếm!");
     } catch (error) {
@@ -63,7 +71,7 @@ const DataManagementSettings = () => {
     setLoading("init", true);
     setResult("init", null);
     try {
-      const response = await initAlgoliaData();
+      const response = await (isSuperAdmin ? superAdminInitAlgoliaApi() : initAlgoliaData());
       setResult("init", {
         success: true,
         message: response.message,

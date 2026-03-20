@@ -14,7 +14,7 @@ const HomeRedirect = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated && userRole) {
       // Nếu là staff hoặc admin, chuyển về dashboard của họ
-      if (userRole === ROLES.STAFF || userRole === ROLES.ADMIN) {
+      if (userRole === ROLES.STAFF || userRole === ROLES.ADMIN || userRole === ROLES.SUPER_ADMIN) {
         const roleConfig = ROLE_ROUTES[userRole];
         if (roleConfig?.defaultPath) {
           console.log(`Redirecting ${userRole} to dashboard`);

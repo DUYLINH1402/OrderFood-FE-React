@@ -14,8 +14,8 @@ const CustomerFeedbacksPage = () => {
       setError(null);
       try {
         const data = await getAllFeedbacks();
-        console.log("Feedbacks fetched:", data);
         setFeedbacks(data || []);
+        console.log("Fetched feedbacks:", data);
       } catch (err) {
         setError("Không thể tải đánh giá khách hàng.");
       } finally {

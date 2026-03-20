@@ -8,6 +8,7 @@ import {
   canAccessRoute,
   getDefaultRoute,
   isAdmin,
+  isSuperAdmin,
   isStaff,
   isCustomer,
   isGuest,
@@ -34,6 +35,7 @@ export const useAuth = () => {
     isAuthenticated,
     userRole,
     isAdmin: isAdmin(userRole),
+    isSuperAdmin: isSuperAdmin(userRole),
     isStaff: isStaff(userRole),
     isCustomer: isCustomer(userRole),
     isGuest: isGuest(userRole),
@@ -60,6 +62,7 @@ export const useRole = () => {
   const {
     userRole,
     isAdmin: _isAdmin,
+    isSuperAdmin: _isSuperAdmin,
     isStaff: _isStaff,
     isCustomer: _isCustomer,
     isGuest: _isGuest,
@@ -68,6 +71,7 @@ export const useRole = () => {
   return {
     role: userRole,
     isAdmin: _isAdmin,
+    isSuperAdmin: _isSuperAdmin,
     isStaff: _isStaff,
     isCustomer: _isCustomer,
     isGuest: _isGuest,

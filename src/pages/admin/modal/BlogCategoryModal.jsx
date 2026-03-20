@@ -6,6 +6,15 @@ import {
   updateAdminCategoryApi,
   deleteAdminCategoryApi,
 } from "../../../services/api/adminBlogApi";
+import {
+  getSuperAdminCategoriesApi,
+  createSuperAdminCategoryApi,
+  updateSuperAdminCategoryApi,
+  deleteSuperAdminCategoryApi,
+} from "../../../services/api/superAdminApi";
+import { toggleBlogCategoryProtected } from "../../../services/service/superAdminService";
+import { useAuth } from "../../../hooks/auth/useAuth";
+import { ROLES } from "../../../utils/roleConfig";
 import { useConfirm } from "../../../components/ConfirmModal";
 
 // Hàm tạo slug từ name
@@ -24,6 +33,14 @@ const generateSlug = (text) => {
 
 const BlogCategoryModal = ({ isOpen, onClose }) => {
   const confirm = useConfirm();
+  const { userRole } = useAuth();
+  const isSuperAdmin = userRole === ROLES.SUPER_ADMIN;
+
+  // Chọn API dựa trên role
+  const getCategoriesApiCall = isSuperAdmin ? getSuperAdminCategoriesApi : getAdminCategoriesApi;
+  const createCategoryApiCall = isSuperAdmin ? createSuperAdminCategoryApi : createAdminCategoryApi;
+  const updateCategoryApiCall = isSuperAdmin ? updateSuperAdminCategoryApi : updateAdminCategoryApi;
+  const deleteCategoryApiCall = isSuperAdmin ? deleteSuperAdminCategoryApi : deleteAdminCategoryApi;
 
   // Animation states
   const [isVisible, setIsVisible] = useState(false);
@@ -51,7 +68,7 @@ const BlogCategoryModal = ({ isOpen, onClose }) => {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await getAdminCategoriesApi();
+      const response = await getCategoriesApiCall();
       if (response.success) {
         setCategories(response.data || []);
       } else {
@@ -218,9 +235,9 @@ const BlogCategoryModal = ({ isOpen, onClose }) => {
 
       let response;
       if (editingCategory) {
-        response = await updateAdminCategoryApi(editingCategory.id, payload);
+        response = await updateCategoryApiCall(editingCategory.id, payload);
       } else {
-        response = await createAdminCategoryApi(payload);
+        response = await createCategoryApiCall(payload);
       }
 
       if (response.success) {
@@ -257,7 +274,7 @@ const BlogCategoryModal = ({ isOpen, onClose }) => {
       ),
       onOk: async () => {
         try {
-          const response = await deleteAdminCategoryApi(category.id);
+          const response = await deleteCategoryApiCall(category.id);
           if (response.success) {
             toast.success("Xóa danh mục thành công");
             fetchCategories();
@@ -537,6 +554,11 @@ const BlogCategoryModal = ({ isOpen, onClose }) => {
                                 Ẩn
                               </span>
                             )}
+                            {category.isProtected && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                🛡️ Bảo vệ
+                              </span>
+                            )}
                             <span className="text-sm text-gray-400">#{category.displayOrder}</span>
                           </div>
                           <p className="text-sm text-gray-500 mt-0.5 truncate">
@@ -563,6 +585,44 @@ const BlogCategoryModal = ({ isOpen, onClose }) => {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 ml-4">
+                          {isSuperAdmin && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await toggleBlogCategoryProtected(
+                                    category.id,
+                                    !category.isProtected
+                                  );
+                                  toast.success(
+                                    category.isProtected
+                                      ? "Đã bỏ bảo vệ danh mục"
+                                      : "Đã bảo vệ danh mục"
+                                  );
+                                  fetchCategories();
+                                } catch (error) {
+                                  toast.error("Không thể thay đổi trạng thái bảo vệ");
+                                }
+                              }}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                category.isProtected
+                                  ? "text-purple-600 hover:text-purple-800 hover:bg-purple-50"
+                                  : "text-gray-400 hover:text-purple-600 hover:bg-purple-50"
+                              }`}
+                              title={category.isProtected ? "Bỏ bảo vệ" : "Bảo vệ danh mục"}>
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                                />
+                              </svg>
+                            </button>
+                          )}
                           <button
                             onClick={() => handleOpenEditForm(category)}
                             className="p-1.5 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"

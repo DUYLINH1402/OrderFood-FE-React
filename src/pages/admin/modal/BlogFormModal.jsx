@@ -7,6 +7,13 @@ import {
   updateAdminBlogApi,
   getAdminBlogByIdApi,
 } from "../../../services/api/adminBlogApi";
+import {
+  createSuperAdminBlogApi,
+  updateSuperAdminBlogApi,
+  getSuperAdminBlogByIdApi,
+} from "../../../services/api/superAdminApi";
+import { useAuth } from "../../../hooks/auth/useAuth";
+import { ROLES } from "../../../utils/roleConfig";
 import { BLOG_TYPES } from "../../../constants/blogConstants";
 
 // Status options
@@ -102,6 +109,13 @@ const generateSlug = (text) => {
 
 const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) => {
   const isEditMode = !!blog;
+  const { userRole } = useAuth();
+  const isSuperAdmin = userRole === ROLES.SUPER_ADMIN;
+
+  // Chọn API dựa trên role
+  const createBlogApiCall = isSuperAdmin ? createSuperAdminBlogApi : createAdminBlogApi;
+  const updateBlogApiCall = isSuperAdmin ? updateSuperAdminBlogApi : updateAdminBlogApi;
+  const getBlogByIdApiCall = isSuperAdmin ? getSuperAdminBlogByIdApi : getAdminBlogByIdApi;
 
   // Animation states
   const [isVisible, setIsVisible] = useState(false);
@@ -153,7 +167,7 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
       if (isEditMode && blog?.id) {
         setFetchingBlog(true);
         try {
-          const response = await getAdminBlogByIdApi(blog.id);
+          const response = await getBlogByIdApiCall(blog.id);
           if (response.success && response.data) {
             const data = response.data;
             setFormData({
@@ -417,9 +431,9 @@ const BlogFormModal = ({ isOpen, blog, categories = [], onClose, onSuccess }) =>
 
       let response;
       if (isEditMode) {
-        response = await updateAdminBlogApi(blog.id, payload);
+        response = await updateBlogApiCall(blog.id, payload);
       } else {
-        response = await createAdminBlogApi(payload);
+        response = await createBlogApiCall(payload);
       }
 
       if (response.success) {

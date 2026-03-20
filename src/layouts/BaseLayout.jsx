@@ -36,6 +36,17 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
   // Cấu hình sidebar dựa trên thông tin user và role
   const getThemeByRole = (roleCode) => {
     switch (roleCode) {
+      case "ROLE_SUPER_ADMIN":
+        return {
+          iconColor: "bg-purple-600",
+          activeColors: {
+            text: "text-purple-700",
+            background: "bg-purple-50",
+            border: "border-purple-200",
+            icon: "text-purple-600",
+          },
+        };
+
       case "ROLE_ADMIN":
         return {
           iconColor: "bg-orange-600",
@@ -100,7 +111,10 @@ const BaseLayout = ({ children, title, subtitle, headerGradient }) => {
   };
 
   const handleProfileClick = () => {
-    const profilePath = user?.roleCode === "ROLE_ADMIN" ? "/admin/profile" : "/staff/profile";
+    const profilePath =
+      user?.roleCode === "ROLE_ADMIN" || user?.roleCode === "ROLE_SUPER_ADMIN"
+        ? "/admin/profile"
+        : "/staff/profile";
     navigate(profilePath);
   };
 

@@ -27,6 +27,11 @@ import MediaPressDetailPage from "../pages/MediaPress/MediaPressDetailPage";
 import CateringServicesPage from "../pages/Catering/CateringServicesPage";
 import CateringDetailPage from "../pages/Catering/CateringDetailPage";
 import ContactPage from "../pages/Contact/ContactPage";
+import PrivacyPolicyPage from "../pages/Policy/PrivacyPolicyPage";
+import ShippingPolicyPage from "../pages/Policy/ShippingPolicyPage";
+import ReturnPolicyPage from "../pages/Policy/ReturnPolicyPage";
+import InspectionPolicyPage from "../pages/Policy/InspectionPolicyPage";
+import PaymentPolicyPage from "../pages/Policy/PaymentPolicyPage";
 import Error404Page from "../pages/Error404Page";
 
 export const UserRoutes = [
@@ -88,6 +93,11 @@ export const UserRoutes = [
       { path: "/dai-tiec", element: <CateringServicesPage /> },
       { path: "/dai-tiec/:slug", element: <CateringDetailPage /> },
       { path: "/lien-he", element: <ContactPage /> },
+      { path: "/chinh-sach-bao-mat", element: <PrivacyPolicyPage /> },
+      { path: "/chinh-sach-van-chuyen", element: <ShippingPolicyPage /> },
+      { path: "/chinh-sach-doi-tra", element: <ReturnPolicyPage /> },
+      { path: "/chinh-sach-kiem-hang", element: <InspectionPolicyPage /> },
+      { path: "/chinh-sach-thanh-toan", element: <PaymentPolicyPage /> },
       { path: "*", element: <Error404Page /> },
     ],
   },

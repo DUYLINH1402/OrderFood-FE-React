@@ -2,10 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import { getAllFeedbacks } from "../../services/service/feedbackService";
 import useScrollReveal from "../../hooks/useScrollReveal";
 import Masonry from "react-masonry-css";
+import ImageLightbox from "../../components/ImageLightbox";
 
 const FeedbacksGallery = ({ showViewMoreButton = true, onViewMore }) => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lightboxSrc, setLightboxSrc] = useState(null);
   const [containerRef, isContainerVisible] = useScrollReveal({ threshold: 0.1 });
   const [galleryRef, areItemsVisible] = useScrollReveal({ threshold: 0.15 });
   const [randomHeights, setRandomHeights] = useState([]);
@@ -64,6 +66,16 @@ const FeedbacksGallery = ({ showViewMoreButton = true, onViewMore }) => {
     640: 1,
   };
 
+  // Mảng màu border xoay vòng (đồng bộ với FeedbackItem)
+  const borderColors = [
+    { border: "border-pink-400", shadow: "shadow-pink-300", dot: "bg-pink-400" },
+    { border: "border-violet-400", shadow: "shadow-violet-300", dot: "bg-violet-400" },
+    { border: "border-sky-400", shadow: "shadow-sky-300", dot: "bg-sky-400" },
+    { border: "border-emerald-400", shadow: "shadow-emerald-300", dot: "bg-emerald-400" },
+    { border: "border-amber-400", shadow: "shadow-amber-300", dot: "bg-amber-400" },
+    { border: "border-rose-400", shadow: "shadow-rose-300", dot: "bg-rose-400" },
+  ];
+
   return (
     <div
       ref={containerRef}
@@ -76,16 +88,30 @@ const FeedbacksGallery = ({ showViewMoreButton = true, onViewMore }) => {
           className="masonry-grid"
           columnClassName="masonry-grid_column">
           {displayedFeedbacks.map((fb, idx) => {
+            const color = borderColors[idx % borderColors.length];
+
             return (
               <div
                 key={fb.id || idx}
-                className={`gallery-reveal mb-4 rounded-xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 ${
-                  areItemsVisible ? "is-visible" : "is-hidden"
-                }`}
+                className={`gallery-reveal mb-4 rounded-xl overflow-hidden bg-white
+                  border-2 ${color.border} ${color.shadow}
+                  shadow-[0_6px_20px_0]
+                  hover:shadow-[0_8px_32px_0]
+                  transition-all duration-300 cursor-zoom-in
+                  transform hover:-translate-y-1 hover:scale-[1.005]
+                  relative
+                  ${areItemsVisible ? "is-visible" : "is-hidden"}
+                `}
                 style={{
                   height: `${randomHeights[idx] || 300}px`,
                   aspectRatio: "auto",
-                }}>
+                }}
+                onClick={() => setLightboxSrc(fb.mediaUrl)}>
+                {/* Góc trang trí top-left */}
+                <span
+                  className={`absolute top-0 left-0 w-5 h-5 rounded-br-xl rounded-tl-xl z-10 opacity-70 ${color.dot}`}
+                />
+
                 <img
                   src={fb.mediaUrl}
                   alt={fb.customerName || "Feedback image"}
@@ -107,6 +133,15 @@ const FeedbacksGallery = ({ showViewMoreButton = true, onViewMore }) => {
             Xem thêm ({imageFeedbacks.length - 9} ảnh)
           </button>
         </div>
+      )}
+
+      {/* Lightbox hiển thị ảnh full */}
+      {lightboxSrc && (
+        <ImageLightbox
+          src={lightboxSrc}
+          alt="Đánh giá khách hàng"
+          onClose={() => setLightboxSrc(null)}
+        />
       )}
     </div>
   );

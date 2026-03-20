@@ -18,10 +18,27 @@ const Footer = () => {
           <div className="mt-[40px]">
             <h4>CHÍNH SÁCH</h4>
             <div className="footer__underline" />
-            <p>
-              Chính sách bảo mật | Chính sách vận chuyển | Chính sách đổi trả | Chính sách kiểm hàng
-              | Chính sách thanh toán
-            </p>
+            <div className="footer__policy-links">
+              <a href="/chinh-sach-bao-mat" target="_blank" rel="noopener noreferrer">
+                Chính sách bảo mật
+              </a>
+              <span className="footer__policy-divider">|</span>
+              <a href="/chinh-sach-van-chuyen" target="_blank" rel="noopener noreferrer">
+                Chính sách vận chuyển
+              </a>
+              <span className="footer__policy-divider">|</span>
+              <a href="/chinh-sach-doi-tra" target="_blank" rel="noopener noreferrer">
+                Chính sách đổi trả
+              </a>
+              <span className="footer__policy-divider">|</span>
+              <a href="/chinh-sach-kiem-hang" target="_blank" rel="noopener noreferrer">
+                Chính sách kiểm hàng
+              </a>
+              <span className="footer__policy-divider">|</span>
+              <a href="/chinh-sach-thanh-toan" target="_blank" rel="noopener noreferrer">
+                Chính sách thanh toán
+              </a>
+            </div>
           </div>
         </div>
 

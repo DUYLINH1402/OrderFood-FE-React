@@ -129,7 +129,13 @@ apiClient.interceptors.response.use(
     }
     // Xử lý lỗi 403 Forbidden - Không có quyền truy cập (KHÔNG logout)
     else if (response?.status === 403) {
+      const errorCode = response.data?.errorCode;
       const errorMessage = response.data?.message || "Bạn không có quyền thực hiện hành động này";
+
+      // Đánh dấu lỗi protected data để các service/component có thể xử lý
+      if (errorCode === "PROTECTED_DATA_ACCESS_DENIED") {
+        error.isProtectedDataError = true;
+      }
 
       console.warn("Access forbidden:", errorMessage);
     } else if (response?.status >= 500) {

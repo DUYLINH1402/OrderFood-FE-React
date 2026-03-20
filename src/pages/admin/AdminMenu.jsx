@@ -17,6 +17,15 @@ import {
   invalidateStatsCache,
   updateFoodStatus,
 } from "../../services/service/adminFoodService";
+import {
+  getSuperAdminFoodsApi,
+  createSuperAdminFoodApi,
+  updateSuperAdminFoodApi,
+  deleteSuperAdminFoodApi,
+  uploadSuperAdminFoodImageApi,
+  updateSuperAdminFoodStatusApi,
+} from "../../services/api/superAdminApi";
+import { toggleFoodProtected } from "../../services/service/superAdminService";
 import FoodFormModal from "./modal/FoodFormModal";
 import DeleteFoodModal from "./modal/DeleteFoodModal";
 import FoodDetailModal from "../staff/modal/FoodDetailModal";
@@ -42,6 +51,8 @@ import {
   FiPlus,
   FiEdit2,
   FiTrash2,
+  FiShield,
+  FiShieldOff,
 } from "react-icons/fi";
 
 // Tab definitions
@@ -105,8 +116,9 @@ const AdminMenu = () => {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Kiểm tra quyền ROLE_ADMIN
-  const isAdmin = userRole === ROLES.ADMIN;
+  // Kiểm tra quyền ROLE_ADMIN hoặc ROLE_SUPER_ADMIN
+  const isAdmin = userRole === ROLES.ADMIN || userRole === ROLES.SUPER_ADMIN;
+  const isSuperAdmin = userRole === ROLES.SUPER_ADMIN;
 
   // Danh sách các category slug "ảo" (virtual) - không filter được bằng categoryId
   const VIRTUAL_CATEGORY_SLUGS = ["best-seller", "combo-khuyen-mai"];
@@ -180,6 +192,19 @@ const AdminMenu = () => {
     [categories]
   );
 
+  // API functions dựa trên role (SUPER_ADMIN dùng endpoint riêng)
+  const foodApiFn = useMemo(
+    () => ({
+      getFoods: isSuperAdmin ? getSuperAdminFoodsApi : getAdminFoods,
+      create: isSuperAdmin ? createSuperAdminFoodApi : createFood,
+      update: isSuperAdmin ? updateSuperAdminFoodApi : updateFood,
+      remove: isSuperAdmin ? deleteSuperAdminFoodApi : deleteFood,
+      upload: isSuperAdmin ? uploadSuperAdminFoodImageApi : uploadFoodImage,
+      updateStatus: isSuperAdmin ? updateSuperAdminFoodStatusApi : updateFoodStatus,
+    }),
+    [isSuperAdmin]
+  );
+
   // Fetch foods với server-side pagination và filter
   const fetchFoods = useCallback(
     async (page = 1, size = pageSize, filters = {}) => {
@@ -192,7 +217,7 @@ const AdminMenu = () => {
         if (categoryIds.length > 1) {
           // Gọi song song API cho tất cả categoryIds
           const promises = categoryIds.map((catId) =>
-            getAdminFoods({
+            foodApiFn.getFoods({
               page: 0,
               size: 1000,
               name: filters.name || "",
@@ -228,7 +253,7 @@ const AdminMenu = () => {
         } else {
           const singleCategoryId = categoryIds.length === 1 ? categoryIds[0] : "ALL";
 
-          const response = await getAdminFoods({
+          const response = await foodApiFn.getFoods({
             page: apiPage,
             size,
             name: filters.name || "",
@@ -253,7 +278,7 @@ const AdminMenu = () => {
         setFoodsLoading(false);
       }
     },
-    [pageSize]
+    [pageSize, foodApiFn]
   );
 
   // Fetch stats bất đồng bộ
@@ -431,7 +456,7 @@ const AdminMenu = () => {
       // Upload image if new image is selected
       if (formData.image) {
         try {
-          const uploadResponse = await uploadFoodImage(formData.image);
+          const uploadResponse = await foodApiFn.upload(formData.image);
           if (uploadResponse?.url) {
             imageUrl = uploadResponse.url;
           }
@@ -456,7 +481,7 @@ const AdminMenu = () => {
 
       if (selectedFood) {
         // Update
-        await updateFood(selectedFood.id, foodData);
+        await foodApiFn.update(selectedFood.id, foodData);
         toast.success("Cập nhật món ăn thành công");
         // Update local state
         setFoods((prev) =>
@@ -464,7 +489,7 @@ const AdminMenu = () => {
         );
       } else {
         // Create
-        const newFood = await createFood(foodData);
+        const newFood = await foodApiFn.create(foodData);
         toast.success("Thêm món ăn thành công");
         // Refresh list
         const categoryIds = getCategoryIdsFromSelection(selectedCategory);
@@ -492,7 +517,7 @@ const AdminMenu = () => {
   const handleDeleteConfirm = async (foodId) => {
     try {
       setDeleteLoading(true);
-      await deleteFood(foodId);
+      await foodApiFn.remove(foodId);
       toast.success("Xóa món ăn thành công");
 
       // Remove from local state
@@ -517,7 +542,7 @@ const AdminMenu = () => {
   const handleToggleStatus = async (food) => {
     const newStatus = food.status === "AVAILABLE" ? "UNAVAILABLE" : "AVAILABLE";
     try {
-      await updateFoodStatus(food.id, { status: newStatus });
+      await foodApiFn.updateStatus(food.id, { status: newStatus });
 
       // Update local state
       setFoods((prev) => prev.map((f) => (f.id === food.id ? { ...f, status: newStatus } : f)));
@@ -538,7 +563,27 @@ const AdminMenu = () => {
       toast.success(`Đã cập nhật món thành "${statusLabels[newStatus]}"`);
     } catch (err) {
       console.error("Error updating status:", err);
-      toast.error("Không thể cập nhật trạng thái");
+    }
+  };
+
+  // Toggle trạng thái bảo vệ (chỉ SUPER_ADMIN)
+  const handleToggleProtected = async (food) => {
+    if (!isSuperAdmin) return;
+    const newProtected = !food.isProtected;
+    try {
+      const result = await toggleFoodProtected(food.id, newProtected);
+      if (result.success) {
+        setFoods((prev) =>
+          prev.map((f) => (f.id === food.id ? { ...f, isProtected: newProtected } : f))
+        );
+        toast.success(
+          newProtected ? `Đã bật bảo vệ cho "${food.name}"` : `Đã tắt bảo vệ cho "${food.name}"`
+        );
+      } else {
+        toast.error(result.message);
+      }
+    } catch (err) {
+      toast.error("Không thể cập nhật trạng thái bảo vệ");
     }
   };
 
@@ -631,6 +676,16 @@ const AdminMenu = () => {
               )}
             </div>
           )}
+          {/* Protected badge */}
+          {food.isProtected && (
+            <div className="absolute bottom-2 left-1">
+              <span
+                className="inline-flex items-center px-1 py-0.5 text-sx font-semibold rounded-full bg-purple-100 text-purple-900 cursor-help"
+                title="Dữ liệu mẫu">
+                <FiShield className="w-5 h-5 mr-0.5" />
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -705,6 +760,22 @@ const AdminMenu = () => {
               className="px-2 tablet:px-3 py-1.5 tablet:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sx tablet:text-sm font-medium transition-colors flex items-center justify-center">
               <FiTrash2 className="w-6 h-6" />
             </button>
+            {isSuperAdmin && (
+              <button
+                onClick={() => handleToggleProtected(food)}
+                className={`px-2 tablet:px-3 py-1.5 tablet:py-2 rounded-lg text-sx tablet:text-sm font-medium transition-colors flex items-center justify-center ${
+                  food.isProtected
+                    ? "bg-purple-500 text-white hover:bg-purple-600"
+                    : "bg-gray-200 text-gray-600 hover:bg-purple-100 hover:text-purple-600"
+                }`}
+                title={food.isProtected ? "Bỏ bảo vệ" : "Bảo vệ món ăn"}>
+                {food.isProtected ? (
+                  <FiShield className="w-6 h-6" />
+                ) : (
+                  <FiShieldOff className="w-6 h-6" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -754,11 +825,19 @@ const AdminMenu = () => {
                 </span>
               </div>
             </div>
-            <span
-              className={`inline-flex items-center px-2 tablet:px-2.5 py-0.5 tablet:py-1 text-sx tablet:text-sm font-semibold rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
-              <StatusIcon className="w-5 h-5 tablet:w-5 tablet:h-5 mr-0.5 tablet:mr-1" />
-              {statusConfig.label}
-            </span>
+            <div className="flex items-center gap-1.5">
+              {food.isProtected && (
+                <span className="inline-flex items-center px-2 py-0.5 text-sx font-semibold rounded-full bg-purple-100 text-purple-800">
+                  <FiShield className="w-4 h-4 mr-0.5" />
+                  Bảo vệ
+                </span>
+              )}
+              <span
+                className={`inline-flex items-center px-2 tablet:px-2.5 py-0.5 tablet:py-1 text-sx tablet:text-sm font-semibold rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
+                <StatusIcon className="w-5 h-5 tablet:w-5 tablet:h-5 mr-0.5 tablet:mr-1" />
+                {statusConfig.label}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center justify-between gap-4 mb-4">
@@ -814,6 +893,22 @@ const AdminMenu = () => {
                 className="px-2 tablet:px-3 py-1 tablet:py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sx tablet:text-sm font-medium transition-colors flex items-center">
                 <FiTrash2 className="w-6 h-6 " />
               </button>
+              {isSuperAdmin && (
+                <button
+                  onClick={() => handleToggleProtected(food)}
+                  className={`px-2 tablet:px-3 py-1 tablet:py-1.5 rounded-lg text-sx tablet:text-sm font-medium transition-colors flex items-center ${
+                    food.isProtected
+                      ? "bg-purple-500 text-white hover:bg-purple-600"
+                      : "bg-gray-200 text-gray-600 hover:bg-purple-100 hover:text-purple-600"
+                  }`}
+                  title={food.isProtected ? "Bỏ bảo vệ" : "Bảo vệ món ăn"}>
+                  {food.isProtected ? (
+                    <FiShield className="w-6 h-6" />
+                  ) : (
+                    <FiShieldOff className="w-6 h-6" />
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
