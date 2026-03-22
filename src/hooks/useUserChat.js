@@ -33,6 +33,8 @@ export const useUserChat = () => {
 
   // Ref để tránh duplicate subscriptions
   const handlersRef = useRef({});
+  // Ref theo dõi trạng thái kết nối trước đó để phát hiện reconnect
+  const prevConnectedRef = useRef(false);
   /**
    * Load lịch sử chat từ API (trang đầu tiên)
    */
@@ -293,6 +295,19 @@ export const useUserChat = () => {
   }, []);
 
   /**
+   * Refresh số lượng tin nhắn chưa đọc từ server
+   */
+  const refreshUnreadCount = useCallback(async () => {
+    if (!userId || !token) return;
+    try {
+      const unread = await chatService.getUnreadCount();
+      setUnreadCount(unread);
+    } catch (err) {
+      console.error("[useUserChat] Lỗi khi refresh unread count:", err);
+    }
+  }, [userId, token]);
+
+  /**
    * Parse timestamp từ nhiều định dạng khác nhau thành Date object
    */
   const parseTimestamp = useCallback((timestamp) => {
@@ -484,17 +499,24 @@ export const useUserChat = () => {
   }, [userId, token, loadChatHistory]);
 
   /**
-   * Theo dõi trạng thái kết nối WebSocket
+   * Theo dõi trạng thái kết nối WebSocket + phát hiện reconnect
    */
   useEffect(() => {
     const checkConnection = () => {
-      setIsConnected(userWebSocketClient.isConnected());
+      const currentlyConnected = userWebSocketClient.isConnected();
+      setIsConnected(currentlyConnected);
+
+      // Phát hiện reconnect (false → true): refresh unread count từ server
+      if (currentlyConnected && !prevConnectedRef.current) {
+        refreshUnreadCount();
+      }
+      prevConnectedRef.current = currentlyConnected;
     };
 
     const interval = setInterval(checkConnection, 5000); // Kiểm tra mỗi 5 giây
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshUnreadCount]);
 
   return {
     // State
@@ -510,6 +532,7 @@ export const useUserChat = () => {
     sendMessage,
     markAsRead,
     markAllAsRead,
+    refreshUnreadCount,
     loadChatHistory,
     loadMoreMessages,
 

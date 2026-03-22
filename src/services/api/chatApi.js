@@ -143,6 +143,79 @@ export const chatApi = {
   // ========== STAFF APIs ==========
 
   /**
+   * Đánh dấu tin nhắn đã đọc (dùng cho STAFF - endpoint staff)
+   * @param {string} messageId - ID của tin nhắn cần đánh dấu đã đọc
+   * @returns {Promise} Promise xác nhận đã đánh dấu tin nhắn
+   */
+  markMessageAsReadForStaff: async (messageId) => {
+    try {
+      const response = await apiClient.put(`/api/v1/staff/chat/mark-read/${messageId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi đánh dấu tin nhắn ${messageId} đã đọc (staff):`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Đánh dấu nhiều tin nhắn đã đọc cùng lúc - dùng cho STAFF
+   * @param {string[]} messageIds - Mảng ID của các tin nhắn cần đánh dấu
+   * @returns {Promise} Promise xác nhận đã đánh dấu tin nhắn
+   */
+  markMessagesAsReadBatchForStaff: async (messageIds) => {
+    try {
+      if (!messageIds || messageIds.length === 0) {
+        return { success: true, markedCount: 0 };
+      }
+
+      const validIds = messageIds.filter((id) => id && !id.toString().startsWith("msg_"));
+
+      if (validIds.length === 0) {
+        return { success: true, markedCount: 0 };
+      }
+
+      const markReadPromises = validIds.map((messageId) =>
+        chatApi.markMessageAsReadForStaff(messageId).catch((err) => {
+          console.warn(`Không thể đánh dấu tin nhắn ${messageId} (staff):`, err);
+          return null;
+        })
+      );
+
+      await Promise.all(markReadPromises);
+      return { success: true, markedCount: validIds.length };
+    } catch (error) {
+      console.error("Lỗi khi đánh dấu batch tin nhắn đã đọc (staff):", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Đánh dấu tất cả tin nhắn của một user đã đọc (cho STAFF - endpoint staff)
+   * @param {number} userId - ID của user
+   * @returns {Promise} Promise xác nhận đã đánh dấu tin nhắn
+   */
+  markUserMessagesAsReadForStaff: async (userId) => {
+    try {
+      const data = await chatApi.getUserMessages(userId, 0, 100);
+
+      if (data.messages && data.messages.length > 0) {
+        const unreadMessageIds = data.messages
+          .filter((msg) => !msg.isRead && msg.messageType === "USER_TO_STAFF")
+          .map((msg) => msg.messageId || msg.id);
+
+        if (unreadMessageIds.length > 0) {
+          return await chatApi.markMessagesAsReadBatchForStaff(unreadMessageIds);
+        }
+      }
+
+      return { success: true, markedCount: 0 };
+    } catch (error) {
+      console.error(`Lỗi khi đánh dấu tin nhắn user ${userId} đã đọc (staff):`, error);
+      throw error;
+    }
+  },
+
+  /**
    * Lấy tất cả tin nhắn từ user gửi cho staff (cho STAFF/ADMIN)
    * @param {number} page - Trang cần tải
    * @param {number} size - Số lượng tin nhắn mỗi trang

@@ -362,12 +362,6 @@ const OrdersTab = () => {
                               <FontAwesomeIcon icon={faCalendarAlt} className="w-6 h-6" />
                               <span>{formatDate(order.createdAt || order.date)}</span>
                             </div>
-                            {order.receiverName && (
-                              <div className="flex items-center gap-1">
-                                <FontAwesomeIcon icon={faPhone} className="w-6 h-6" />
-                                <span>{order.receiverName}</span>
-                              </div>
-                            )}
                           </div>
                         </div>
                       </div>

@@ -18,7 +18,7 @@ const SupportFloating = () => {
   }
 
   // Lấy unread count và markAllAsRead từ useUserChat hook
-  const { unreadCount, markAllAsRead } = useUserChat();
+  const { unreadCount, markAllAsRead, refreshUnreadCount } = useUserChat();
 
   // State để quản lý hiển thị Chatbot
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -29,6 +29,18 @@ const SupportFloating = () => {
   // Refs để theo dõi các element
   const chatbotWrapperRef = useRef(null);
   const staffChatWrapperRef = useRef(null);
+
+  // Ref theo dõi trạng thái trước đó của staff chat để phát hiện đóng
+  const prevStaffChatOpenRef = useRef(false);
+
+  // Khi staff chat đóng → đồng bộ lại unread count từ server
+  // (StaffChat instance khác có thể đã markAsRead rồi)
+  useEffect(() => {
+    if (prevStaffChatOpenRef.current && !isStaffChatOpen) {
+      refreshUnreadCount();
+    }
+    prevStaffChatOpenRef.current = isStaffChatOpen;
+  }, [isStaffChatOpen, refreshUnreadCount]);
 
   // State để theo dõi click cuối cùng cho double-click detection
   const [lastChatbotClickTime, setLastChatbotClickTime] = useState(0);

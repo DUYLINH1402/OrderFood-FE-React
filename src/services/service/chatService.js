@@ -89,11 +89,16 @@ export const chatService = {
     try {
       const response = await chatApi.getUnreadMessages();
 
-      // Xử lý tương tự như getChatHistory
+      // Xử lý response từ backend: { unreadMessages: [...], count: N }
       let messages = [];
 
-      if (response?.messages && Array.isArray(response.messages)) {
+      if (response?.unreadMessages && Array.isArray(response.unreadMessages)) {
+        // Response chính từ backend (/api/v1/client/chat/unread)
+        messages = response.unreadMessages;
+      } else if (response?.messages && Array.isArray(response.messages)) {
         messages = response.messages;
+      } else if (response?.data?.unreadMessages && Array.isArray(response.data.unreadMessages)) {
+        messages = response.data.unreadMessages;
       } else if (response?.data?.messages && Array.isArray(response.data.messages)) {
         messages = response.data.messages;
       } else if (Array.isArray(response?.data)) {

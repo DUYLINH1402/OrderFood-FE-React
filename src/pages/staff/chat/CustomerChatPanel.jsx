@@ -66,6 +66,23 @@ const CustomerChatPanel = ({
   const isLoadingMoreRef = useRef(false); // Flag để biết đang load thêm tin cũ (không scroll)
   const isInitialScrollRef = useRef(false); // Flag để ngăn load more khi đang scroll xuống bottom lần đầu
 
+  // Refs để tránh stale closure trong WebSocket handlers
+  const activeCustomerIdRef = useRef(activeCustomerId);
+  const onUnreadCountChangeRef = useRef(onUnreadCountChange);
+  const conversationsRef = useRef(conversations);
+  const processedMessageIdsRef = useRef(new Set()); // Dedup tin nhắn từ nhiều channel WebSocket
+
+  // Sync refs với state mới nhất (tránh stale closure trong WebSocket handlers)
+  useEffect(() => {
+    activeCustomerIdRef.current = activeCustomerId;
+  }, [activeCustomerId]);
+  useEffect(() => {
+    onUnreadCountChangeRef.current = onUnreadCountChange;
+  }, [onUnreadCountChange]);
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
+
   // Detect mobile screen size
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -411,8 +428,8 @@ const CustomerChatPanel = ({
               .filter((id) => id && !id.toString().startsWith("msg_"));
 
             if (unreadMessageIds.length > 0) {
-              // Sử dụng batch API để đánh dấu tất cả cùng lúc
-              const result = await chatApi.markMessagesAsReadBatch(unreadMessageIds);
+              // Sử dụng batch API staff endpoint để đánh dấu tất cả cùng lúc
+              const result = await chatApi.markMessagesAsReadBatchForStaff(unreadMessageIds);
 
               // Cập nhật flag isRead trong local state
               unreadMessages.forEach((msg) => {
@@ -546,8 +563,8 @@ const CustomerChatPanel = ({
 
     if (unreadMessageIds.length > 0) {
       try {
-        // Gọi batch API để đánh dấu tất cả đã đọc
-        const result = await chatApi.markMessagesAsReadBatch(unreadMessageIds);
+        // Gọi batch API staff endpoint để đánh dấu tất cả đã đọc
+        const result = await chatApi.markMessagesAsReadBatchForStaff(unreadMessageIds);
 
         // Cập nhật flag isRead trong local state
         setCustomerChats((prev) => {
@@ -659,6 +676,17 @@ const CustomerChatPanel = ({
   const syncAllConversationsReadStatus = async () => {
     try {
       if (conversations.length === 0) return;
+
+      // Nếu đang xem một conversation → mark-as-read trên server trước khi sync
+      const currentActive = activeCustomerIdRef.current;
+      if (currentActive) {
+        try {
+          await chatApi.markUserMessagesAsReadForStaff(currentActive);
+        } catch (err) {
+          console.error("Lỗi khi mark-as-read trước sync:", err);
+        }
+      }
+
       const userIds = conversations.map((conv) => conv.userId).filter(Boolean);
 
       if (userIds.length === 0) return;
@@ -673,16 +701,19 @@ const CustomerChatPanel = ({
         const updated = prev.map((conv) => {
           const readStatus = readStatusResults.find((r) => r.userId === conv.userId);
           if (readStatus) {
-            // LUÔN dùng unreadMessages từ server (source of truth)
-            // Server đã đánh dấu đã đọc thì unreadMessages = 0
             const serverUnreadCount = readStatus.unreadMessages || 0;
-            totalUnreadAfterSync += serverUnreadCount;
+
+            // Conversation đang active → luôn set unread = 0
+            // (server có thể chưa kịp cập nhật do race condition)
+            const isActive = String(conv.userId) === String(currentActive);
+            const finalUnread = isActive ? 0 : serverUnreadCount;
+            totalUnreadAfterSync += finalUnread;
 
             return {
               ...conv,
-              unreadCount: serverUnreadCount,
-              allMessagesRead: readStatus.allMessagesRead,
-              hasUnreadMessages: readStatus.hasUnreadMessages,
+              unreadCount: finalUnread,
+              allMessagesRead: isActive ? true : readStatus.allMessagesRead,
+              hasUnreadMessages: isActive ? false : readStatus.hasUnreadMessages,
             };
           }
           return conv;
@@ -704,18 +735,21 @@ const CustomerChatPanel = ({
     try {
       const readStatus = await chatApi.getUserReadStatus(userId);
 
-      // Cập nhật conversation cụ thể - LUÔN dùng unreadCount từ server
+      // Nếu user này đang được staff xem → unread luôn = 0
+      const isActive = String(userId) === String(activeCustomerIdRef.current);
+
+      // Cập nhật conversation cụ thể
       setConversations((prev) => {
         const updated = prev.map((conv) => {
           if (conv.userId === userId) {
-            // Server là source of truth cho unread count
             const serverUnreadCount = readStatus.unreadMessages || 0;
+            const finalUnread = isActive ? 0 : serverUnreadCount;
 
             return {
               ...conv,
-              unreadCount: serverUnreadCount,
-              allMessagesRead: readStatus.allMessagesRead,
-              hasUnreadMessages: readStatus.hasUnreadMessages,
+              unreadCount: finalUnread,
+              allMessagesRead: isActive ? true : readStatus.allMessagesRead,
+              hasUnreadMessages: isActive ? false : readStatus.hasUnreadMessages,
             };
           }
           return conv;
@@ -750,7 +784,17 @@ const CustomerChatPanel = ({
     try {
       setLoading(true);
 
-      // Lấy tổng unread count chính xác từ server
+      // Trước khi refresh: nếu đang xem conversation, đánh dấu đã đọc trên server trước
+      const previousActiveCustomer = activeCustomerId;
+      if (previousActiveCustomer) {
+        try {
+          await chatApi.markUserMessagesAsReadForStaff(previousActiveCustomer);
+        } catch (err) {
+          console.error("Lỗi khi mark-as-read trước refresh:", err);
+        }
+      }
+
+      // Lấy tổng unread count chính xác từ server (sau khi đã mark-as-read)
       const totalUnreadFromServer = await chatApi.getStaffUnreadCount();
 
       // Lấy danh sách conversations MỚI từ API (đã bao gồm unread count chính xác)
@@ -848,12 +892,12 @@ const CustomerChatPanel = ({
       // Xử lý các loại tin nhắn khác nhau từ WebSocket
       let customerId, customerName, messageText, messageType;
 
-      if (messageData.type === "USER_CHAT") {
+      if (messageData.type === "USER_CHAT" || messageData.type === "USER_CHAT_REALTIME") {
         // Tin nhắn từ user chat
         customerId = messageData.userId || messageData.userPhone;
         customerName = messageData.userName || messageData.userPhone || `Khách hàng ${customerId}`;
         messageText = messageData.message;
-        messageType = "USER_CHAT";
+        messageType = messageData.type;
       } else if (messageData.userPhone || messageData.userId) {
         // Tin nhắn trực tiếp
         customerId = messageData.userId || messageData.userPhone || messageData.customerId;
@@ -871,38 +915,45 @@ const CustomerChatPanel = ({
         return;
       }
 
+      // Dedup: tin nhắn có thể đến từ cả 2 channel WebSocket (/topic/staff-chat và /user/queue/chat-messages)
+      const messageId = messageData.messageId || messageData.id;
+      const dedupKey = messageId
+        ? String(messageId)
+        : `${customerId}_${messageText}_${messageData.timestamp || ""}`;
+      if (processedMessageIdsRef.current.has(dedupKey)) {
+        return; // Đã xử lý rồi, bỏ qua
+      }
+      processedMessageIdsRef.current.add(dedupKey);
+      // Giữ Set không quá lớn - xóa entry cũ sau 30 giây
+      setTimeout(() => processedMessageIdsRef.current.delete(dedupKey), 30000);
+
+      // Đọc activeCustomerId từ ref (luôn là giá trị mới nhất, tránh stale closure)
+      const currentActiveCustomerId = activeCustomerIdRef.current;
+      const isActiveConversation = String(currentActiveCustomerId) === String(customerId);
+
       // Xử lý thông tin reply nếu có
       let replyTo = null;
       if (messageData.replyToMessageId || messageData.replyContext) {
         replyTo = {
           id: messageData.replyToMessageId,
           text: messageData.replyContext?.originalText || "Tin nhắn đã bị xóa",
-          sender: "staff", // Tin nhắn gốc từ staff
+          sender: "staff",
           senderName: messageData.replyContext?.originalSender || "Nhân viên",
           timestamp: messageData.replyContext?.originalTimestamp,
         };
-        console.log("🔄 Tin nhắn user reply cho:", replyTo);
       }
 
       const newMessage = {
-        id: messageData.messageId || messageData.id || `msg_${Date.now()}_${Math.random()}`,
+        id: messageId || `msg_${Date.now()}_${Math.random()}`,
         text: messageText,
-        sender: "user", // Thống nhất với formatMessageForDisplay() - dùng "user" thay vì "customer"
+        sender: "user",
         timestamp: new Date(messageData.timestamp || Date.now()),
         customerName,
         messageType,
-        isRead: false, // Mặc định chưa đọc
-        replyTo: replyTo, // Thêm thông tin reply
+        // Giữ isRead: false để markAllMessagesAsReadForActiveCustomer có thể sync server
+        isRead: false,
+        replyTo: replyTo,
       };
-
-      console.log(
-        "📩 Nhận tin nhắn mới từ:",
-        customerName,
-        "ID:",
-        newMessage.id,
-        "Active:",
-        activeCustomerId === customerId
-      );
 
       setCustomerChats((prev) => {
         const newChats = new Map(prev);
@@ -914,13 +965,20 @@ const CustomerChatPanel = ({
           lastMessageTime: new Date(),
         };
 
+        // Kiểm tra duplicate trong messages hiện tại
+        const isDuplicate = existingChat.messages.some((msg) => msg.id === newMessage.id);
+        if (isDuplicate) {
+          return prev; // Không thay đổi state nếu tin nhắn đã tồn tại
+        }
+
         // Thêm tin nhắn mới
-        existingChat.messages.push(newMessage);
+        existingChat.messages = [...existingChat.messages, newMessage];
         existingChat.lastMessageTime = newMessage.timestamp;
 
-        // LUÔN LUÔN tăng unread count khi nhận tin nhắn mới
-        // CHỈ reset về 0 khi Staff click vào conversation
-        existingChat.unreadCount += 1;
+        // Chỉ tăng unread count khi Staff KHÔNG đang xem conversation này
+        if (!isActiveConversation) {
+          existingChat.unreadCount += 1;
+        }
         newChats.set(customerId, existingChat);
 
         return newChats;
@@ -930,17 +988,16 @@ const CustomerChatPanel = ({
       setConversations((prev) => {
         const updatedConversations = prev.map((conv) => {
           if (conv.userId === customerId) {
-            // LUÔN tăng unread count từ WebSocket real-time
-            const newUnreadCount = (conv.unreadCount || 0) + 1;
             return {
               ...conv,
-              unreadCount: newUnreadCount,
+              // Chỉ tăng unread khi Staff KHÔNG đang xem conversation này
+              unreadCount: isActiveConversation ? 0 : (conv.unreadCount || 0) + 1,
               lastMessageTime: newMessage.timestamp,
               lastMessage: {
                 content: messageText,
                 timestamp: newMessage.timestamp,
               },
-              isTemporary: false, // Đây là real WebSocket data
+              isTemporary: false,
             };
           }
           return conv;
@@ -949,57 +1006,80 @@ const CustomerChatPanel = ({
         // Nếu customer chưa có trong conversations, thêm mới
         const existingConv = prev.find((c) => c.userId === customerId);
         if (!existingConv) {
-          const newUnreadCount = 1; // Tin nhắn mới đầu tiên = 1 unread
           updatedConversations.push({
             userId: customerId,
             user: { name: customerName },
-            unreadCount: newUnreadCount,
+            unreadCount: isActiveConversation ? 0 : 1,
             lastMessageTime: newMessage.timestamp,
             lastMessage: {
               content: messageText,
               timestamp: newMessage.timestamp,
             },
-            isTemporary: false, // Real WebSocket data
+            isTemporary: false,
           });
         }
 
         return updatedConversations;
       });
 
-      // Cập nhật Badge count bằng cách re-fetch từ server (đảm bảo chính xác)
-      if (onUnreadCountChange) {
-        // Thay vì tính toán local, re-fetch từ server để đảm bảo chính xác
-        setTimeout(async () => {
-          try {
-            const serverCount = await chatApi.getStaffUnreadCount();
-            onUnreadCountChange(serverCount);
-            await syncUserReadStatus(customerId);
-          } catch (error) {
-            console.error("Lỗi khi re-fetch server count:", error);
-            // Fallback: tính toán local
-            const localTotal = conversations.reduce((total, conv) => {
-              if (conv.userId === customerId) {
-                return total + ((conv.unreadCount || 0) + 1);
-              }
-              return total + (conv.unreadCount || 0);
-            }, 0);
+      // Nếu staff đang xem conversation này → gọi markUserMessagesAsRead để server cũng biết
+      if (isActiveConversation) {
+        // Dùng markUserMessagesAsRead (lấy TẤT CẢ unread từ server rồi mark) - đáng tin cậy hơn
+        // fire-and-forget nhưng gọi API toàn diện
+        chatApi
+          .markUserMessagesAsReadForStaff(customerId)
+          .then(() => {
+            // Sau khi server đã mark xong, re-fetch badge count để chính xác
+            chatApi
+              .getStaffUnreadCount()
+              .then((serverCount) => {
+                onUnreadCountChangeRef.current?.(serverCount);
+              })
+              .catch(() => {});
+          })
+          .catch((err) =>
+            console.error("Lỗi auto markUserMessagesAsRead cho active conversation:", err)
+          );
+      }
 
-            const finalTotal = conversations.find((c) => c.userId === customerId)
-              ? localTotal
-              : localTotal + 1;
+      // Cập nhật Badge count
+      const onChangeCallback = onUnreadCountChangeRef.current;
+      if (onChangeCallback) {
+        if (isActiveConversation) {
+          // Active conversation → badge không cần tăng, sẽ sync sau markUserMessagesAsRead
+        } else {
+          // Conversation không active → tính local nhanh rồi sync server
+          const currentConversations = conversationsRef.current;
+          const localTotal = currentConversations.reduce((total, conv) => {
+            if (conv.userId === customerId) {
+              return total + ((conv.unreadCount || 0) + 1);
+            }
+            return total + (conv.unreadCount || 0);
+          }, 0);
+          const finalTotal = currentConversations.find((c) => c.userId === customerId)
+            ? localTotal
+            : localTotal + 1;
+          onChangeCallback(finalTotal);
 
-            onUnreadCountChange(finalTotal);
-          }
-        }, 100); // Delay ngắn để đảm bảo state đã update
+          // Sau đó sync với server để chính xác
+          setTimeout(async () => {
+            try {
+              const serverCount = await chatApi.getStaffUnreadCount();
+              onUnreadCountChangeRef.current?.(serverCount);
+            } catch (error) {
+              console.error("Lỗi khi re-fetch server count:", error);
+            }
+          }, 500);
+        }
       }
 
       // Tự động chọn customer nếu chưa có ai được chọn
-      if (!activeCustomerId) {
+      if (!currentActiveCustomerId) {
         setActiveCustomerId(customerId);
       }
 
       // Scroll xuống bottom nếu tin nhắn mới từ customer đang active
-      if (activeCustomerId === customerId) {
+      if (isActiveConversation) {
         setTimeout(scrollToBottom, 100);
       }
     } catch (error) {
@@ -1228,8 +1308,8 @@ const CustomerChatPanel = ({
           .filter((id) => id && !id.toString().startsWith("msg_"));
 
         if (unreadMessageIds.length > 0) {
-          // Sử dụng batch API để đánh dấu tất cả cùng lúc (song song)
-          const result = await chatApi.markMessagesAsReadBatch(unreadMessageIds);
+          // Sử dụng batch API staff endpoint để đánh dấu tất cả cùng lúc (song song)
+          const result = await chatApi.markMessagesAsReadBatchForStaff(unreadMessageIds);
 
           // Cập nhật flag isRead trong local state
           unreadMessages.forEach((msg) => {
