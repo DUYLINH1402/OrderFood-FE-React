@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBox,
@@ -24,6 +25,8 @@ import {
 } from "../../constants/orderConstants";
 
 const OrdersTab = () => {
+  const location = useLocation();
+  const autoExpandedRef = useRef(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -63,6 +66,26 @@ const OrdersTab = () => {
     };
     fetchOrders();
   }, []);
+
+  // Auto-expand order từ URL param ?order=orderCode
+  useEffect(() => {
+    if (orders.length === 0) return;
+    const params = new URLSearchParams(location.search);
+    const orderParam = params.get("order");
+    if (!orderParam || autoExpandedRef.current === orderParam) return;
+
+    const target = orders.find(
+      (o) => String(o.orderCode) === String(orderParam) || String(o.id) === String(orderParam)
+    );
+    if (target) {
+      autoExpandedRef.current = orderParam;
+      setExpandedOrder(target.id);
+      setTimeout(() => {
+        const el = document.getElementById(`order-${target.id}`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  }, [orders, location.search]);
 
   // Mở modal hủy đơn hàng
   const openCancelModal = (order) => {
@@ -327,6 +350,7 @@ const OrdersTab = () => {
               return (
                 <div
                   key={order.id}
+                  id={`order-${order.id}`}
                   className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer"
                   onClick={() => setExpandedOrder(isExpanded ? null : order.id)}>
                   {/* Order header */}

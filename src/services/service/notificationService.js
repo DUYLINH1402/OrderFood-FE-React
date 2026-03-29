@@ -178,16 +178,18 @@ const transformNotificationFromAPI = (apiNotification) => {
     type: apiNotification.type || "SYSTEM_NOTIFICATION",
     title: apiNotification.title,
     message: apiNotification.message,
-    read: apiNotification.is_read === 1 || apiNotification.isRead === true,
+    read:
+      apiNotification.is_read === 1 ||
+      apiNotification.is_read === true ||
+      apiNotification.isRead === true,
     timestamp: apiNotification.created_at || apiNotification.createdAt,
     readAt: apiNotification.read_at || apiNotification.readAt,
 
     // Thông tin về đơn hàng (nếu có)
-    orderData: apiNotification.order_id
+    orderData: apiNotification.orderId || apiNotification.order_id
       ? {
-          id: apiNotification.order_id,
-          orderCode: apiNotification.order_code,
-          // Các thông tin khác về đơn hàng có thể được thêm vào sau
+          id: apiNotification.orderId || apiNotification.order_id,
+          orderCode: apiNotification.orderCode || apiNotification.order_code,
         }
       : null,
 
@@ -196,11 +198,11 @@ const transformNotificationFromAPI = (apiNotification) => {
     category: apiNotification.category || "general",
 
     // Thông tin người nhận
-    recipientId: apiNotification.recipient_id,
-    recipientType: apiNotification.recipient_type,
+    recipientId: apiNotification.recipientId || apiNotification.recipient_id,
+    recipientType: apiNotification.recipientType || apiNotification.recipient_type,
 
     // Action URL nếu có
-    actionUrl: apiNotification.action_url,
+    actionUrl: apiNotification.actionUrl || apiNotification.action_url,
   };
 };
 

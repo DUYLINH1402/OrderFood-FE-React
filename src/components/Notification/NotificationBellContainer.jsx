@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import NotificationBell from "./NotificationBell";
-import { useUserNotifications } from "../../hooks/useUserNotifications";
+import { useNotificationContext } from "../../contexts/NotificationContext";
 import { useUserWebSocketContext } from "../../services/websocket/UserWebSocketProvider";
 import userWebSocketClient from "../../services/websocket/userWebSocketClient";
 
@@ -11,7 +11,7 @@ import userWebSocketClient from "../../services/websocket/userWebSocketClient";
  * Đăng ký trực tiếp vào userWebSocketClient để đảm bảo nhận được messages
  */
 const NotificationBellContainer = () => {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isLoggedIn: isAuthenticated, user } = useSelector((state) => state.auth);
 
   // Sử dụng WebSocket context thay vì kết nối trực tiếp
   const wsContext = useUserWebSocketContext();
@@ -31,7 +31,7 @@ const NotificationBellContainer = () => {
     requestNotificationPermission,
     toggleAudio,
     loadNotificationsFromAPI,
-  } = useUserNotifications();
+  } = useNotificationContext();
 
   // Ref để giữ reference ổn định của addWebSocketNotification
   const addWebSocketNotificationRef = useRef(addWebSocketNotification);

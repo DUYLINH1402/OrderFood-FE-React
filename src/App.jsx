@@ -12,6 +12,7 @@ import "./assets/styles/components/SupportFloating.scss";
 import AuthLoader from "./routes/AuthLoader";
 import { ConfirmProvider } from "./components/ConfirmModal";
 import { UserWebSocketProvider } from "./services/websocket/UserWebSocketProvider";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import AudioEnabler from "./components/AudioEnabler";
 import SupportFloating from "./components/Support/SupportFloating";
 import ScrollToTop from "./components/Support/ScrollToTop";
@@ -43,13 +44,15 @@ function App() {
         />
         <ConfirmProvider>
           <UserWebSocketProvider>
-            <AudioEnabler>
-              <AuthLoader>
-                <AppRoutes />
-                <SupportFloating />
-                <ScrollToTop />
-              </AuthLoader>
-            </AudioEnabler>
+            <NotificationProvider>
+              <AudioEnabler>
+                <AuthLoader>
+                  <AppRoutes />
+                  <SupportFloating />
+                  <ScrollToTop />
+                </AuthLoader>
+              </AudioEnabler>
+            </NotificationProvider>
           </UserWebSocketProvider>
         </ConfirmProvider>
       </PersistGate>

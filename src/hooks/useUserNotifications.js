@@ -38,7 +38,7 @@ export const useUserNotifications = () => {
   const autoSyncTimeoutRef = useRef(null);
 
   // Lấy thông tin user từ Redux store
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isLoggedIn: isAuthenticated, user } = useSelector((state) => state.auth);
 
   // Load notifications từ API khi user đăng nhập
   useEffect(() => {
@@ -524,6 +524,29 @@ export const useUserNotifications = () => {
           const result = await markNotificationAsRead(notificationId);
           if (!result.success) {
             console.error("Failed to mark notification as read on server:", result.message);
+            // Revert UI nếu API thất bại
+            setNotifications((prev) => {
+              const reverted = prev.map((n) =>
+                n.id === notificationId ? { ...n, read: false, readAt: null } : n
+              );
+              saveNotifications(reverted);
+              return reverted;
+            });
+          } else if (result.data) {
+            // Cập nhật state với data thực từ server để đảm bảo đồng bộ
+            const serverRead =
+              result.data.isRead === true ||
+              result.data.is_read === true ||
+              result.data.is_read === 1;
+            setNotifications((prev) => {
+              const updated = prev.map((n) =>
+                n.id === notificationId
+                  ? { ...n, read: serverRead, readAt: result.data.readAt || n.readAt }
+                  : n
+              );
+              saveNotifications(updated);
+              return updated;
+            });
           }
         } catch (error) {
           console.error("Error marking notification as read:", error);
@@ -553,6 +576,8 @@ export const useUserNotifications = () => {
         if (!result.success) {
           console.error("Failed to mark all notifications as read on server:", result.message);
         }
+        // Reload từ API để đảm bảo trạng thái đồng bộ với server
+        await loadNotificationsFromAPI();
       } catch (error) {
         console.error("Error marking all notifications as read:", error);
       }

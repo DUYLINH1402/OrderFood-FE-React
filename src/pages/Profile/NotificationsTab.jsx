@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "antd";
-import { useUserNotifications } from "../../hooks/useUserNotifications";
+import { useNotificationsTab } from "../../contexts/NotificationContext";
 // Import utility functions
 import {
   getNotificationIconConfig,
@@ -56,7 +56,7 @@ const NotificationsTab = () => {
     clearAll,
     toggleAudio,
     loadNotificationsFromAPI,
-  } = useUserNotifications();
+  } = useNotificationsTab();
 
   const getNotificationIcon = (type, orderStatus) => {
     // Sử dụng utility function chung
